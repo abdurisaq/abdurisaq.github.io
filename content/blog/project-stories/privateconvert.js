@@ -1,11 +1,17 @@
 addPage({
     type: "blog",
-    path: "blog/privateconvert.md",
+    path: "blog/project-stories/privateconvert.md",
     treeOrder: 10,
+    folderOrder: 20,
     searchOrder: 110,
+    folderPresentation: {
+        className: "project-stories-folder",
+        contentsClassName: "project-stories-contents",
+        separator: true,
+    },
 });
 
-// blog/privateconvert.md
+// blog/project-stories/privateconvert.md
 DATA.blogPosts.push({
     id: "privateconvert",
     type: "story",

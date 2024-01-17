@@ -106,19 +106,17 @@
     margin: 7px 12px 5px 34px;
     opacity: 0.9;
 }
+.tree-folder.project-stories-folder,
 .tree-folder.deep-dives-folder {
     margin-bottom: 2px;
 }
+.tree-children.project-stories-contents,
 .tree-children.deep-dives-contents {
-    margin: 0 12px 7px 44px;
+    margin: 0 0 7px;
     padding: 4px 0 5px 9px;
-    border-left: 1px solid var(--border);
-    background: color-mix(in srgb, var(--surface) 35%, transparent);
+    border-left: 0;
 }
-#deep-dive-tree .tree-file {
-    padding-left: 8px;
-    padding-right: 4px;
-}
-#deep-dive-tree .tree-file .tree-label {
-    font-size: 11px;
+.tree-children.project-stories-contents,
+.tree-children.deep-dives-contents {
+    padding-left: 0;
 }

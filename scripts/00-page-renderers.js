@@ -403,7 +403,9 @@ const pages = {
             return joinHtml(
                 `<div class="page-eyebrow">~/blog</div><h1>blog</h1>`,
                 `<p class="page-intro">The projects, why I started them, what went wrong, and how they turned out.</p>`,
-                `<section class="blog-list">${stories.map(blogCard).join("")}</section>`,
+                `<section class="blog-story-list"><div class="section-heading-row"><h2>Project stories</h2>`,
+                `<span class="section-kicker">~/blog/project-stories</span></div>`,
+                `<div class="blog-list">${stories.map(blogCard).join("")}</div></section>`,
                 `${
                     notes.length
                         ? joinHtml(

@@ -2,6 +2,7 @@ addPage({
     type: "blog",
     path: "blog/deep-dives/localtether-implementation-notes.md",
     treeOrder: 120,
+    folderOrder: 30,
     searchOrder: 170,
 });
 

@@ -2,6 +2,7 @@ addPage({
     type: "blog",
     path: "blog/deep-dives/versatiletraining-ue3-notes.md",
     treeOrder: 110,
+    folderOrder: 30,
     searchOrder: 140,
     folderPresentation: {
         className: "deep-dives-folder",

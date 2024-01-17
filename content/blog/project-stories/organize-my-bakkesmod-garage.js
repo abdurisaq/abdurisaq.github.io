@@ -1,11 +1,11 @@
 addPage({
     type: "blog",
-    path: "blog/organize-my-bakkesmod-garage.md",
+    path: "blog/project-stories/organize-my-bakkesmod-garage.md",
     treeOrder: 40,
     searchOrder: 150,
 });
 
-// blog/organize-my-bakkesmod-garage.md
+// blog/project-stories/organize-my-bakkesmod-garage.md
 DATA.blogPosts.push({
     id: "organize-my-bakkesmod-garage",
     type: "story",

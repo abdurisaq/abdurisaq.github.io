@@ -1,11 +1,11 @@
 addPage({
     type: "blog",
-    path: "blog/localtether-story.md",
+    path: "blog/project-stories/localtether-story.md",
     treeOrder: 50,
     searchOrder: 160,
 });
 
-// blog/localtether-story.md
+// blog/project-stories/localtether-story.md
 DATA.blogPosts.push({
     id: "localtether-story",
     type: "story",

@@ -270,7 +270,7 @@ input:focus-visible {
     transform: rotate(-90deg);
 }
 .tree-children {
-    overflow: hidden;
+    overflow: visible;
 }
 .tree-children.closed {
     display: none;

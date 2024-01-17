@@ -1,11 +1,11 @@
 addPage({
     type: "blog",
-    path: "blog/versatiletraining-story.md",
+    path: "blog/project-stories/versatiletraining-story.md",
     treeOrder: 30,
     searchOrder: 130,
 });
 
-// blog/versatiletraining-story.md
+// blog/project-stories/versatiletraining-story.md
 DATA.blogPosts.push({
     id: "versatiletraining-story",
     type: "story",
