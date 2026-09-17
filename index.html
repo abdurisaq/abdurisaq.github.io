@@ -1,20 +1,199 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#292522" />
+        <meta name="description" content="Abdurisaq — software engineering portfolio" />
         <title>abdurisaq | portfolio</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap"
+            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
         <link rel="stylesheet" href="style.css" />
+        <script>
+            (() => {
+                const saved = localStorage.getItem("portfolio-theme");
+                const theme =
+                    saved ||
+                    (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+                document.documentElement.dataset.theme = theme;
+            })();
+        </script>
     </head>
     <body>
-        <header id="nav"></header>
-        <main id="app"></main>
-        <footer id="status"></footer>
+        <div class="editor-shell">
+            <header class="topbar">
+                <div class="window-mark"><span></span><span></span><span></span></div>
+                <a class="topbar-title" href="#/" aria-label="Go to portfolio home"
+                    ><span class="brand-mark">⌘</span> abdurisaq
+                    <span class="topbar-muted">— portfolio.nvim</span></a
+                >
+                <div class="topbar-actions">
+                    <button
+                        class="icon-button"
+                        id="search-open"
+                        type="button"
+                        title="Find files (Ctrl+K)"
+                        aria-label="Find files"
+                    >
+                        ⌕
+                    </button>
+                    <button
+                        class="icon-button"
+                        id="theme-toggle"
+                        type="button"
+                        title="Toggle color theme"
+                        aria-label="Toggle color theme"
+                    >
+                        ☼
+                    </button>
+                    <button
+                        class="icon-button mobile-explorer-toggle"
+                        id="explorer-toggle"
+                        type="button"
+                        title="Toggle explorer"
+                        aria-label="Toggle explorer"
+                    >
+                        ☰
+                    </button>
+                </div>
+            </header>
+            <div class="workspace">
+                <aside class="explorer" id="explorer" aria-label="File explorer">
+                    <div class="explorer-heading">
+                        <span>EXPLORER</span
+                        ><button
+                            id="collapse-explorer"
+                            class="subtle-button"
+                            aria-label="Hide explorer"
+                            title="Hide explorer"
+                        >
+                            ‹
+                        </button>
+                    </div>
+                    <div class="tree-root">
+                        <span class="tree-chevron">⌄</span
+                        ><span class="folder-icon">▰</span> abdurisaq
+                    </div>
+                    <nav class="tree" id="file-tree">
+                        <a class="tree-file" href="#/" data-route="home"
+                            ><span class="file-icon lua"></span> index.lua</a
+                        >
+                        <a class="tree-file" href="#/about" data-route="about"
+                            ><span class="file-icon md">M</span> about.md</a
+                        >
+                        <button class="tree-folder" type="button" data-folder="experience">
+                            <span class="tree-chevron">⌄</span
+                            ><span class="folder-icon">▰</span> experience
+                        </button>
+                        <div class="tree-children" data-folder-content="experience">
+                            <a class="tree-file" href="#/experience" data-route="experience"
+                                ><span class="file-icon md">M</span> experience.md</a
+                            >
+                            <a class="tree-file" href="#/resume" data-route="resume"
+                                ><span class="file-icon pdf">▤</span> resume.pdf</a
+                            >
+                        </div>
+                        <button class="tree-folder" type="button" data-folder="projects">
+                            <span class="tree-chevron">⌄</span
+                            ><span class="folder-icon">▰</span> projects
+                        </button>
+                        <div class="tree-children" data-folder-content="projects">
+                            <a class="tree-file" href="#/projects" data-route="projects"
+                                ><span class="file-icon js">JS</span> index.lua</a
+                            >
+                            <div id="project-tree"></div>
+                        </div>
+                        <a class="tree-file" href="#/skills" data-route="skills"
+                            ><span class="file-icon lua"></span> skills.lua</a
+                        >
+                        <a class="tree-file" href="#/style" data-route="style"
+                            ><span class="file-icon conf">⚙</span> colorscheme.md</a
+                        >
+                    </nav>
+                    <div class="explorer-bottom">
+                        <span class="explorer-dot"></span> WORKSPACE
+                        <span class="explorer-bottom-right">1 folder</span>
+                    </div>
+                </aside>
+                <main class="editor-main">
+                    <div
+                        class="bufferline"
+                        id="bufferline"
+                        role="tablist"
+                        aria-label="Open files"
+                    ></div>
+                    <div class="breadcrumb" id="breadcrumb"></div>
+                    <div id="app" class="editor-content" tabindex="-1"></div>
+                </main>
+            </div>
+            <footer class="statusline" id="status" aria-label="Editor status"></footer>
+            <div class="command-row" id="command-row" hidden>
+                <span class="command-prompt">:</span
+                ><input
+                    id="command-input"
+                    aria-label="Neovim command"
+                    autocomplete="off"
+                    spellcheck="false"
+                    placeholder="Type a command..."
+                />
+                <span class="command-hint">Enter to run · Esc to close</span>
+            </div>
+        </div>
+        <div class="overlay" id="search-overlay" hidden>
+            <div class="overlay-backdrop" data-close-overlay></div>
+            <section
+                class="palette"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="palette-title"
+            >
+                <div class="palette-input-row">
+                    <span class="palette-symbol">⌕</span
+                    ><label class="sr-only" id="palette-title" for="palette-input"
+                        >Find a page or project</label
+                    ><input
+                        id="palette-input"
+                        placeholder="Find files, projects, skills..."
+                        autocomplete="off"
+                    /><kbd>ESC</kbd>
+                </div>
+                <div class="palette-results" id="palette-results"></div>
+                <div class="palette-footer">
+                    <span>↑↓ navigate</span><span>↵ open</span><span>esc close</span>
+                </div>
+            </section>
+        </div>
+        <div class="help-overlay" id="help-overlay" hidden>
+            <div class="overlay-backdrop" data-close-help></div>
+            <section
+                class="help-dialog"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="help-title"
+            >
+                <div class="dialog-heading">
+                    <h2 id="help-title">Keyboard shortcuts</h2>
+                    <button class="subtle-button" data-close-help aria-label="Close help">×</button>
+                </div>
+                <div class="shortcut-grid">
+                    <kbd>j / k</kbd><span>Scroll down / up</span><kbd>gg / G</kbd
+                    ><span>Jump to top / bottom</span> <kbd>Ctrl+d / Ctrl+u</kbd
+                    ><span>Half-page down / up</span><kbd>Ctrl+k</kbd
+                    ><span>Find files and content</span> <kbd>Space e</kbd
+                    ><span>Toggle file explorer</span><kbd>]b / [b</kbd
+                    ><span>Next / previous tab</span> <kbd>Space b d</kbd
+                    ><span>Close current tab</span><kbd>:</kbd><span>Open command line</span
+                    ><kbd>?</kbd><span>Show this help</span>
+                </div>
+                <p class="help-note">
+                    All actions are also available through the interface controls.
+                </p>
+            </section>
+        </div>
         <script src="data.js"></script>
         <script src="app.js"></script>
     </body>

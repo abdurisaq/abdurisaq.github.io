@@ -1,6 +1,34 @@
-# Portfolio
+# abdurisaq — portfolio.nvim
 
-Static site, no build step. Edit `data.js` for all content, drop your resume at `assets/resume.pdf`.
-Run locally: `python3 -m http.server` in this folder. Deploy: push to GitHub Pages or import the
-folder into Vercel. Anything beginning with `TODO` in data.js shows greyed-out on the site so you
-can find what's left to fill in.
+A lightweight, static resume portfolio presented as a Neovim-inspired editor. It uses vanilla HTML,
+CSS and JavaScript; no build step is required.
+
+## Run locally
+
+Open `index.html` in a browser, or serve the folder with any static file server:
+
+```sh
+python -m http.server 8000
+```
+
+Then visit `http://localhost:8000`.
+
+## Interface
+
+- File explorer navigation and collapsible project/experience folders
+- Persistent open-buffer tabs with close and cycle behavior
+- Telescope-style search (`Ctrl+K`)
+- Ex command line (`:`): `:e about.md`, `:e projects/localtether`, `:bn`, `:bp`, `:bd`,
+  `:colorscheme melange`, `:help`
+- Keyboard navigation: `j/k`, `gg/G`, `Ctrl+D/Ctrl+U`, `Space e`, `]b/[b`, `Space b d`, `?`
+- Melange light/dark palettes; theme selection is saved locally and initially follows the OS
+  preference
+
+All primary actions also have mouse-accessible controls. The site keeps portfolio content in
+`data.js`.
+
+## Personalize before publishing
+
+Update the TODO values and contact details in `data.js`, add your resume PDF at `assets/resume.pdf`,
+and verify project demo links. The colorscheme page reads the configured dotfiles repository from
+GitHub.
