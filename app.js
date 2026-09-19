@@ -13,42 +13,72 @@ const tags = (a) =>
 const video = (v) =>
     `<div class="video"><iframe src="https://www.youtube-nocookie.com/embed/${esc(v.id)}" title="${esc(v.title)}" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div><p class="todo" style="margin-bottom:24px">${esc(v.title)}</p>`;
 const projectCard = (p) =>
-    `<a class="card" href="#/projects/${encodeURIComponent(p.id)}"><h3>${esc(p.name)}</h3><p>${esc(p.summary)}</p>${tags(p.stack.slice(0, 4))}</a>`;
+    `<a class="card" href="#/projects/${encodeURIComponent(p.id)}"><h3>${esc(p.name)}</h3><p>${esc(p.summary)}</p>${p.metrics ? `<div class="metric-row">${p.metrics.map((m) => `<span class="metric"><strong>${esc(m.value)}</strong><small>${esc(m.label)}</small></span>`).join("")}</div>` : ""}${tags(p.stack.slice(0, 4))}</a>`;
 const fileFor = (page, id) =>
     id
         ? `${id}.md`
         : {
               home: "index.lua",
               about: "about.md",
-              experience: "experience.md",
-              projects: "projects/",
-              skills: "skills.lua",
+              experience: "work.md",
+              projects: "index.lua",
+              skills: "skills.md",
               resume: "resume.pdf",
               style: "colorscheme.md",
+              community: "community.md",
+              "more-projects": "more-projects.md",
           }[page] || "index.lua";
 const routeFor = (page, id) => (id ? `#/projects/${id}` : `#/${page === "home" ? "" : page}`);
 const pages = {
     home: () => `<section class="hero"><div class="hi">-- hello, world</div><div class="big">${esc(P.name)}<span style="color:var(--yellow)">.</span></div><p class="sub">${esc(P.tagline)}</p><div class="btns"><a class="btn" href="#/projects">Explore projects <span>↗</span></a><a class="btn alt" href="#/resume">View resume</a><a class="btn alt" href="#/about">About me</a></div></section>
     <section><h2>Featured projects</h2><div class="grid">${DATA.projects.slice(0, 3).map(projectCard).join("")}</div><p style="margin-top:15px"><a href="#/projects">Browse all projects →</a></p></section>
+    <section><div class="section-heading-row"><h2>Built for a community</h2><span class="section-kicker">community project</span></div><div class="grid">${DATA.communityProjects.map(projectCard).join("")}</div></section>
+    <section><h2>Open-source contributions</h2><p>Ongoing work on a personal Mihon fork, including an upstream bug fix and an extension-filtering contribution.</p><a href="#/community">Read about community contributions →</a></section>
     <section><h2>Get in touch</h2><p><a href="mailto:${esc(P.email)}">${esc(P.email)}</a> <span style="color:var(--dim)">·</span> <a href="${esc(P.github)}" target="_blank" rel="noopener">GitHub ↗</a> <span style="color:var(--dim)">·</span> <a href="${esc(P.linkedin)}" target="_blank" rel="noopener">LinkedIn ↗</a></p></section>`,
     about: () =>
         `<h1>about me</h1><section class="cols"><div>${DATA.about.map((x) => `<p>${t(x)}</p>`).join("")}</div><aside class="side">${DATA.facts.map(([k, v]) => `<div style="margin-bottom:8px"><span style="color:var(--cyan)">${esc(k)}:</span> ${t(v)}</div>`).join("")}</aside></section>`,
     experience: () =>
         `<h1>experience</h1><section class="timeline">${DATA.experience.map((j) => `<div class="job"><h3>${t(j.role)}</h3><div class="meta">${t(j.org)} · ${t(j.dates)} · ${t(j.place)}</div><ul>${j.bullets.map((b) => `<li>${t(b)}</li>`).join("")}</ul></div>`).join("")}</section>`,
     projects: () =>
-        `<h1>projects</h1><p style="color:var(--muted)">A selection of things I've built. Select a project to explore its implementation and technical details.</p><div class="grid">${DATA.projects.map(projectCard).join("")}</div>`,
+        `<h1>projects</h1><p class="page-intro">Selected work first, followed by a community tool and smaller experiments.</p><section><h2>Featured projects</h2><div class="grid">${DATA.projects.slice(0, 3).map(projectCard).join("")}</div></section><section><div class="section-heading-row"><h2>Community project</h2><span class="section-kicker">player adoption</span></div><div class="grid">${DATA.communityProjects.map(projectCard).join("")}</div></section>${DATA.projects.length > 3 ? `<section><h2>Additional selected work</h2><div class="grid">${DATA.projects.slice(3).map(projectCard).join("")}</div></section>` : ""}<section><h2>Other projects</h2><p>Smaller applications, coursework and systems experiments are collected separately.</p><a href="#/more-projects">Open more-projects.md →</a></section>`,
     project: (id) => {
-        const p = DATA.projects.find((x) => x.id === id);
+        const p = [...DATA.projects, ...DATA.communityProjects, ...DATA.moreProjects].find(
+            (x) => x.id === id,
+        );
         if (!p) return pages.notfound();
-        return `<div class="crumb"><a href="#/projects">projects</a> / ${esc(p.id)}</div><h1>${esc(p.name)}</h1><p style="color:var(--muted)">${esc(p.summary)}</p>${p.videos.map(video).join("")}<div class="cols"><div><section><h2>Overview</h2><p>${esc(p.about)}</p></section><section><h2>Technical highlights</h2><ul>${p.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul></section></div><aside class="side"><h3>Technology</h3>${tags(p.stack)}<h3 style="margin-top:20px">Links</h3>${p.links.map(([n, u]) => `<div style="margin:6px 0"><a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)} ↗</a></div>`).join("")}</aside></div>`;
+        return `<div class="crumb"><a href="#/projects">projects</a> / ${esc(p.id)}</div><h1>${esc(p.name)}</h1><p class="page-intro">${esc(p.summary)}</p>${p.image ? `<figure class="project-media"><img src="${esc(p.image)}" alt="${esc(p.imageAlt || p.name)}" loading="lazy"><figcaption>${esc(p.imageAlt || p.name)}</figcaption></figure>` : ""}${p.metrics ? `<div class="metrics-panel"><div class="metrics-label">Community reach · reported project stats</div><div class="metric-row">${p.metrics.map((m) => `<div class="metric"><strong>${esc(m.value)}</strong><small>${esc(m.label)}</small></div>`).join("")}</div></div>` : ""}${(p.videos || []).map(video).join("")}<div class="cols project-layout"><div><section><h2>Overview</h2><p>${esc(p.about)}</p></section><section><h2>Technical highlights</h2><ul>${p.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul></section></div><aside class="side"><h3>Technology</h3>${tags(p.stack)}<h3 style="margin-top:20px">Links</h3>${p.links.map(([n, u]) => `<div style="margin:6px 0"><a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)} ↗</a></div>`).join("")}</aside></div>`;
     },
     skills: () =>
-        `<h1>skills</h1>${Object.entries(DATA.skills)
+        `<h1>skills</h1><p class="page-intro">Technologies and tools used across projects and coursework.</p>${Object.entries(
+            DATA.skills,
+        )
             .map(
                 ([g, list]) =>
-                    `<section><h2>${esc(g)}</h2><div class="skills">${list.map(([n, i]) => `<div class="skill"><img src="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.16.0/icons/${esc(i)}/${esc(i)}-original.svg" alt="" loading="lazy" onerror="this.style.display='none'">${esc(n)}</div>`).join("")}</div></section>`,
+                    `<section class="skill-group"><h2>${esc(g)}</h2><div class="skill-list">${list.map((name) => `<span class="skill-chip">${esc(name)}</span>`).join("")}</div></section>`,
             )
             .join("")}`,
+    "more-projects": () =>
+        `<h1>more projects</h1><p class="page-intro">A few additional applications, systems exercises and collaborative coursework. These are included for breadth without competing with the main project case studies.</p><div class="grid">${DATA.moreProjects.map(projectCard).join("")}</div>`,
+    community: () => {
+        const m = DATA.community.mihon;
+        return `<h1>community contributions</h1><p class="page-intro">Ongoing open-source work and projects shaped by real user workflows. I keep upstream pull requests separate from changes that live only in my fork.</p><section class="community-intro"><div><h2>${esc(m.name)}</h2><p>${esc(m.summary)}</p><a href="${esc(m.repo)}" target="_blank" rel="noopener">View personal fork ↗</a>${m.stack ? tags(m.stack) : ""}</div><div class="contribution-count"><strong>${m.contributions.filter((c) => c.status === "Merged upstream").length}</strong><span>merged upstream</span></div></section><section><h2>Upstream contributions</h2><div class="contribution-list">${m.contributions
+            .filter((c) => c.url)
+            .map(
+                (c) =>
+                    `<article class="contribution"><div class="contribution-heading"><h3>${esc(c.title)}</h3><span class="contribution-status ${c.status === "Merged upstream" ? "merged" : "open"}">${esc(c.status)}</span></div><p>${esc(c.detail)}</p><a href="${esc(c.url)}" target="_blank" rel="noopener">View pull request ↗</a></article>`,
+            )
+            .join(
+                "",
+            )}</div></section><section><h2>Additional work in the fork</h2><div class="contribution-list">${m.contributions
+            .filter((c) => !c.url)
+            .map(
+                (c) =>
+                    `<article class="contribution"><div class="contribution-heading"><h3>${esc(c.title)}</h3><span class="contribution-status fork">${esc(c.status)}</span></div><p>${esc(c.detail)}</p></article>`,
+            )
+            .join(
+                "",
+            )}</div></section><p class="community-footnote">This is ongoing personal work for a tablet-oriented workflow; upstream status is shown explicitly so proposed and fork-only changes are not presented as merged contributions.</p>`;
+    },
     resume: () =>
         `<h1>resume</h1><div class="btns" style="margin:0 0 16px"><a class="btn" href="${esc(P.resume)}" download>Download PDF</a><a class="btn alt" href="${esc(P.resume)}" target="_blank" rel="noopener">Open in new tab</a></div><object class="pdf" data="${esc(P.resume)}" type="application/pdf"><p class="todo" style="padding:20px">No PDF found. Put your resume at <code>${esc(P.resume)}</code>, or use the download button.</p></object>`,
     style: () =>
@@ -107,13 +137,12 @@ function renderChrome() {
         )
         .join("");
     const file = bufferLabel(key),
-        parent = key.startsWith("project:")
-            ? "projects"
-            : key === "home"
-              ? "~"
-              : key === "projects"
-                ? "~"
-                : "~";
+        parent =
+            key.startsWith("project:") || key === "projects" || key === "more-projects"
+                ? "projects"
+                : key === "experience" || key === "skills" || key === "resume"
+                  ? "experience"
+                  : "~";
     $("#breadcrumb").innerHTML =
         `<span>${esc(P.handle)}</span> <span style="color:var(--dim)">/</span> <span>${esc(parent)}</span> <span style="color:var(--dim)">/</span> <span class="crumb-current">${esc(file)}</span>`;
     $("#status").innerHTML =
@@ -137,10 +166,15 @@ function renderEditor() {
     if (key === "style") loadDotfiles();
 }
 function renderProjectTree() {
-    $("#project-tree").innerHTML = DATA.projects
+    const ordered = [
+        ...DATA.projects.slice(0, 3),
+        ...DATA.communityProjects,
+        ...DATA.projects.slice(3),
+    ];
+    $("#project-tree").innerHTML = ordered
         .map(
             (p) =>
-                `<a class="tree-file" href="#/projects/${encodeURIComponent(p.id)}" data-project="${esc(p.id)}"><span class="file-icon md">M</span> ${esc(p.id)}.md</a>`,
+                `<a class="tree-file" href="#/projects/${encodeURIComponent(p.id)}" data-project="${esc(p.id)}"><span class="file-type md">MD</span><span class="tree-label">${esc(p.id)}.md</span></a>`,
         )
         .join("");
 }
@@ -215,7 +249,8 @@ function buildSearchItems() {
         },
         { label: "about.md", detail: "About me", route: "#/about", kind: "PAGE", terms: "about" },
         {
-            label: "experience.md",
+            label: "work.md",
+            path: "experience/work.md",
             detail: "Work and experience",
             route: "#/experience",
             kind: "PAGE",
@@ -223,36 +258,64 @@ function buildSearchItems() {
         },
         {
             label: "projects/",
-            detail: "All projects",
+            detail: "Featured projects",
             route: "#/projects",
             kind: "DIR",
-            terms: "projects",
+            terms: "projects portfolio",
         },
         {
-            label: "skills.lua",
+            label: "skills.md",
+            path: "experience/skills.md",
             detail: "Languages, frameworks and tools",
             route: "#/skills",
             kind: "PAGE",
-            terms: "skills technologies languages",
+            terms: "skills technologies languages frameworks databases systems networking",
         },
         {
             label: "resume.pdf",
+            path: "experience/resume.pdf",
             detail: "Resume PDF",
             route: "#/resume",
             kind: "PDF",
             terms: "resume cv",
         },
         {
+            label: "community.md",
+            detail: "Mihon open-source contributions",
+            route: "#/community",
+            kind: "PAGE",
+            terms: "community open source mihon fork pull request extension filtering keyboard navigation",
+        },
+        {
+            label: "more-projects.md",
+            path: "projects/more-projects.md",
+            detail: "Additional applications and coursework",
+            route: "#/more-projects",
+            kind: "PAGE",
+            terms: "additional projects music app http server coursework",
+        },
+        {
             label: "colorscheme.md",
             detail: "About this Neovim-inspired interface",
             route: "#/style",
             kind: "PAGE",
-            terms: "theme melange neovim colorscheme",
+            terms: "theme melange neovim colorscheme dotfiles",
         },
     ];
-    DATA.projects.forEach((p) =>
+    [...DATA.projects, ...DATA.communityProjects].forEach((p) =>
         items.push({
             label: `${p.id}.md`,
+            path: `projects/${p.id}.md`,
+            detail: p.summary,
+            route: `#/projects/${p.id}`,
+            kind: "PROJECT",
+            terms: [p.name, p.summary, p.about, ...p.stack, ...p.highlights].join(" "),
+        }),
+    );
+    DATA.moreProjects.forEach((p) =>
+        items.push({
+            label: `${p.id}.md`,
+            path: `projects/${p.id}.md`,
             detail: p.summary,
             route: `#/projects/${p.id}`,
             kind: "PROJECT",
@@ -260,7 +323,7 @@ function buildSearchItems() {
         }),
     );
     Object.entries(DATA.skills).forEach(([group, skills]) =>
-        skills.forEach(([name]) =>
+        skills.forEach((name) =>
             items.push({
                 label: name,
                 detail: `Skill · ${group}`,
@@ -358,6 +421,7 @@ function runCommand(raw) {
             const match = [...searchItems].find(
                 (x) =>
                     x.label === value ||
+                    x.path === value ||
                     x.route.replace(/^#\/?/, "") === value ||
                     x.route === `#/${value}`,
             );
@@ -596,7 +660,7 @@ async function loadDotfiles() {
             paths.find((p) => /nvim.*init\.lua$/.test(p)) ||
             paths.find((p) => /init\.(lua|vim)$/.test(p)) ||
             paths[0];
-        box.innerHTML = `<div class="box"><h3>${esc(info.full_name)}</h3><p style="margin:0">last pushed <b>${ago(info.pushed_at)}</b> · ${paths.length} files · branch <code>${esc(br)}</code> · ${info.stargazers_count} stars</p></div><div class="box"><h3>Latest commits</h3>${commits.map((c) => `<div class="commit"><span>${ago(c.commit.author.date)}</span><a href="${esc(c.html_url)}" target="_blank" rel="noopener">${esc(c.commit.message.split("\n")[0])}</a></div>`).join("")}</div><div class="cols" style="grid-template-columns:1fr 2fr"><div class="box files" id="files">${paths.map((p) => `<button data-p="${esc(p)}">${esc(p)}</button>`).join("")}</div><div class="box"><div id="fname" style="margin-bottom:8px"></div><pre class="code" id="code"></pre></div></div>`;
+        box.innerHTML = `<div class="box"><h3>${esc(info.full_name)}</h3><p style="margin:0">last pushed <b>${ago(info.pushed_at)}</b> · ${paths.length} files · branch <code>${esc(br)}</code> · ${info.stargazers_count} stars</p></div><div class="box"><h3>Latest commits</h3>${commits.map((c) => `<div class="commit"><span>${ago(c.commit.author.date)}</span><a href="${esc(c.html_url)}" target="_blank" rel="noopener">${esc(c.commit.message.split("\n")[0])}</a></div>`).join("")}</div><div class="live-layout"><div class="box files" id="files" aria-label="Dotfiles">${paths.map((p) => `<button data-p="${esc(p)}" title="${esc(p)}">${esc(p)}</button>`).join("")}</div><section class="box code-panel"><div id="fname" class="code-filename"></div><div class="code-viewport"><pre class="code" id="code"></pre></div></section></div>`;
         const show = async (p) => {
             document
                 .querySelectorAll("#files button")

@@ -80,10 +80,12 @@
                     </div>
                     <nav class="tree" id="file-tree">
                         <a class="tree-file" href="#/" data-route="home"
-                            ><span class="file-icon lua"></span> index.lua</a
+                            ><span class="file-type lua">LUA</span
+                            ><span class="tree-label">index.lua</span></a
                         >
                         <a class="tree-file" href="#/about" data-route="about"
-                            ><span class="file-icon md">M</span> about.md</a
+                            ><span class="file-type md">MD</span
+                            ><span class="tree-label">about.md</span></a
                         >
                         <button class="tree-folder" type="button" data-folder="experience">
                             <span class="tree-chevron">⌄</span
@@ -91,10 +93,16 @@
                         </button>
                         <div class="tree-children" data-folder-content="experience">
                             <a class="tree-file" href="#/experience" data-route="experience"
-                                ><span class="file-icon md">M</span> experience.md</a
+                                ><span class="file-type md">MD</span
+                                ><span class="tree-label">work.md</span></a
+                            >
+                            <a class="tree-file" href="#/skills" data-route="skills"
+                                ><span class="file-type md">MD</span
+                                ><span class="tree-label">skills.md</span></a
                             >
                             <a class="tree-file" href="#/resume" data-route="resume"
-                                ><span class="file-icon pdf">▤</span> resume.pdf</a
+                                ><span class="file-type pdf">PDF</span
+                                ><span class="tree-label">resume.pdf</span></a
                             >
                         </div>
                         <button class="tree-folder" type="button" data-folder="projects">
@@ -103,20 +111,27 @@
                         </button>
                         <div class="tree-children" data-folder-content="projects">
                             <a class="tree-file" href="#/projects" data-route="projects"
-                                ><span class="file-icon js">JS</span> index.lua</a
+                                ><span class="file-type lua">LUA</span
+                                ><span class="tree-label">index.lua</span></a
                             >
                             <div id="project-tree"></div>
+                            <a class="tree-file" href="#/more-projects" data-route="more-projects"
+                                ><span class="file-type md">MD</span
+                                ><span class="tree-label">more-projects.md</span></a
+                            >
                         </div>
-                        <a class="tree-file" href="#/skills" data-route="skills"
-                            ><span class="file-icon lua"></span> skills.lua</a
+                        <a class="tree-file" href="#/community" data-route="community"
+                            ><span class="file-type md">MD</span
+                            ><span class="tree-label">community.md</span></a
                         >
                         <a class="tree-file" href="#/style" data-route="style"
-                            ><span class="file-icon conf">⚙</span> colorscheme.md</a
+                            ><span class="file-type md">MD</span
+                            ><span class="tree-label">colorscheme.md</span></a
                         >
                     </nav>
                     <div class="explorer-bottom">
                         <span class="explorer-dot"></span> WORKSPACE
-                        <span class="explorer-bottom-right">1 folder</span>
+                        <span class="explorer-bottom-right">4 folders</span>
                     </div>
                 </aside>
                 <main class="editor-main">

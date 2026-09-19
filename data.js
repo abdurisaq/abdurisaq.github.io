@@ -38,34 +38,41 @@ const DATA = {
         },
     ],
 
-    /* icon = devicon slug (https://devicon.dev). If an icon doesn't exist the label still shows. */
     skills: {
-        Languages: [
-            ["C++", "cplusplus"],
-            ["Python", "python"],
-            ["TypeScript", "typescript"],
-            ["JavaScript", "javascript"],
-            ["CMake", "cmake"],
+        Languages: ["C++", "Python", "Kotlin", "TypeScript", "JavaScript", "SQL", "C", "Java"],
+        Frameworks: [
+            "React",
+            "Next.js",
+            "FastAPI",
+            "Flask",
+            "tRPC",
+            "Prisma",
+            "SQLModel",
+            "Ktor",
+            "Jetpack Compose",
+            "Dear ImGui",
+            "Cereal",
         ],
-        Web: [
-            ["React", "react"],
-            ["Next.js", "nextjs"],
-            ["Tailwind", "tailwindcss"],
-            ["Vite", "vitejs"],
-            ["FastAPI", "fastapi"],
+        "Databases & Tools": [
+            "PostgreSQL",
+            "SQLite",
+            "Supabase",
+            "Room",
+            "Docker",
+            "Git",
+            "CMake",
+            "vcpkg",
+            "pytest",
         ],
-        "Data & Infra": [
-            ["PostgreSQL", "postgresql"],
-            ["Prisma", "prisma"],
-            ["Docker", "docker"],
-            ["Vercel", "vercel"],
-            ["Supabase", "supabase"],
-        ],
-        Tools: [
-            ["Git", "git"],
-            ["GitHub", "github"],
-            ["Linux", "linux"],
-            ["Neovim", "neovim"],
+        "Systems & Networking": [
+            "Linux",
+            "Windows APIs",
+            "SDL2",
+            "standalone Asio",
+            "OpenSSL",
+            "libevdev",
+            "TCP/IP",
+            "REST APIs",
         ],
     },
 
@@ -173,4 +180,125 @@ const DATA = {
             links: [["Source", "https://github.com/abdurisaq/PrivateConvert"]],
         },
     ],
+
+    communityProjects: [
+        {
+            id: "organize-my-bakkesmod-garage",
+            name: "OrganizeMyBakkesModGarage",
+            repo: "https://github.com/abdurisaq/OrganizeMyBakkesModGarage",
+            summary:
+                "A BakkesMod plugin for organizing Rocket League presets into groups, sorting loadouts and managing in-game garage setups.",
+            stack: ["C++", "BakkesMod SDK", "Dear ImGui", "Windows APIs"],
+            image: "assets/organize-my-bakkesmod-garage.png",
+            imageAlt:
+                "OrganizeMyBakkesModGarage group and preset management interface shown over Rocket League gameplay.",
+            about: "A Rocket League plugin built to make large preset collections easier to manage. Players can group presets, edit and sort groups, equip presets, swap car bodies, shuffle a selected group during matches, and copy presets from replays. The project reached a substantial player audience despite being a smaller personal plugin rather than a primary resume project.",
+            highlights: [
+                "Create and edit named preset groups for easier garage organization.",
+                "Sort groups by name, modification date or size, in ascending or descending order.",
+                "Equip presets, swap car bodies and shuffle a selected group in supported game modes.",
+                "Copy presets from replays and persist group data locally.",
+            ],
+            metrics: [
+                { value: "36.2K", label: "views" },
+                { value: "13K", label: "downloads" },
+            ],
+            videos: [],
+            links: [["Source", "https://github.com/abdurisaq/OrganizeMyBakkesModGarage"]],
+        },
+    ],
+
+    moreProjects: [
+        {
+            id: "musicapp",
+            name: "MusicApp",
+            repo: "https://github.com/abdurisaq/MusicApp",
+            summary:
+                "An Android music app with media downloads, playlists, background playback and Bluetooth controls.",
+            stack: ["Kotlin", "Android", "Media Playback"],
+            about: "An Android application for downloading audio and video, organizing downloaded media into playlists, and listening with familiar music-player controls.",
+            highlights: [
+                "Playlist creation and organization.",
+                "Background playback with shuffle support.",
+                "Bluetooth playback controls.",
+                "Uses a user-provided YouTube API key for search and media retrieval.",
+            ],
+            links: [["Source", "https://github.com/abdurisaq/MusicApp"]],
+        },
+        {
+            id: "http-server-from-scratch",
+            name: "HTTP Server From Scratch",
+            repo: "https://github.com/abdurisaq/HTTP-Server-From-Scratch",
+            summary:
+                "A C++ socket-based HTTP server implementing request handling, file endpoints and gzip response compression.",
+            stack: ["C++23", "TCP/IP", "Sockets", "CMake", "zlib"],
+            about: "A learning project built around a raw TCP socket server. It accepts HTTP connections, parses request targets and methods, responds to basic routes, serves and creates files, and handles clients on separate threads.",
+            highlights: [
+                "Accepts TCP connections and dispatches each client request to a worker thread.",
+                "Implements basic GET and POST handling for file endpoints.",
+                "Supports echo and User-Agent routes with HTTP response headers.",
+                "Negotiates gzip response compression when the client advertises support.",
+                "Uses CMake to organize Linux and Windows client/server targets in the wider repository.",
+            ],
+            links: [["Source", "https://github.com/abdurisaq/HTTP-Server-From-Scratch"]],
+        },
+        {
+            id: "353-project",
+            name: "353-Project",
+            repo: "https://github.com/abdurisaq/353-Project",
+            summary:
+                "A collaborative data-analysis project exploring relationships between political freedom measures, terrorist attacks and US defense-company spending.",
+            stack: [
+                "Python",
+                "pandas",
+                "NumPy",
+                "scikit-learn",
+                "statsmodels",
+                "Matplotlib",
+                "Seaborn",
+            ],
+            about: "A university group project that combines country-level datasets, maps countries into regions, and explores relationships between freedom indicators, terrorist attacks, oil reserves and defense spending.",
+            highlights: [
+                "Preprocessed and joined datasets from multiple sources.",
+                "Mapped country records into geographic regions for comparison.",
+                "Used correlation analysis, visualizations and regression models to explore the data.",
+                "Compared spending trends and used random-forest feature importance analysis.",
+            ],
+            links: [["Source", "https://github.com/abdurisaq/353-Project"]],
+        },
+    ],
+
+    community: {
+        mihon: {
+            name: "Mihon",
+            repo: "https://github.com/abdurisaq/mihon-fork",
+            summary:
+                "An ongoing personal fork of the Mihon Android manga reader, focused on tablet and hardware-keyboard workflows.",
+            stack: ["Kotlin", "Android", "Jetpack Compose"],
+            contributions: [
+                {
+                    title: "Fix SliderItem off-by-one error",
+                    status: "Merged upstream",
+                    detail: "Corrected the slider step calculation so the configured number of intervals matches the selectable range.",
+                    url: "https://github.com/mihonapp/mihon/pull/1356",
+                },
+                {
+                    title: "Extension filtering",
+                    status: "Open pull request",
+                    detail: "Added filtering for the extensions list; the upstream pull request is open for review.",
+                    url: "https://github.com/mihonapp/mihon/pull/4153",
+                },
+                {
+                    title: "Keyboard-driven screen navigation",
+                    status: "Fork work",
+                    detail: "Added keyboard-first navigation between app screens for a more desktop-like tablet experience.",
+                },
+                {
+                    title: "Configurable keybinding system",
+                    status: "Fork work",
+                    detail: "Experimented with a configurable keybinding system. The upstream proposal was not accepted because the implementation went beyond the scope of the original change; the work remains part of the fork's ongoing exploration.",
+                },
+            ],
+        },
+    },
 };
