@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#292522" />
         <meta name="description" content="Abdurisaq — software engineering portfolio" />
+        <meta name="referrer" content="strict-origin-when-cross-origin" />
         <title>abdurisaq | portfolio</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -36,8 +37,8 @@
                         class="icon-button"
                         id="search-open"
                         type="button"
-                        title="Find files (Ctrl+K)"
-                        aria-label="Find files"
+                        title="Telescope search (Ctrl+K / Space Space)"
+                        aria-label="Open Telescope search"
                     >
                         ⌕
                     </button>
@@ -87,6 +88,10 @@
                             ><span class="file-type md">MD</span
                             ><span class="tree-label">about.md</span></a
                         >
+                        <a class="tree-file" href="#/setup" data-route="setup"
+                            ><span class="file-type md">MD</span
+                            ><span class="tree-label">setup.md</span></a
+                        >
                         <button class="tree-folder" type="button" data-folder="experience">
                             <span class="tree-chevron">⌄</span
                             ><span class="folder-icon">▰</span> experience
@@ -115,10 +120,19 @@
                                 ><span class="tree-label">index.lua</span></a
                             >
                             <div id="project-tree"></div>
-                            <a class="tree-file" href="#/more-projects" data-route="more-projects"
-                                ><span class="file-type md">MD</span
-                                ><span class="tree-label">more-projects.md</span></a
+                            <button
+                                class="tree-folder nested"
+                                type="button"
+                                data-folder="smaller-projects"
                             >
+                                <span class="tree-chevron">⌄</span
+                                ><span class="folder-icon">▰</span> smaller-projects
+                            </button>
+                            <div
+                                class="tree-children"
+                                data-folder-content="smaller-projects"
+                                id="smaller-project-tree"
+                            ></div>
                         </div>
                         <a class="tree-file" href="#/community" data-route="community"
                             ><span class="file-type md">MD</span
@@ -131,7 +145,7 @@
                     </nav>
                     <div class="explorer-bottom">
                         <span class="explorer-dot"></span> WORKSPACE
-                        <span class="explorer-bottom-right">4 folders</span>
+                        <span class="explorer-bottom-right">5 folders</span>
                     </div>
                 </aside>
                 <main class="editor-main">
@@ -169,16 +183,35 @@
                 <div class="palette-input-row">
                     <span class="palette-symbol">⌕</span
                     ><label class="sr-only" id="palette-title" for="palette-input"
-                        >Find a page or project</label
+                        >Telescope · search portfolio</label
                     ><input
                         id="palette-input"
-                        placeholder="Find files, projects, skills..."
+                        placeholder="Search files, projects, technologies and text..."
                         autocomplete="off"
                     /><kbd>ESC</kbd>
                 </div>
-                <div class="palette-results" id="palette-results"></div>
+                <div
+                    class="palette-toolbar"
+                    id="palette-modes"
+                    role="tablist"
+                    aria-label="Search mode"
+                >
+                    <button
+                        type="button"
+                        class="active"
+                        data-search-mode="files"
+                        aria-pressed="true"
+                    >
+                        Files</button
+                    ><button type="button" data-search-mode="grep" aria-pressed="false">Grep</button
+                    ><span class="palette-mode-hint"
+                        >Files matches pages · Grep searches page content</span
+                    >
+                </div>
+                <div class="palette-results" id="palette-results" aria-live="polite"></div>
                 <div class="palette-footer">
-                    <span>↑↓ navigate</span><span>↵ open</span><span>esc close</span>
+                    <span>↑↓ navigate</span><span>↵ open result</span
+                    ><span>Files / Grep switch mode</span><span>esc close</span>
                 </div>
             </section>
         </div>
@@ -197,8 +230,9 @@
                 <div class="shortcut-grid">
                     <kbd>j / k</kbd><span>Scroll down / up</span><kbd>gg / G</kbd
                     ><span>Jump to top / bottom</span> <kbd>Ctrl+d / Ctrl+u</kbd
-                    ><span>Half-page down / up</span><kbd>Ctrl+k</kbd
-                    ><span>Find files and content</span> <kbd>Space e</kbd
+                    ><span>Half-page down / up</span><kbd>Ctrl+k / Ctrl+p</kbd
+                    ><span>Open Telescope search</span><kbd>Space Space</kbd
+                    ><span>Open Telescope search</span> <kbd>Space e</kbd
                     ><span>Toggle file explorer</span><kbd>]b / [b</kbd
                     ><span>Next / previous tab</span> <kbd>Space b d</kbd
                     ><span>Close current tab</span><kbd>:</kbd><span>Open command line</span
