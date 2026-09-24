@@ -20,7 +20,7 @@ Then visit `http://localhost:8000`.
   and experience folders
 - Skills are grouped under `experience/skills.md`; smaller projects live in
   `projects/smaller-projects/`, with one page per project
-- `setup.md` describes the Fedora laptop and Arch Linux / Omarchy desktop environments
+- `setup.md` describes a Fedora Linux laptop and a Windows + Arch Linux (Omarchy) dual-boot desktop
 - Persistent open-buffer tabs with close and cycle behavior
 - Telescope-style search with **Files** and **Grep** modes (`Ctrl+K`, `Ctrl+P`, or `Space Space`);
   Grep searches project descriptions, technical walkthroughs, skills and setup details
@@ -32,7 +32,8 @@ Then visit `http://localhost:8000`.
 - Melange light/dark palettes; theme selection is saved locally and initially follows the OS
   preference
 - Project pages use conversational walkthroughs, technical notes, video demos (where available), and
-  screenshot slots
+  screenshot slots; VersatileTraining also includes a researched UE3/BakkesMod reverse-engineering
+  walkthrough
 
 ## Add project screenshots
 
@@ -65,8 +66,9 @@ embed as a fallback.
 
 Update the TODO values and contact details in `data.js`, add your resume PDF at `assets/resume.pdf`,
 and verify project demo links. The colorscheme page reads the configured dotfiles repository from
-GitHub. Source previews keep horizontal scrolling inside the code panel so long lines do not expand
-the full page.
+GitHub. The colorscheme page has independent scroll containers for the file list and source preview:
+scroll the file list to browse dotfiles, and scroll the code pane vertically or horizontally to
+inspect long files.
 
 All portfolio content is kept in `data.js`; the presentation and interactions are in `app.js`,
 `style.css` and `index.html`.

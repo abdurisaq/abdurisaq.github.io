@@ -13,6 +13,9 @@ will automatically replace their placeholder cards with the image. PNG or JPG is
 - `versatile-training-pack-editor.png`
 - `versatile-training-snapshot-gallery.png`
 - `versatile-training-goal-blockers.png`
+- `versatile-training-function-scanner.png`
+- `versatile-training-ue3-object-inspection.png`
+- `versatile-training-parameter-dump.png`
 
 ## Versatile Training Hub
 

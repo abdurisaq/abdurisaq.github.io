@@ -23,6 +23,10 @@ const renderProjectSections = (sections) =>
                 `<section class="project-story-section"><h2>${esc(section.title)}</h2>${(section.paragraphs || []).map((text) => `<p>${esc(text)}</p>`).join("")}${section.bullets?.length ? `<ul>${section.bullets.map((item) => `<li>${esc(item)}</li>`).join("")}</ul>` : ""}</section>`,
         )
         .join("");
+const renderDeepDive = (dive) =>
+    !dive
+        ? ""
+        : `<section class="deep-dive"><div class="section-heading-row"><h2>Under the hood: reverse engineering Rocket League</h2><span class="section-kicker">UE3 reflection · runtime hooks · binary inspection</span></div><p class="page-intro">${esc(dive.intro)}</p>${(dive.sections || []).map((section) => `<section class="project-story-section"><h3>${esc(section.title)}</h3>${(section.paragraphs || []).map((text) => `<p>${esc(text)}</p>`).join("")}</section>`).join("")}<section class="project-story-section"><h3>My investigation loop</h3><div class="research-flow">${(dive.workflow || []).map((step, i) => `<div class="research-step"><span>${String(i + 1).padStart(2, "0")}</span><strong>${esc(step)}</strong></div>`).join("")}</div></section><figure class="debug-snippet"><figcaption><strong>${esc(dive.snippetTitle || "Debugging excerpt")}</strong><span>${esc(dive.snippetNote || "")}</span></figcaption><pre><code>${esc(dive.snippet || "")}</code></pre></figure>${(dive.resources || []).length ? `<section class="project-story-section research-resources"><h3>Further reading</h3><ul>${dive.resources.map((resource) => `<li><a href="${esc(resource.url)}" target="_blank" rel="noopener">${esc(resource.title)} ↗</a> — ${esc(resource.note)}</li>`).join("")}</ul></section>` : ""}</section>`;
 const isSmallerProject = (id) => DATA.smallerProjects.some((p) => p.id === id);
 const projectRoute = (p) =>
     isSmallerProject(p.id)
@@ -72,6 +76,7 @@ const pages = {
       <div class="cols project-layout"><div>
         <section><h2>What it is</h2><p>${esc(p.about)}</p></section>
         ${renderProjectSections(p.sections)}
+        ${renderDeepDive(p.deepDive)}
         <section><h2>Technical highlights</h2><ul>${p.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul></section>
       </div><aside class="side"><h3>Technology</h3>${tags(p.stack)}<h3 style="margin-top:20px">Links</h3>${p.links.map(([n, u]) => `<div style="margin:6px 0"><a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)} ↗</a></div>`).join("")}</aside></div>
       ${screenshotGallery(p.screenshots)}
@@ -102,7 +107,7 @@ const pages = {
             .filter((c) => !c.url)
             .map(
                 (c) =>
-                    `<article class="contribution"><div class="contribution-heading"><h3>${esc(c.title)}</h3><span class="contribution-status fork">${esc(c.status)}</span></div><p>${esc(c.detail)}</p></article>`,
+                    `<article class="contribution"><div class="contribution-heading"><h3>${esc(c.title)}</h3><span class="contribution-status fork">${esc(c.status)}</span></div><p>${esc(c.detail)}</p>${c.branchUrl ? `<a href="${esc(c.branchUrl)}" target="_blank" rel="noopener">View implementation branch ↗</a>` : ""}${c.issueUrl ? `${c.branchUrl ? ` <span class="link-separator">·</span> ` : ""}<a href="${esc(c.issueUrl)}" target="_blank" rel="noopener">Original issue #1232 ↗</a>` : ""}</article>`,
             )
             .join(
                 "",
@@ -295,6 +300,23 @@ setTheme(document.documentElement.dataset.theme || "dark", false);
 // Telescope-style finder: file navigation plus a content-oriented live grep mode.
 let searchMode = "files";
 function projectSearchContent(p) {
+    const deepDive = p.deepDive
+        ? [
+              p.deepDive.intro,
+              ...(p.deepDive.sections || []).flatMap((section) => [
+                  section.title,
+                  ...(section.paragraphs || []),
+                  ...(section.bullets || []),
+              ]),
+              ...(p.deepDive.workflow || []),
+              p.deepDive.snippetNote,
+              p.deepDive.snippet,
+              ...(p.deepDive.resources || []).flatMap((resource) => [
+                  resource.title,
+                  resource.note,
+              ]),
+          ]
+        : [];
     return [
         p.name,
         p.summary,
@@ -306,6 +328,7 @@ function projectSearchContent(p) {
             ...(section.paragraphs || []),
             ...(section.bullets || []),
         ]),
+        ...deepDive,
     ];
 }
 function buildSearchItems() {
@@ -338,7 +361,7 @@ function buildSearchItems() {
         {
             label: "setup.md",
             path: "setup.md",
-            detail: "Fedora laptop · Arch Linux desktop · Omarchy · Neovim",
+            detail: "Fedora laptop · Windows and Arch Linux (Omarchy) desktop dual boot · Neovim",
             route: "#/setup",
             kind: "PAGE",
             content: setupContent,

@@ -13,7 +13,7 @@ const DATA = {
     dotfiles: { user: "abdurisaq", repo: ".dotfiles" },
 
     setup: {
-        intro: "I spend most of my time in Linux environments. My laptop and desktop have slightly different setups, but both are where I build, test and experiment with the tools featured here.",
+        intro: "My laptop and desktop have different operating-system setups, but both are part of the same development workflow. Linux is where I prefer to work; Windows stays installed for the games that still refuse to cooperate with it.",
         machines: [
             {
                 device: "Laptop",
@@ -21,16 +21,16 @@ const DATA = {
                 detail: "My portable Linux environment for development and day-to-day work.",
             },
             {
-                device: "Desktop",
-                system: "Arch Linux · Omarchy",
-                detail: "My desktop setup. Omarchy gives this machine the Arch-based workflow I enjoy customizing.",
+                device: "Desktop · dual boot",
+                system: "Windows + Arch Linux (Omarchy)",
+                detail: "My desktop dual-boots Windows and Arch Linux. I spend most of my time on the Arch/Omarchy side, but keep Windows around for games that do not run properly on Linux yet.",
             },
         ],
         workflow: [
             "Neovim as my primary editor",
             "Git and GitHub for version control and collaboration",
             "CMake and vcpkg for native C++ projects",
-            "A Linux-first workflow, with Windows development where a project or toolchain requires it",
+            "Arch/Omarchy for my preferred desktop workflow, with Windows available when game compatibility requires it",
         ],
     },
 
@@ -200,6 +200,105 @@ const DATA = {
                     ],
                 },
             ],
+            deepDive: {
+                intro: "The hardest part of VersatileTraining was not drawing the editor. It was finding the game events and data needed to make the editor affect Rocket League reliably. Rocket League is a UE3 game with a long-running modding community. I approached the undocumented parts as a reverse-engineering problem: use the engine's metadata and package files to learn what exists, observe the running game to learn what actually happens, then use BakkesMod's SDK to turn a confirmed event into plugin code.",
+                sections: [
+                    {
+                        title: "Why Unreal Engine 3 is inspectable",
+                        paragraphs: [
+                            "UE3 is built around reflected objects, classes, properties and functions. At runtime, UObject instances are associated with class and name metadata; structures commonly discussed in Rocket League research include GObjects, the global collection of UObject pointers, and GNames, the engine's name table. By locating and validating those structures, researchers can enumerate live objects and reconstruct readable paths such as a class-qualified function name. That is much more useful than staring at anonymous addresses: it gives you names and relationships to search for.",
+                            "This metadata is also why the engine's scripting layer matters. UnrealScript declares classes, properties and functions that appear in the reflected object model, while native C++ functions provide engine or game behavior behind many of those calls. The reflection system gives tools a way to describe and address those functions and objects at runtime. The important caveat is that addresses, offsets and layouts are build-specific; an offset found for one Rocket League version is not a permanent engine constant.",
+                        ],
+                    },
+                    {
+                        title: "Use package files to understand what the game contains",
+                        paragraphs: [
+                            "Runtime inspection is only half of the picture. Unreal package files (for example, .upk and .u packages) are structured containers, not arbitrary blobs: a header points to name, import and export tables, followed by serialized data. The name table stores indexed names; import and export entries describe references to external and in-package objects, including class, outer and serialized-data relationships. Tools such as UELib parse and deserialize Unreal package structures, including UObject, UClass, UFunction and UProperty data, and can reconstruct UnrealScript source from bytecode. UE Explorer's Rocket League-focused edition adds support for game-specific UE3 tokens and reversed native functions, which matters because shipped games can modify or extend the engine format.",
+                            "Static package inspection helps answer questions such as which classes or function names exist and what script-side relationships are visible. It cannot, by itself, tell me which function fires during a particular shot setup or what an undocumented callback's live parameter memory contains. For that I needed to observe the running game. A useful way to think about the two approaches is: package analysis gives me a map of possible code paths; runtime tracing helps identify the path taken by the action I am testing.",
+                        ],
+                    },
+                    {
+                        title: "Trace behavior in the running game",
+                        paragraphs: [
+                            "There are several levels of runtime investigation. A community Rocket League data-dumper walkthrough describes inspecting GObjects and GNames, and discusses ProcessEvent as a high-traffic observation point for reflected UObject function calls. Watching that dispatch path can help correlate a controlled in-game action with the functions being invoked. That is a lower-level reverse-engineering technique; it is useful context, but it is not the same thing as the BakkesMod workflow I used for this project.",
+                            "For my day-to-day discovery, I used BakkesMod's Function Scanner. I launch Rocket League with the -dev option, open the BakkesMod console with F6, and use togglemenu devtools to bring up the scanner. The DevTools scanner can filter function names with include and exclude terms. Matching functions appear as they fire. I would perform one action in-game, watch which names appeared at that moment, narrow the filters, and repeat until I had a likely event and understood when it ran. It turns trial and error into a controlled experiment instead of guessing function names. ",
+                        ],
+                    },
+                    {
+                        title: "Where BakkesMod fits",
+                        paragraphs: [
+                            "BakkesMod is the bridge between Rocket League and third-party plugin code. Its injector loads the BakkesMod runtime DLL into the RocketLeague process. The BakkesMod SDK then exposes a C++ plugin interface, including GameWrapper and CVarManager wrappers; a plugin is built as a DLL, placed in BakkesMod's plugins directory and loaded from the in-game console with plugin load. That means my plugin can use the supported wrapper layer for common game objects and events instead of rebuilding the loader and every game-facing interface itself.",
+                            "Once the scanner identifies a candidate, the SDK lets me register a named hook. HookEvent runs my callback when the target function is called; HookEventPost runs after it returns. For example, a path such as Function TAGame.Car_TA.SetVehicleInput identifies a reflected game function. The caller-aware hook variants also provide the caller wrapper and a void* parameter pointer, which is where inspecting an undocumented argument block becomes possible. The division of work is important: the scanner helps me discover a function, and the SDK hook lets my plugin react to it. The scanner does not magically provide a correct C++ struct for every callback.",
+                        ],
+                    },
+                    {
+                        title: "Inspect the payload, but do not mistake bytes for a schema",
+                        paragraphs: [
+                            "In one investigation, I used an SDK wrapper to resolve a product ID to a readable finish label, then associated the finish with a player ID when I had one. If the owner was not known yet, I kept it in an unclaimed collection to reconcile later. In the same callback, I treated params as a byte pointer and printed a 128-byte window as 16-byte rows: an offset, hexadecimal values and the printable ASCII view. Comparing captures from repeatable actions helped me spot which bytes changed with the state I was investigating.",
+                            "That dump was a diagnostic aid, not a decoded structure. A void* has no schema attached to it. I still had to identify the correct event, understand the expected parameter layout and validate any inferred fields across multiple captures before using them in plugin logic. The SDK's generic HookEventWithAnyCaller helper also documents that it performs a blind cast with no type checks; using an incorrect wrapper type can crash the game. Once I have confirmed what a callback represents, I prefer a correctly typed wrapper or a verified parameter structure over leaving exploratory byte-reading in the finished feature.",
+                        ],
+                    },
+                ],
+                workflow: [
+                    "Reproduce one specific in-game action",
+                    "Filter the live function scanner to find candidate events",
+                    "Hook the candidate and log its name and caller",
+                    "Compare readable wrapper values and parameter dumps",
+                    "Validate the structure across repeated tests, then implement the feature",
+                ],
+                snippetTitle: "A small part of the diagnostic approach",
+                snippetNote:
+                    "Adapted from my temporary callback logger: first resolve the finish label and associate it with a player, then inspect a fixed 128-byte window as offset + hex + ASCII. This is an investigation excerpt, not a generic safe parser; the event and readable parameter length must be verified first.",
+                snippet:
+                    "const std::string finishName = gameWrapper->GetItemsWrapper()\n    .GetProduct(id).GetLabel().ToString();\nLOG(\"name is {}\", finishName);\n\nif (currentPlayerId == 0) {\n    if (playerIdString.empty()) {\n        unclaimedPaintFinishes.push_back(currentPaintFinish);\n    } else {\n        paintFinishMap[playerIdString] = currentPaintFinish;\n    }\n} else {\n    paintFinishMap[std::to_string(currentPlayerId)] = currentPaintFinish;\n}\n\nconstexpr std::size_t length = 128;\nconst auto* bytes = static_cast<const std::uint8_t*>(params);\nstd::stringstream dump;\nfor (std::size_t offset = 0; offset < length; offset += 16) {\n    dump << std::hex << std::setw(4) << std::setfill('0') << offset << \": \";\n    for (std::size_t j = 0; j < 16; ++j) {\n        dump << std::setw(2) << std::setfill('0')\n             << static_cast<int>(bytes[offset + j]) << ' ';\n    }\n    dump << \" | \";\n    for (std::size_t j = 0; j < 16; ++j) {\n        const auto c = static_cast<unsigned char>(bytes[offset + j]);\n        dump << (std::isprint(c) ? static_cast<char>(c) : '.');\n    }\n    dump << '\\n';\n}\nLOG(\"Hex dump of params:\\n{}\", dump.str());",
+                resources: [
+                    {
+                        title: "BakkesMod Function Scanner",
+                        note: "Filtering runtime function names and finding events as they fire.",
+                        url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/function-scanner",
+                    },
+                    {
+                        title: "Using Function Hooks",
+                        note: "The SDK's HookEvent and HookEventPost callback model.",
+                        url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/using-function-hooks",
+                    },
+                    {
+                        title: "Hook Event With Any Caller",
+                        note: "Caller-aware hooks, raw parameters and the documented blind-cast warning.",
+                        url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/hook-event-with-any-caller",
+                    },
+                    {
+                        title: "Rocket League Data Dumper",
+                        note: "A community walkthrough of GObjects, GNames, IDA/ReClass inspection and ProcessEvent-based runtime tracing.",
+                        url: "https://github.com/DRKn1ght/RocketLeague-Data-Dumper",
+                    },
+                    {
+                        title: "Unreal package file format",
+                        note: "Explains the package header and name, import and export tables behind serialized object references.",
+                        url: "https://wiki.beyondunreal.com/Unreal_package",
+                    },
+                    {
+                        title: "UE Explorer · Rocket League edition",
+                        note: "A package browser/decompiler with Rocket League-specific UE3 token support.",
+                        url: "https://github.com/lauralex/ue-explorer",
+                    },
+                    {
+                        title: "UELib",
+                        note: "A parser/deserializer for Unreal packages and UnrealScript bytecode decompilation.",
+                        url: "https://github.com/EliotVU/Unreal-Library",
+                    },
+                    {
+                        title: "BakkesMod SDK",
+                        note: "Plugin lifecycle, SDK wrappers and loading compiled plugin DLLs.",
+                        url: "https://github.com/bakkesmodorg/BakkesModSDK",
+                    },
+                    {
+                        title: "BakkesMod Injector",
+                        note: "The public injector project that loads bakkesmod.dll into Rocket League.",
+                        url: "https://github.com/bakkesmodorg/BakkesModInjector",
+                    },
+                ],
+            },
             metricsLabel: "BakkesPlugins listing · figures provided",
             metrics: [
                 { value: "10.6K", label: "views" },
@@ -220,6 +319,22 @@ const DATA = {
                     src: "assets/screenshots/versatile-training-goal-blockers.png",
                     alt: "VersatileTraining goal blocker configuration",
                     caption: "Goal blocker configuration",
+                },
+                {
+                    src: "assets/screenshots/versatile-training-function-scanner.png",
+                    alt: "BakkesMod function scanner showing candidate Rocket League events",
+                    caption: "Function scanner during a controlled in-game action",
+                },
+                {
+                    src: "assets/screenshots/versatile-training-ue3-object-inspection.png",
+                    alt: "UE3 object, class or function metadata inspected during Rocket League reverse engineering",
+                    caption: "Inspecting UE3 object and function metadata",
+                },
+                {
+                    src: "assets/screenshots/versatile-training-parameter-dump.png",
+                    alt: "Hexadecimal and ASCII parameter dump from an event callback",
+                    caption:
+                        "Inspecting callback parameters while validating an undocumented event",
                 },
             ],
             highlights: [
@@ -643,9 +758,12 @@ const DATA = {
                     url: "https://github.com/mihonapp/mihon/pull/4153",
                 },
                 {
-                    title: "Keyboard-driven screen navigation",
+                    title: "Keyboard-driven reader navigation",
                     status: "Fork work",
-                    detail: "Added keyboard-first navigation between app screens for a more desktop-like tablet experience.",
+                    detail: "Prototyped adjustable step scrolling for the up/down arrow keys in long-strip reading mode, making it easier to control panel movement from a tablet keyboard. I kept this implementation in my fork after a separate upstream solution addressed the broader request before my version could be merged.",
+                    branchUrl:
+                        "https://github.com/abdurisaq/mihon-fork/tree/webpage-like-navigation-with-keyboard",
+                    issueUrl: "https://github.com/mihonapp/mihon/issues/1232",
                 },
                 {
                     title: "Configurable keybinding system",
