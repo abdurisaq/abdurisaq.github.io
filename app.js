@@ -27,6 +27,36 @@ const renderDeepDive = (dive) =>
     !dive
         ? ""
         : `<section class="deep-dive"><div class="section-heading-row"><h2>Under the hood: reverse engineering Rocket League</h2><span class="section-kicker">UE3 reflection · runtime hooks · binary inspection</span></div><p class="page-intro">${esc(dive.intro)}</p>${(dive.sections || []).map((section) => `<section class="project-story-section"><h3>${esc(section.title)}</h3>${(section.paragraphs || []).map((text) => `<p>${esc(text)}</p>`).join("")}</section>`).join("")}<section class="project-story-section"><h3>My investigation loop</h3><div class="research-flow">${(dive.workflow || []).map((step, i) => `<div class="research-step"><span>${String(i + 1).padStart(2, "0")}</span><strong>${esc(step)}</strong></div>`).join("")}</div></section><figure class="debug-snippet"><figcaption><strong>${esc(dive.snippetTitle || "Debugging excerpt")}</strong><span>${esc(dive.snippetNote || "")}</span></figcaption><pre><code>${esc(dive.snippet || "")}</code></pre></figure>${(dive.resources || []).length ? `<section class="project-story-section research-resources"><h3>Further reading</h3><ul>${dive.resources.map((resource) => `<li><a href="${esc(resource.url)}" target="_blank" rel="noopener">${esc(resource.title)} ↗</a> — ${esc(resource.note)}</li>`).join("")}</ul></section>` : ""}</section>`;
+const dataAccessExamples = [
+    {
+        title: "Read values through a game-facing wrapper",
+        note: "This pattern uses named accessors on TrainingEditorSaveDataWrapper, then converts the returned string-like values into std::string.",
+        code: `TrainingEditorSaveDataWrapper data = TrainingEditorSaveDataWrapper(p->RPC->TrainingData);
+std::string code_from_game = data.GetCode().ToString();
+std::string name_from_game = data.GetTM_Name().ToString();`,
+        explanation:
+            "The wrapper keeps the call site semantic: the code asks for the training code and name instead of manually locating fields in a raw block of memory.",
+    },
+    {
+        title: "Interpret a callback payload with a known layout",
+        note: "This layout-based example reads fields after a padding region from the address supplied by the callback wrapper.",
+        code: `struct cBall_GameEditor_TA {
+    unsigned char pad[0xb10];
+    Vector StartLocation;
+    Rotator StartRotation;
+    float VelocityStartSpeed;
+    Rotator VelocityStartRotation;
+};
+
+cBall_GameEditor_TA* caller = (cBall_GameEditor_TA*)cw.memory_address;`,
+        explanation:
+            "This is a lower-level alternative: the cast only gives the bytes a C++ type. It does not prove the offset or field layout is correct. The padding, alignment, field order, and callback contract must be verified for the exact game build before relying on the values.",
+    },
+];
+const renderDataAccessExamples = () =>
+    `<section class="project-story-section"><div class="section-heading-row"><h2>Two ways I read game data</h2><span class="section-kicker">wrapper API · verified layout</span></div><p>These examples show two different levels of abstraction. I prefer a named SDK wrapper where one exists; a layout-based view is useful only after the callback payload and field offsets have been checked against the running build.</p>${dataAccessExamples.map((example, i) => `<figure class="debug-snippet"><figcaption><strong>${String(i + 1).padStart(2, "0")} · ${esc(example.title)}</strong><span>${esc(example.note)}</span></figcaption><pre><code>${esc(example.code)}</code></pre><p class="snippet-explanation">${esc(example.explanation)}</p></figure>`).join("")}</section>`;
+const deepDiveLink = () =>
+    `<section class="deep-dive-link"><div><span class="section-kicker">separate technical article</span><h2>Under the hood: reverse engineering Rocket League</h2><p>The investigation process, UE3 metadata, BakkesMod hooks, and the C++ data-access patterns behind VersatileTraining live in a dedicated deep dive.</p></div><a class="btn" href="#/blog/versatiletraining-reverse-engineering">Read the deep dive <span>↗</span></a></section>`;
 const isSmallerProject = (id) => DATA.smallerProjects.some((p) => p.id === id);
 const projectRoute = (p) =>
     isSmallerProject(p.id)
@@ -47,6 +77,8 @@ const fileFor = (page, id) =>
               resume: "resume.pdf",
               style: "colorscheme.md",
               community: "community.md",
+              blog: "index.md",
+              "vim-motions": "vim-motions.md",
           }[page] || "index.lua";
 const routeFor = (page, id) =>
     id ? `#/${page}/${encodeURIComponent(id)}` : `#/${page === "home" ? "" : page}`;
@@ -55,6 +87,7 @@ const pages = {
     <section><h2>Featured projects</h2><div class="grid">${DATA.projects.slice(0, 3).map(projectCard).join("")}</div><p style="margin-top:15px"><a href="#/projects">Browse all projects →</a></p></section>
     <section><div class="section-heading-row"><h2>Built for a community</h2><span class="section-kicker">community project</span></div><div class="grid">${DATA.communityProjects.map(projectCard).join("")}</div></section>
     <section><h2>Open-source contributions</h2><p>Ongoing work on a personal Mihon fork, including an upstream bug fix and an extension-filtering contribution.</p><a href="#/community">Read about community contributions →</a></section>
+    <section class="home-vim-callout"><div><span class="section-kicker">interactive tutorial</span><h2>Learn vim motions</h2><p>Seven small challenges for the motions that travel with you across Neovim, VS Code, and other editors.</p></div><a class="btn" href="#/vim-motions">Start the lesson <span>↗</span></a></section>
     <section><h2>Get in touch</h2><p><a href="mailto:${esc(P.email)}">${esc(P.email)}</a> <span style="color:var(--dim)">·</span> <a href="${esc(P.github)}" target="_blank" rel="noopener">GitHub ↗</a> <span style="color:var(--dim)">·</span> <a href="${esc(P.linkedin)}" target="_blank" rel="noopener">LinkedIn ↗</a></p></section>`,
     about: () =>
         `<h1>about me</h1><section class="cols"><div>${DATA.about.map((x) => `<p>${t(x)}</p>`).join("")}</div><aside class="side">${DATA.facts.map(([k, v]) => `<div style="margin-bottom:8px"><span style="color:var(--cyan)">${esc(k)}:</span> ${t(v)}</div>`).join("")}</aside></section>`,
@@ -76,12 +109,22 @@ const pages = {
       <div class="cols project-layout"><div>
         <section><h2>What it is</h2><p>${esc(p.about)}</p></section>
         ${renderProjectSections(p.sections)}
-        ${renderDeepDive(p.deepDive)}
+        ${p.deepDive ? deepDiveLink() : ""}
         <section><h2>Technical highlights</h2><ul>${p.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul></section>
       </div><aside class="side"><h3>Technology</h3>${tags(p.stack)}<h3 style="margin-top:20px">Links</h3>${p.links.map(([n, u]) => `<div style="margin:6px 0"><a href="${esc(u)}" target="_blank" rel="noopener">${esc(n)} ↗</a></div>`).join("")}</aside></div>
       ${screenshotGallery(p.screenshots)}
       ${(p.videos || []).length ? `<section><h2>Demo</h2>${p.videos.map(video).join("")}</section>` : ""}`;
     },
+    blog: () =>
+        `<h1>writing</h1><p class="page-intro">Longer technical notes live here, separate from the project summaries. The project pages stay focused on what I built; the deep dives go into how I investigated and implemented the harder parts.</p><section class="blog-list"><a class="blog-card" href="#/blog/versatiletraining-reverse-engineering"><span class="section-kicker">reverse engineering · C++ · BakkesMod</span><h2>Inside VersatileTraining: investigating Rocket League game data</h2><p>From UE3 metadata and function discovery to BakkesMod hooks, parameter inspection, and the trade-offs between wrapper APIs and verified memory layouts.</p><span class="blog-read">Read article ↗</span></a></section>`,
+    blogArticle: (id) => {
+        if (id !== "versatiletraining-reverse-engineering") return pages.notfound();
+        const project = DATA.projects.find((item) => item.id === "versatiletraining");
+        const dive = project?.deepDive;
+        if (!dive) return pages.notfound();
+        return `<div class="crumb"><a href="#/blog">writing</a> / <span>versatiletraining-deep-dive.md</span></div><article class="blog-article"><div class="article-meta"><span>TECHNICAL DEEP DIVE</span><span>Rocket League · UE3 · C++</span></div><h1>Inside VersatileTraining: investigating Rocket League game data</h1><p class="page-intro">A closer look at how I traced game behavior, connected runtime events to BakkesMod callbacks, and worked from readable wrappers toward validated data layouts.</p><p class="article-project-link">Part of <a href="#/projects/versatiletraining">VersatileTraining</a> — a configurable Rocket League training plugin.</p>${renderDeepDive(dive)}${renderDataAccessExamples()}<p class="article-footnote">Offsets and runtime layouts are version-specific. A pointer cast does not validate a structure; the event contract and field layout need to be confirmed against the build being inspected.</p><div class="btns"><a class="btn alt" href="#/projects/versatiletraining">Back to the project</a><a class="btn alt" href="#/blog">All writing</a></div></article>`;
+    },
+    "vim-motions": () => renderVimTutorialMarkup(),
     skills: () =>
         `<h1>skills</h1><p class="page-intro">Technologies and tools used across projects and coursework.</p>${Object.entries(
             DATA.skills,
@@ -138,9 +181,11 @@ const currentKey = () => {
     const { page, id } = current();
     if (page === "projects" && id) return `project:${id}`;
     if (page === "smaller-projects" && id) return `smaller-project:${id}`;
+    if (page === "blog" && id) return `blog:${id}`;
     return page;
 };
 const bufferLabel = (key) => {
+    if (key.startsWith("blog:")) return "versatiletraining-deep-dive.md";
     if (key.startsWith("project:") || key.startsWith("smaller-project:"))
         return `${key.slice(key.indexOf(":") + 1)}.md`;
     return fileFor(key);
@@ -148,6 +193,7 @@ const bufferLabel = (key) => {
 const bufferRoute = (key) => {
     if (key.startsWith("project:")) return routeFor("projects", key.slice(8));
     if (key.startsWith("smaller-project:")) return routeFor("smaller-projects", key.slice(16));
+    if (key.startsWith("blog:")) return routeFor("blog", key.slice(5));
     return routeFor(key);
 };
 function openBuffer(key, navigate = true) {
@@ -183,9 +229,13 @@ function renderChrome() {
         ? "projects / smaller-projects"
         : key.startsWith("project:") || key === "projects"
           ? "projects"
-          : key === "experience" || key === "skills" || key === "resume"
-            ? "experience"
-            : "~";
+          : key.startsWith("blog:") || key === "blog"
+            ? "writing"
+            : key === "vim-motions"
+              ? "lessons"
+              : key === "experience" || key === "skills" || key === "resume"
+                ? "experience"
+                : "~";
     $("#breadcrumb").innerHTML =
         `<span>${esc(P.handle)}</span> <span style="color:var(--dim)">/</span> <span>${esc(parent)}</span> <span style="color:var(--dim)">/</span> <span class="crumb-current">${esc(file)}</span>`;
     $("#status").innerHTML =
@@ -193,6 +243,11 @@ function renderChrome() {
     document
         .querySelectorAll("#file-tree [data-route]")
         .forEach((a) => a.classList.toggle("active", a.dataset.route === route.page && !route.id));
+    document
+        .querySelectorAll("#file-tree [data-article]")
+        .forEach((a) =>
+            a.classList.toggle("active", a.dataset.article === route.id && route.page === "blog"),
+        );
     document
         .querySelectorAll("#project-tree [data-project], #smaller-project-tree [data-project]")
         .forEach((a) => a.classList.toggle("active", a.dataset.project === route.id));
@@ -205,7 +260,9 @@ function renderEditor() {
     const target =
         key.startsWith("project:") || key.startsWith("smaller-project:")
             ? pages.project(id)
-            : (pages[page] || pages.notfound)();
+            : key.startsWith("blog:")
+              ? pages.blogArticle(id)
+              : (pages[page] || pages.notfound)();
     $("#app").innerHTML = target;
     document.querySelectorAll(".screenshot-slot img").forEach((img) => {
         img.addEventListener(
@@ -218,6 +275,7 @@ function renderEditor() {
             img.closest(".screenshot-slot")?.classList.add("has-image");
     });
     if (key === "style") loadDotfiles();
+    if (key === "vim-motions") initVimTutorial();
 }
 function renderProjectTree() {
     const ordered = [
@@ -287,7 +345,11 @@ $("#theme-toggle").addEventListener("click", () =>
 );
 function setTheme(theme, persist = true) {
     document.documentElement.dataset.theme = theme;
-    if (persist) localStorage.setItem("portfolio-theme", theme);
+    if (persist) {
+        try {
+            localStorage.setItem("portfolio-theme", theme);
+        } catch (_) {}
+    }
     const b = $("#theme-toggle");
     b.textContent = theme === "dark" ? "☼" : "☾";
     b.title = `Switch to ${theme === "dark" ? "light" : "dark"} theme`;
@@ -426,6 +488,33 @@ function buildSearchItems() {
             kind: "PAGE",
             content: ["Melange light dark themes Neovim colorscheme dotfiles live preview"],
         },
+        {
+            label: "writing/index.md",
+            path: "writing/index.md",
+            detail: "Technical deep dives and notes",
+            route: "#/blog",
+            kind: "PAGE",
+            content: ["writing blog articles reverse engineering Rocket League BakkesMod C++"],
+        },
+        {
+            label: "versatiletraining-deep-dive.md",
+            path: "writing/versatiletraining-deep-dive.md",
+            detail: "Inside VersatileTraining: investigating Rocket League game data",
+            route: "#/blog/versatiletraining-reverse-engineering",
+            kind: "ARTICLE",
+            content: [
+                DATA.projects.find((p) => p.id === "versatiletraining")?.deepDive?.intro || "",
+                ...dataAccessExamples.flatMap((x) => [x.title, x.note, x.code, x.explanation]),
+            ],
+        },
+        {
+            label: "vim-motions.md",
+            path: "vim-motions.md",
+            detail: "Seven-stage interactive Vim motions tutorial",
+            route: "#/vim-motions",
+            kind: "PLAY",
+            content: ["Vim motions hjkl w b e dd x yy p i Esc ciw interactive tutorial"],
+        },
     ];
     [...DATA.projects, ...DATA.communityProjects].forEach((p) =>
         items.push({
@@ -553,7 +642,7 @@ function renderSearchResults(query) {
         ? matches
               .map(
                   (item, i) =>
-                      `<button class="palette-result ${i === searchIndex ? "selected" : ""}" data-search-route="${esc(item.route)}"><span class="result-symbol">${item.kind === "PROJECT" ? "◇" : item.kind === "DIR" ? "▰" : "▤"}</span><span class="result-copy"><strong>${esc(item.path || item.label)}</strong><small>${esc(item.excerpt || item.detail)}</small></span><span class="result-kind">${esc(item.kind)}</span></button>`,
+                      `<button class="palette-result ${i === searchIndex ? "selected" : ""}" data-search-route="${esc(item.route)}"><span class="result-symbol">${item.kind === "PROJECT" ? "◇" : item.kind === "DIR" ? "▰" : item.kind === "PLAY" ? "▶" : "▤"}</span><span class="result-copy"><strong>${esc(item.path || item.label)}</strong><small>${esc(item.excerpt || item.detail)}</small></span><span class="result-kind">${esc(item.kind)}</span></button>`,
               )
               .join("")
         : `<div class="palette-empty">No ${searchMode === "grep" ? "content matches" : "matching files"}.</div>`;
@@ -799,6 +888,442 @@ addEventListener("keydown", (e) => {
         return;
     }
 });
+
+/* ---------- interactive Vim motions lesson ---------- */
+const VIM_STAGES = [
+    {
+        title: "Move",
+        subtitle: "The home row is your map",
+        goal: 'Move the cursor from the start of "the" to the start of "lazy". The target is marked for this first round.',
+        lines: ["over the lazy dog"],
+        cursor: { line: 0, col: 5 },
+        target: { line: 0, col: 9 },
+        marker: true,
+        teach: "h moves left, j moves down, k moves up, and l moves right. Keep your fingers on the home row.",
+    },
+    {
+        title: "Word motions",
+        subtitle: "Move by meaning, not by character",
+        goal: 'The marker is gone. Use word motions to place the cursor at the start of "lazy".',
+        lines: ["over the lazy dog"],
+        cursor: { line: 0, col: 0 },
+        target: { line: 0, col: 9 },
+        marker: false,
+        teach: "w goes to the next word, b goes back, and e lands at the end of a word. Much quicker than l l l l.",
+    },
+    {
+        title: "Delete",
+        subtitle: "Remove a whole line",
+        goal: 'Delete the line "DELETE ME" and keep the two surrounding lines exactly as they are.',
+        lines: ["keep this line", "DELETE ME", "keep this one too"],
+        cursor: { line: 1, col: 0 },
+        expected: ["keep this line", "keep this one too"],
+        teach: "dd deletes the current line. x deletes one character under the cursor.",
+    },
+    {
+        title: "Yank & put",
+        subtitle: "Copy a line without selecting it",
+        goal: 'Duplicate the first line so the buffer contains "copy me" twice, followed by "leave me".',
+        lines: ["copy me", "leave me"],
+        cursor: { line: 0, col: 0 },
+        expected: ["copy me", "copy me", "leave me"],
+        teach: "yy yanks (copies) the current line, and p puts it below the cursor.",
+    },
+    {
+        title: "Insert",
+        subtitle: "Temporarily switch modes",
+        goal: 'Type "Hello " at the very start of the line, then press Esc to return to normal mode.',
+        lines: ["world"],
+        cursor: { line: 0, col: 0 },
+        expected: ["Hello world"],
+        expectedMode: "normal",
+        teach: "i enters insert mode, and Esc returns to normal mode. Notice how the editor status color changes with the mode.",
+    },
+    {
+        title: "Change",
+        subtitle: "A change is a delete plus insert",
+        goal: 'Replace the word "wrong" with "right".',
+        lines: ["this word is wrong"],
+        cursor: { line: 0, col: 13 },
+        expected: ["this word is right"],
+        teach: "ciw means change inside word: it removes the word and enters insert mode in one motion. This is the one that tends to stick.",
+    },
+    {
+        title: "Free play",
+        subtitle: "Put the motions together",
+        goal: "Make the paragraph read cleanly. Use the motions you have learned; there are no key hints on this stage.",
+        lines: [
+            "Vim turns editing into a sequence of small motions.",
+            "A repeated sentence makes this paragraph harder to read.",
+            "",
+            "A repeated sentence makes this paragraph harder to read.",
+            "Fix teh typo before calling it done.",
+        ],
+        cursor: { line: 0, col: 0 },
+        expected: [
+            "Vim turns editing into a sequence of small motions.",
+            "A repeated sentence makes this paragraph harder to read.",
+            "Fix the typo before calling it done.",
+        ],
+        teach: "You just edited a document without touching the mouse. Try these motions in VS Code with a Vim extension, or in Neovim.",
+    },
+];
+const cloneStageState = (index) => {
+    const stage = VIM_STAGES[index];
+    return {
+        index,
+        lines: [...stage.lines],
+        line: stage.cursor.line,
+        col: stage.cursor.col,
+        mode: "normal",
+        pending: "",
+        yank: null,
+        passed: false,
+        completed: false,
+        message: "",
+        shareMessage: "",
+    };
+};
+let vimState = cloneStageState(0);
+const vimExpectedStage = (state) => VIM_STAGES[state.index];
+const vimCursorFlat = (state) =>
+    state.lines.slice(0, state.line).reduce((n, line) => n + line.length + 1, 0) + state.col;
+function vimLocationAt(lines, flat) {
+    let remaining = Math.max(0, flat);
+    for (let line = 0; line < lines.length; line++) {
+        if (remaining <= lines[line].length) return { line, col: remaining };
+        remaining -= lines[line].length + 1;
+    }
+    const last = lines.length - 1;
+    return { line: last, col: Math.max(0, lines[last].length - 1) };
+}
+function vimSetFlat(state, flat) {
+    const position = vimLocationAt(state.lines, flat);
+    state.line = position.line;
+    state.col = position.col;
+    if (state.mode === "normal")
+        state.col = Math.min(state.col, Math.max(0, state.lines[state.line].length - 1));
+}
+function vimMoveWord(state, motion) {
+    const content = state.lines.join("\n");
+    if (!content.length) return;
+    let index = vimCursorFlat(state);
+    if (motion === "w") {
+        index = Math.min(content.length, index + 1);
+        while (index < content.length && !/\s/.test(content[index])) index++;
+        while (index < content.length && /\s/.test(content[index])) index++;
+    } else if (motion === "b") {
+        index = Math.max(0, index - 1);
+        while (index > 0 && /\s/.test(content[index])) index--;
+        while (index > 0 && !/\s/.test(content[index - 1])) index--;
+    } else if (motion === "e") {
+        index = Math.min(content.length - 1, index + 1);
+        while (index < content.length && /\s/.test(content[index])) index++;
+        while (index + 1 < content.length && !/\s/.test(content[index + 1])) index++;
+    }
+    vimSetFlat(state, index);
+}
+function vimDeleteLine(state) {
+    state.lines.splice(state.line, 1);
+    if (!state.lines.length) state.lines = [""];
+    state.line = Math.min(state.line, state.lines.length - 1);
+    state.col = Math.min(state.col, Math.max(0, state.lines[state.line].length - 1));
+}
+function vimChangeWord(state) {
+    const content = state.lines.join("\n");
+    let start = vimCursorFlat(state),
+        end = start;
+    if (start >= content.length || /\s/.test(content[start] || "")) {
+        while (start < content.length && /\s/.test(content[start])) start++;
+        end = start;
+    }
+    while (start > 0 && !/\s/.test(content[start - 1])) start--;
+    end = Math.max(start, end);
+    while (end < content.length && !/\s/.test(content[end])) end++;
+    const next = content.slice(0, start) + content.slice(end);
+    state.lines = next.split("\n");
+    const position = vimLocationAt(state.lines, start);
+    state.line = position.line;
+    state.col = position.col;
+    state.mode = "insert";
+    state.pending = "";
+}
+function vimHandleKey(event) {
+    const key = event.key;
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const state = vimState;
+    state.message = "";
+    if (state.passed || state.completed) return;
+
+    if (state.mode === "insert") {
+        if (key === "Escape") {
+            state.mode = "normal";
+            state.col = Math.min(state.col, Math.max(0, state.lines[state.line].length - 1));
+        } else if (key === "Backspace") {
+            const line = state.lines[state.line];
+            if (state.col > 0) {
+                state.lines[state.line] = line.slice(0, state.col - 1) + line.slice(state.col);
+                state.col--;
+            } else if (state.line > 0) {
+                const previousLength = state.lines[state.line - 1].length;
+                state.lines[state.line - 1] += line;
+                state.lines.splice(state.line, 1);
+                state.line--;
+                state.col = previousLength;
+            }
+        } else if (key === "Enter") {
+            const line = state.lines[state.line];
+            state.lines.splice(state.line, 1, line.slice(0, state.col), line.slice(state.col));
+            state.line++;
+            state.col = 0;
+        } else if (key.length === 1) {
+            const line = state.lines[state.line];
+            state.lines[state.line] = line.slice(0, state.col) + key + line.slice(state.col);
+            state.col++;
+        }
+        renderVimBuffer();
+        return;
+    }
+
+    if (state.pending === "d") {
+        state.pending = "";
+        if (key === "d") vimDeleteLine(state);
+        renderVimBuffer();
+        return;
+    }
+    if (state.pending === "y") {
+        state.pending = "";
+        if (key === "y") state.yank = state.lines[state.line];
+        renderVimBuffer();
+        return;
+    }
+    if (state.pending === "c") {
+        state.pending = key === "i" ? "ci" : "";
+        renderVimBuffer();
+        return;
+    }
+    if (state.pending === "ci") {
+        state.pending = "";
+        if (key === "w") vimChangeWord(state);
+        renderVimBuffer();
+        return;
+    }
+
+    const line = state.lines[state.line] || "";
+    switch (key) {
+        case "h":
+            state.col = Math.max(0, state.col - 1);
+            break;
+        case "l":
+            state.col = Math.min(Math.max(0, line.length - 1), state.col + 1);
+            break;
+        case "j":
+            state.line = Math.min(state.lines.length - 1, state.line + 1);
+            state.col = Math.min(state.col, Math.max(0, state.lines[state.line].length - 1));
+            break;
+        case "k":
+            state.line = Math.max(0, state.line - 1);
+            state.col = Math.min(state.col, Math.max(0, state.lines[state.line].length - 1));
+            break;
+        case "w":
+        case "b":
+        case "e":
+            vimMoveWord(state, key);
+            break;
+        case "d":
+            state.pending = "d";
+            break;
+        case "y":
+            state.pending = "y";
+            break;
+        case "c":
+            state.pending = "c";
+            break;
+        case "i":
+            state.mode = "insert";
+            break;
+        case "x":
+            if (line.length && state.col < line.length)
+                state.lines[state.line] = line.slice(0, state.col) + line.slice(state.col + 1);
+            state.col = Math.min(state.col, Math.max(0, state.lines[state.line].length - 1));
+            break;
+        case "p":
+            if (state.yank !== null) {
+                state.lines.splice(state.line + 1, 0, state.yank);
+                state.line++;
+                state.col = 0;
+            }
+            break;
+        default:
+            break;
+    }
+    renderVimBuffer();
+}
+function renderVimBuffer() {
+    const buffer = $("#vim-buffer");
+    if (!buffer) return;
+    const stage = vimExpectedStage(vimState);
+    buffer.innerHTML = vimState.lines
+        .map((line, lineIndex) => {
+            const chars = line.length
+                ? [...line]
+                      .map((char, col) => {
+                          const isCursor = vimState.line === lineIndex && vimState.col === col;
+                          const isTarget =
+                              stage.marker &&
+                              stage.target?.line === lineIndex &&
+                              stage.target?.col === col;
+                          const value = char === " " ? "&nbsp;" : esc(char);
+                          return `<span class="vim-char${isTarget ? " vim-target" : ""}${isCursor ? " vim-cursor" : ""}">${value}</span>`;
+                      })
+                      .join("")
+                : `<span class="vim-char${vimState.line === lineIndex ? " vim-cursor" : ""}">&nbsp;</span>`;
+            return `<div class="vim-line"><span class="vim-line-number">${String(lineIndex + 1).padStart(2, "0")}</span><span class="vim-line-text">${chars}</span></div>`;
+        })
+        .join("");
+    const mode = $("#vim-mode-pill");
+    if (mode) {
+        mode.textContent = vimState.mode === "insert" ? "INSERT" : "NORMAL";
+        mode.className = `vim-mode-pill ${vimState.mode}`;
+    }
+    const position = $("#vim-position");
+    if (position) position.textContent = `${vimState.line + 1}:${vimState.col + 1}`;
+    const pending = $("#vim-pending");
+    if (pending)
+        pending.textContent = vimState.pending ? ` ${vimState.pending.toUpperCase()}…` : "";
+    const lineCount = document.querySelector(".vim-editor-title-right");
+    if (lineCount)
+        lineCount.textContent = `${String(vimState.lines.length).padStart(2, "0")} lines`;
+    const feedback = $("#vim-feedback");
+    if (feedback && feedback.classList.contains("is-error")) {
+        feedback.textContent = "";
+        feedback.className = "vim-feedback";
+    }
+}
+function vimStageMatches() {
+    const stage = vimExpectedStage(vimState);
+    if (stage.target)
+        return vimState.line === stage.target.line && vimState.col === stage.target.col;
+    const sameBuffer = JSON.stringify(vimState.lines) === JSON.stringify(stage.expected);
+    const correctMode = !stage.expectedMode || vimState.mode === stage.expectedMode;
+    return sameBuffer && correctMode;
+}
+function checkVimStage() {
+    if (vimState.passed || vimState.completed) return;
+    if (!vimStageMatches()) {
+        vimState.message = "Not there yet. Keep editing, then check again.";
+        const feedback = $("#vim-feedback");
+        if (feedback) {
+            feedback.textContent = vimState.message;
+            feedback.className = "vim-feedback is-error";
+        }
+        return;
+    }
+    vimState.passed = true;
+    vimState.message = "Stage complete.";
+    if (vimState.index === VIM_STAGES.length - 1) {
+        vimState.completed = true;
+        renderVimTutorialPage();
+        return;
+    }
+    const teach = $("#vim-teach");
+    if (teach) {
+        teach.hidden = false;
+        teach.innerHTML = `<span class="section-kicker">WHAT YOU LEARNED</span><p>${esc(vimExpectedStage(vimState).teach)}</p><button class="btn" id="vim-next" type="button">Next stage <span>→</span></button>`;
+        $("#vim-next")?.addEventListener("click", nextVimStage);
+    }
+    const check = $("#vim-check");
+    if (check) check.disabled = true;
+    const feedback = $("#vim-feedback");
+    if (feedback) {
+        feedback.textContent = "Nice. The buffer matches the goal.";
+        feedback.className = "vim-feedback is-success";
+    }
+}
+function resetVimStage() {
+    vimState = cloneStageState(vimState.index);
+    renderVimTutorialPage();
+    $("#vim-buffer")?.focus();
+}
+function nextVimStage() {
+    vimState = cloneStageState(vimState.index + 1);
+    renderVimTutorialPage();
+    $("#vim-buffer")?.focus();
+}
+function restartVimLesson() {
+    vimState = cloneStageState(0);
+    renderVimTutorialPage();
+    $("#vim-buffer")?.focus();
+}
+async function shareVimLesson() {
+    const shareData = {
+        title: "Vim Motions — Interactive Tutorial",
+        text: "I finished this seven-stage Vim motions tutorial.",
+        url: `${location.origin}${location.pathname}#/vim-motions`,
+    };
+    try {
+        if (navigator.share) {
+            await navigator.share(shareData);
+            vimState.shareMessage = "Share sheet opened.";
+        } else if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(shareData.url);
+            vimState.shareMessage = "Link copied to clipboard.";
+        } else {
+            const field = document.createElement("textarea");
+            field.value = shareData.url;
+            field.style.position = "fixed";
+            field.style.opacity = "0";
+            document.body.appendChild(field);
+            field.select();
+            const copied = document.execCommand("copy");
+            field.remove();
+            vimState.shareMessage = copied ? "Link copied to clipboard." : shareData.url;
+        }
+    } catch (error) {
+        if (error?.name !== "AbortError")
+            vimState.shareMessage = "Sharing was not available in this browser.";
+    }
+    const status = $("#vim-share-status");
+    if (status) status.textContent = vimState.shareMessage;
+}
+function renderVimTutorialMarkup() {
+    if (vimState.completed)
+        return `<div class="vim-completion"><div class="section-kicker">LESSON COMPLETE</div><div class="completion-mark">✓</div><h1>You just edited a document without touching the mouse.</h1><p class="page-intro">You used motions to navigate, delete, copy, insert, and change text. Open VS Code, install a Vim extension, and try w, dd, and ciw on real code. The same ideas work in Neovim and many other editors, too.</p><section class="learned-keys"><h2>Keys and commands learned</h2><div class="key-list">${["h", "j", "k", "l", "w", "b", "e", "dd", "x", "yy", "p", "i", "Esc", "ciw"].map((key) => `<span class="key-chip"><kbd>${key}</kbd></span>`).join("")}</div></section><section class="completion-resources"><h2>Take the motions with you</h2><a href="${esc(REPO)}" target="_blank" rel="noopener"><strong>Author’s dotfiles</strong><span>${esc(REPO)} ↗</span></a><a href="https://marketplace.visualstudio.com/items?itemName=vscodevim.vim" target="_blank" rel="noopener"><strong>Vim extension for VS Code</strong><span>VSCodeVim · Visual Studio Marketplace ↗</span></a><a href="https://neovim.io/doc/user/" target="_blank" rel="noopener"><strong>Neovim :help</strong><span>Open the help docs, or type :help inside Neovim ↗</span></a></section><div class="completion-actions"><button class="btn" id="vim-share" type="button">Share lesson <span>↗</span></button><button class="btn alt" id="vim-restart" type="button">Play again</button><span id="vim-share-status" class="vim-share-status" aria-live="polite">${esc(vimState.shareMessage)}</span></div></div>`;
+    const stage = vimExpectedStage(vimState);
+    const stepDots = VIM_STAGES.map(
+        (item, index) =>
+            `<span class="vim-step${index < vimState.index ? " done" : ""}${index === vimState.index ? " current" : ""}" aria-label="Stage ${index + 1}${index < vimState.index ? ", complete" : ""}">${index + 1}</span>`,
+    ).join("");
+    return `<div class="vim-lesson"><div class="vim-lesson-intro"><div class="section-kicker">INTERACTIVE TUTORIAL · 7 STAGES</div><h1>Vim motions</h1><p>I'm not going to convince you to switch to Neovim. But the best part of the ecosystem — vim motions — travels with you. VS Code, your browser, your IDE. Once it clicks, going back to the mouse feels like a downgrade.</p></div><div class="vim-progress" aria-label="Lesson progress">${stepDots}</div><div class="vim-stage-heading"><div><span class="section-kicker">STAGE ${vimState.index + 1} OF ${VIM_STAGES.length}</span><h2>${esc(stage.title)} <span>— ${esc(stage.subtitle)}</span></h2></div><button class="vim-reset-inline" type="button" id="vim-reset-top">Reset stage ↺</button></div><div class="vim-layout"><section class="vim-instructions"><div class="vim-goal"><span class="section-kicker">YOUR GOAL</span><p>${esc(stage.goal)}</p></div>${vimState.index < 6 ? `<div class="vim-key-hints"><span class="section-kicker">KEYS TO TRY</span>${vimState.index === 0 ? `<div class="motion-grid"><kbd>h</kbd><span>left</span><kbd>j</kbd><span>down</span><kbd>k</kbd><span>up</span><kbd>l</kbd><span>right</span></div>` : vimState.index === 1 ? `<div class="motion-grid"><kbd>w</kbd><span>next word</span><kbd>b</kbd><span>previous word</span><kbd>e</kbd><span>end of word</span></div>` : vimState.index === 2 ? `<div class="motion-grid"><kbd>dd</kbd><span>delete line</span><kbd>x</kbd><span>delete character</span></div>` : vimState.index === 3 ? `<div class="motion-grid"><kbd>yy</kbd><span>yank line</span><kbd>p</kbd><span>put below</span></div>` : vimState.index === 4 ? `<div class="motion-grid"><kbd>i</kbd><span>insert</span><kbd>Esc</kbd><span>normal mode</span></div>` : `<div class="motion-grid"><kbd>ciw</kbd><span>change inside word</span><kbd>Esc</kbd><span>return to normal</span></div>`}</div>` : `<div class="vim-key-hints no-hints"><span class="section-kicker">FREE PLAY</span><p>No hints here. Put the motions together.</p></div>`}<div id="vim-teach" class="vim-teach" ${vimState.passed ? "" : "hidden"}><span class="section-kicker">WHAT YOU LEARNED</span><p>${esc(stage.teach)}</p>${vimState.index < 6 ? `<button class="btn" id="vim-next" type="button">Next stage <span>→</span></button>` : ""}</div></section><section class="vim-practice" aria-label="Practice editor"><div class="vim-editor-window"><div class="vim-editor-title"><span class="vim-file-dot"></span><span>practice.txt</span><span class="vim-editor-title-right">${String(vimState.lines.length).padStart(2, "0")} lines</span></div><div id="vim-buffer" class="vim-buffer" tabindex="0" role="application" aria-label="Vim practice buffer. Focus here and use the keyboard to edit the text."><div class="vim-line"><span class="vim-line-number">01</span><span class="vim-line-text">Click or focus here to start</span></div></div><div class="vim-editor-footer"><span id="vim-mode-pill" class="vim-mode-pill normal">NORMAL</span><span id="vim-pending" class="vim-pending"></span><span class="vim-footer-spacer"></span><span id="vim-position">1:1</span><span>utf-8</span></div></div><div class="vim-editor-actions"><button class="btn" id="vim-check" type="button" ${vimState.passed ? "disabled" : ""}>Check goal</button><button class="btn alt" id="vim-reset" type="button">Reset</button><span id="vim-feedback" class="vim-feedback" aria-live="polite">${esc(vimState.message)}</span></div><p class="vim-editor-hint">Keyboard input goes to the editor while it is focused. Click the buffer, then use the motions — no mouse editing required.</p></section></div></div>`;
+}
+function renderVimTutorialPage() {
+    const app = $("#app");
+    if (!app) return;
+    app.innerHTML = renderVimTutorialMarkup();
+    initVimTutorial();
+}
+function initVimTutorial() {
+    if (vimState.completed) {
+        $("#vim-share")?.addEventListener("click", shareVimLesson);
+        $("#vim-restart")?.addEventListener("click", restartVimLesson);
+        return;
+    }
+    const buffer = $("#vim-buffer");
+    if (buffer) {
+        renderVimBuffer();
+        buffer.addEventListener("keydown", vimHandleKey);
+        buffer.addEventListener("click", () => buffer.focus());
+    }
+    $("#vim-check")?.addEventListener("click", () => {
+        checkVimStage();
+        buffer?.focus();
+    });
+    $("#vim-reset")?.addEventListener("click", resetVimStage);
+    $("#vim-reset-top")?.addEventListener("click", resetVimStage);
+    $("#vim-next")?.addEventListener("click", nextVimStage);
+}
 
 /* ---------- live dotfiles panel ---------- */
 const ago = (d) => {

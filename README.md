@@ -31,9 +31,11 @@ Then visit `http://localhost:8000`.
   `Space b d`, `?`
 - Melange light/dark palettes; theme selection is saved locally and initially follows the OS
   preference
-- Project pages use conversational walkthroughs, technical notes, video demos (where available), and
-  screenshot slots; VersatileTraining also includes a researched UE3/BakkesMod reverse-engineering
-  walkthrough
+- Project pages use conversational walkthroughs, video demos (where available), and screenshot
+  slots. The longer VersatileTraining UE3/BakkesMod investigation is a separate article under
+  `writing/`
+- `vim-motions.md` opens a seven-stage, keyboard-driven Vim motions tutorial with progress checks, a
+  completion key list, and share support
 
 ## Add project screenshots
 
@@ -66,9 +68,12 @@ embed as a fallback.
 
 Update the TODO values and contact details in `data.js`, add your resume PDF at `assets/resume.pdf`,
 and verify project demo links. The colorscheme page reads the configured dotfiles repository from
-GitHub. The colorscheme page has independent scroll containers for the file list and source preview:
-scroll the file list to browse dotfiles, and scroll the code pane vertically or horizontally to
-inspect long files.
+GitHub. The writing section contains the VersatileTraining reverse-engineering deep dive and the two
+C++ data-access examples. The project page links to it instead of embedding the full article.
+
+The colorscheme page has independent scroll containers for the file list and source preview: scroll
+the file list to browse dotfiles, and scroll the code pane vertically or horizontally to inspect
+long files.
 
 All portfolio content is kept in `data.js`; the presentation and interactions are in `app.js`,
 `style.css` and `index.html`.

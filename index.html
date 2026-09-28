@@ -16,11 +16,13 @@
         <link rel="stylesheet" href="style.css" />
         <script>
             (() => {
-                const saved = localStorage.getItem("portfolio-theme");
-                const theme =
-                    saved ||
-                    (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
-                document.documentElement.dataset.theme = theme;
+                let saved = null;
+                try {
+                    saved = localStorage.getItem("portfolio-theme");
+                } catch (_) {}
+                const prefersLight =
+                    window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches;
+                document.documentElement.dataset.theme = saved || (prefersLight ? "light" : "dark");
             })();
         </script>
     </head>
@@ -138,6 +140,27 @@
                             ><span class="file-type md">MD</span
                             ><span class="tree-label">community.md</span></a
                         >
+                        <button class="tree-folder" type="button" data-folder="writing">
+                            <span class="tree-chevron">⌄</span
+                            ><span class="folder-icon">▰</span> writing
+                        </button>
+                        <div class="tree-children" data-folder-content="writing">
+                            <a class="tree-file" href="#/blog" data-route="blog"
+                                ><span class="file-type md">MD</span
+                                ><span class="tree-label">index.md</span></a
+                            >
+                            <a
+                                class="tree-file"
+                                href="#/blog/versatiletraining-reverse-engineering"
+                                data-article="versatiletraining-reverse-engineering"
+                                ><span class="file-type md">MD</span
+                                ><span class="tree-label">versatiletraining-deep-dive.md</span></a
+                            >
+                        </div>
+                        <a class="tree-file" href="#/vim-motions" data-route="vim-motions"
+                            ><span class="file-type lua">PLAY</span
+                            ><span class="tree-label">vim-motions.md</span></a
+                        >
                         <a class="tree-file" href="#/style" data-route="style"
                             ><span class="file-type md">MD</span
                             ><span class="tree-label">colorscheme.md</span></a
@@ -145,7 +168,7 @@
                     </nav>
                     <div class="explorer-bottom">
                         <span class="explorer-dot"></span> WORKSPACE
-                        <span class="explorer-bottom-right">5 folders</span>
+                        <span class="explorer-bottom-right">6 folders</span>
                     </div>
                 </aside>
                 <main class="editor-main">
