@@ -2078,3 +2078,224 @@ pre.code {
         text-align: left;
     }
 }
+
+/* Keyboard-first Vim motions workspace and Telescope split preview. */
+.palette {
+    width: min(980px, 100%);
+}
+.palette-toolbar button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.palette-toolbar button kbd {
+    font:
+        9px "JetBrains Mono",
+        monospace;
+    color: var(--dim);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 4px;
+}
+.palette-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(240px, 0.85fr);
+    min-height: 280px;
+    max-height: 58vh;
+}
+.palette-results {
+    max-height: 58vh;
+    min-height: 280px;
+    overflow: auto;
+    border-right: 1px solid var(--border);
+    padding: 5px;
+}
+.palette-preview {
+    min-width: 0;
+    overflow: auto;
+    padding: 17px 18px;
+    background: var(--bg);
+    color: var(--fg);
+}
+.palette-preview-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--dim);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+}
+.palette-preview h3 {
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    margin: 13px 0 8px;
+    color: var(--yellow);
+}
+.palette-preview-detail {
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.7;
+}
+.palette-preview-rule {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+}
+.palette-preview-excerpt {
+    margin: 0;
+    color: var(--fg);
+    font:
+        11px/1.8 "JetBrains Mono",
+        monospace;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+.palette-preview-open {
+    margin-top: 18px;
+    color: var(--dim);
+    font-size: 9px;
+}
+.palette-preview-empty {
+    color: var(--dim);
+    font-size: 11px;
+    line-height: 1.8;
+    padding-top: 8px;
+}
+.tree-file.keyboard-selected,
+.tree-folder.keyboard-selected {
+    outline: 1px solid var(--yellow);
+    outline-offset: -1px;
+    background: var(--selection);
+    color: var(--fg);
+}
+.tree-file:focus-visible,
+.tree-folder:focus-visible {
+    outline: 1px solid var(--yellow);
+    outline-offset: -1px;
+}
+.vim-workspace-help .motion-grid {
+    grid-template-columns: minmax(74px, auto) 1fr;
+    font-size: 9px;
+}
+.vim-editor-hint {
+    line-height: 1.8;
+}
+@media (max-width: 720px) {
+    .palette-split {
+        grid-template-columns: minmax(0, 1fr);
+        max-height: 68vh;
+    }
+    .palette-results {
+        max-height: 32vh;
+        min-height: 180px;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .palette-preview {
+        max-height: 30vh;
+        min-height: 125px;
+    }
+}
+
+/* Conversational project deep dives */
+.article-lede {
+    max-width: 78ch;
+    font-size: 15px;
+    line-height: 1.85;
+    color: var(--fg);
+    margin: 16px 0 12px;
+}
+.article-section {
+    margin: 30px 0;
+    max-width: 82ch;
+}
+.article-section h2 {
+    font-size: 17px;
+    margin: 0 0 11px;
+    color: var(--yellow);
+}
+.article-section p {
+    font-size: 12px;
+    line-height: 1.95;
+    color: var(--fg);
+    margin: 0 0 13px;
+}
+.article-section ul {
+    padding-left: 22px;
+    color: var(--fg);
+    font-size: 12px;
+    line-height: 1.8;
+}
+.article-code {
+    margin: 16px 0;
+    padding: 16px;
+    overflow: auto;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--fg);
+    font: 11px/1.75 var(--mono);
+    white-space: pre;
+}
+.article-callout {
+    margin: 17px 0;
+    padding: 13px 16px;
+    border-left: 2px solid var(--yellow);
+    background: var(--panel);
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.8;
+}
+.article-media-section {
+    margin: 34px 0;
+}
+.article-media-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+.article-media {
+    margin: 0;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    padding: 9px;
+}
+.article-media img {
+    display: block;
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    background: #171614;
+}
+.article-media figcaption {
+    padding: 8px 2px 2px;
+    color: var(--muted);
+    font-size: 10px;
+    line-height: 1.5;
+}
+.article-media-note {
+    font-size: 10px;
+    color: var(--dim);
+    margin-top: 9px;
+}
+.article-resources {
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+}
+.article-resources li {
+    margin: 8px 0;
+    line-height: 1.7;
+}
+.article-resources li span {
+    color: var(--muted);
+}
+@media (max-width: 600px) {
+    .article-media-grid {
+        grid-template-columns: 1fr;
+    }
+    .article-lede {
+        font-size: 13px;
+    }
+    .article-section h2 {
+        font-size: 15px;
+    }
+}

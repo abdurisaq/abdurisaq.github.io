@@ -68,8 +68,10 @@ embed as a fallback.
 
 Update the TODO values and contact details in `data.js`, add your resume PDF at `assets/resume.pdf`,
 and verify project demo links. The colorscheme page reads the configured dotfiles repository from
-GitHub. The writing section contains the VersatileTraining reverse-engineering deep dive and the two
-C++ data-access examples. The project page links to it instead of embedding the full article.
+GitHub. The writing section contains five conversational project deep dives (PrivateConvert,
+MusicApp, VersatileTraining, OrganizeMyBakkesModGarage, and LocalTether). The longer stories live
+outside the project summaries, which link to their matching article. The standalone HTTP Server From
+Scratch project card was removed; it is mentioned as an earlier experiment in the LocalTether story.
 
 The colorscheme page has independent scroll containers for the file list and source preview: scroll
 the file list to browse dotfiles, and scroll the code pane vertically or horizontally to inspect

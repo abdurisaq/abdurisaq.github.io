@@ -273,6 +273,11 @@ const DATA = {
                         url: "https://github.com/DRKn1ght/RocketLeague-Data-Dumper",
                     },
                     {
+                        title: "RLSDK-Generator",
+                        note: "A community C++20 UE3 SDK generator; the repository describes its CodeRed Generator lineage, generated headers and global initialization options.",
+                        url: "https://github.com/matix2/RLSDK-Generator",
+                    },
+                    {
                         title: "Unreal package file format",
                         note: "Explains the package header and name, import and export tables behind serialized object references.",
                         url: "https://wiki.beyondunreal.com/Unreal_package",
@@ -557,10 +562,10 @@ const DATA = {
                 "Equip presets, swap car bodies and shuffle a selected group in supported game modes.",
                 "Copy presets from replays and persist group data locally.",
             ],
-            metricsLabel: "Community adoption · figures provided",
+            metricsLabel: "Community adoption · author-reported total",
             metrics: [
                 { value: "36.2K", label: "views" },
-                { value: "13K", label: "downloads" },
+                { value: "13K+", label: "downloads" },
             ],
             videos: [],
             links: [["Source", "https://github.com/abdurisaq/OrganizeMyBakkesModGarage"]],
@@ -616,64 +621,6 @@ const DATA = {
                 "YouTube search and downloading require a user-provided API key.",
             ],
             links: [["Source", "https://github.com/abdurisaq/MusicApp"]],
-        },
-        {
-            id: "http-server-from-scratch",
-            name: "HTTP Server From Scratch",
-            repo: "https://github.com/abdurisaq/HTTP-Server-From-Scratch",
-            summary:
-                "A C++ socket-based HTTP server implementing request handling, file endpoints and gzip response compression.",
-            stack: ["C++23", "TCP/IP", "Sockets", "CMake", "zlib"],
-            about: "This is a from-scratch networking exercise: instead of relying on an HTTP framework, the server opens a TCP socket, accepts a connection and builds the HTTP response itself. I used it to get closer to the mechanics underneath a request—parsing the request line, reading headers, selecting a route and writing a response back over the socket.",
-            sections: [
-                {
-                    title: "Start below the HTTP abstraction",
-                    paragraphs: [
-                        "The server creates a listening TCP socket on port 4221, binds it, listens for incoming connections and accepts clients in a loop. Each accepted connection is handed to a detached worker thread that reads the request and handles the response.",
-                    ],
-                },
-                {
-                    title: "Route and build responses manually",
-                    bullets: [
-                        "The echo route returns text from the request target.",
-                        "The User-Agent route reads the corresponding request header and returns it as plain text.",
-                        "The /files endpoint supports GET to read a file and POST to create or write one in the configured directory.",
-                        "Unknown paths return a basic 404 response.",
-                    ],
-                },
-                {
-                    title: "Add content negotiation",
-                    paragraphs: [
-                        "The server checks the Accept-Encoding header. When the client advertises gzip, it compresses the response body with zlib and adds a Content-Encoding header. This makes the project a useful exercise in how HTTP headers affect the bytes sent over an otherwise ordinary TCP connection.",
-                    ],
-                },
-                {
-                    title: "Explore platform-specific networking",
-                    paragraphs: [
-                        "The repository also contains Windows and Linux client/server variants, discovery experiments and CMake targets for the different builds. The main POSIX server is intentionally small; this is a learning implementation, not a claim of full HTTP/1.1 compliance or production hardening.",
-                    ],
-                },
-            ],
-            screenshots: [
-                {
-                    src: "assets/screenshots/http-server-terminal.png",
-                    alt: "HTTP server terminal showing a request and response",
-                    caption: "Server output and raw HTTP requests",
-                },
-                {
-                    src: "assets/screenshots/http-server-client-test.png",
-                    alt: "HTTP server client test showing returned endpoint data",
-                    caption: "Client request and endpoint response",
-                },
-            ],
-            highlights: [
-                "Raw TCP socket lifecycle: socket, bind, listen and accept.",
-                "Per-connection worker threads for request handling.",
-                "Hand-built response handling for echo, User-Agent and file GET/POST routes.",
-                "Gzip response compression negotiated through Accept-Encoding and implemented with zlib.",
-                "CMake targets for Linux and Windows variants in the wider repository.",
-            ],
-            links: [["Source", "https://github.com/abdurisaq/HTTP-Server-From-Scratch"]],
         },
         {
             id: "353-project",
@@ -773,4 +720,419 @@ const DATA = {
             ],
         },
     },
+    articles: [
+        {
+            id: "privateconvert-local-first-conversion",
+            projectId: "privateconvert",
+            filename: "privateconvert-deep-dive.md",
+            title: "I got tired of trusting random file-converter websites",
+            kicker: "local-first software · privacy · FastAPI",
+            lede: "I hate online converters with a passion. The task is usually tiny: shrink an image, compress a video, combine a few pages, or change a file into a format someone asked for. Yet the normal advice is to search the web, click whichever result has the best SEO, upload the file, and hope the website is behaving itself.",
+            sections: [
+                {
+                    title: "A solved problem with a ridiculous trust requirement",
+                    paragraphs: [
+                        "What bothers me is the mismatch. The conversion itself is not mysterious, but the user is asked to hand a document to a service they may have found thirty seconds ago. That file might be a harmless meme, or it might contain a passport scan, a signed form, a work document, or information that should never have left the machine in the first place.",
+                        "I am not claiming every online converter is malicious. The point is that uploading a file creates a trust boundary, and most people are not in a position to evaluate the operator, retention policy, download flow, or the file they get back. For a one-off utility, the amount of trust being requested feels wildly out of proportion to the job.",
+                    ],
+                },
+                {
+                    title: "Then the warnings stopped sounding hypothetical",
+                    paragraphs: [
+                        "In March 2025, the FBI Denver Field Office warned about scams using free document-converter and downloader tools. The warning describes tools that can appear to perform the advertised conversion while also delivering malware or collecting sensitive information. Malwarebytes expanded on the same campaign, describing lures that included downloaded utilities, browser extensions, and even converted files carrying malicious code. Forbes covered the warning a few days later.",
+                        "That reporting did not create my dislike of online converters; it put a concrete example behind it. The risk is not limited to whether a website stores the uploaded original. The download step can be part of the attack too. A converter can give someone the result they expected and still leave them with something they absolutely did not ask for.",
+                    ],
+                    callout:
+                        "The FBI warning is about a specific converter-scam campaign, not proof that every online converter is malicious. My design choice is simpler: when the operation can run on my own machine, I would rather keep the file there.",
+                },
+                {
+                    title: "I did not need another giant editing suite",
+                    paragraphs: [
+                        "I made PrivateConvert for my own use case. I repeatedly needed a small set of file operations: convert an image, adjust it, work with a PDF, or compress a video to a specific size so it would fit an upload limit. Discord's file-size limit was one of those recurring annoyances — why am I still manually fighting a 10 MB ceiling?",
+                        "I was not trying to recreate Photoshop, Premiere, or Acrobat. I wanted a practical toolbox for the operations I actually reach for, with enough flexibility to chain steps together instead of visiting a different website for every tiny task.",
+                    ],
+                },
+                {
+                    title: "Pipelines made the repeated work less repetitive",
+                    paragraphs: [
+                        "The File Operations page lets me assemble operations into a pipeline, validate it, save it, and run it again later. Image, PDF, and video tasks share the same broad workflow even though the underlying tools differ. Video processing uses ffmpeg, with ffprobe for metadata inspection and size-target compression; PDF page editing has its own editor rather than being squeezed into a generic button.",
+                        "I also wanted conversions to behave like jobs rather than a spinner that disappears. The queue gives me a place to see what is active, cancel work, remove completed output, and configure retention. In the current project setup, terminal jobs default to a 30-day retention period, temporary files are cleaned at startup, and expired jobs are checked periodically.",
+                    ],
+                },
+                {
+                    title: "Local-first is a boundary, not a magic security word",
+                    paragraphs: [
+                        "The finished FastAPI backend serves the built React interface, so Node is needed for the frontend build but not for the normal runtime. The local launcher and Docker Compose both bind the app to localhost, and Docker stores its application data in a local directory. That is deliberate: this is a single-user desktop-style utility, not a file-conversion service I intend to expose to the internet.",
+                        "I still do not want to oversell the word private. Local processing reduces the need to upload originals to a third party, but users should still run software they trust, keep their machine secure, and understand what tools the application invokes. The goal is control over my own conversion workflow, not a claim that local software is automatically flawless.",
+                    ],
+                },
+                {
+                    title: "The point was to stop making a tiny task someone else's problem",
+                    paragraphs: [
+                        "PrivateConvert is intentionally opinionated. It covers the conversions and operations I personally use, keeps the work on the machine, and gives those operations a reusable interface. It is less about building the world's most complete converter and more about refusing to make a random website the default place my files go.",
+                    ],
+                },
+            ],
+            resources: [
+                {
+                    title: "FBI Denver: Online File Converter Scam (March 7, 2025)",
+                    note: "The original warning describes fake converter/downloader tools, malicious downloads, and possible data theft.",
+                    url: "https://www.fbi.gov/contact-us/field-offices/denver/news/fbi-denver-warns-of-online-file-converter-scam",
+                },
+                {
+                    title: "Malwarebytes: Warning over free online file converters (March 17, 2025)",
+                    note: "A security write-up of the same campaign and the ways the tools can deliver malware or steal information.",
+                    url: "https://www.malwarebytes.com/blog/news/2025/03/warning-over-free-online-file-converters-that-actually-install-malware",
+                },
+                {
+                    title: "Forbes: FBI Issues Document Converter Warning (March 18, 2025)",
+                    note: "Additional coverage of the FBI warning and the case for local conversion where practical.",
+                    url: "https://www.forbes.com/sites/zakdoffman/2025/03/18/fbi-warns-chrome-safari-and-edge-users-do-not-use-these-websites/",
+                },
+            ],
+        },
+        {
+            id: "musicapp-own-music-player",
+            projectId: "musicapp",
+            filename: "musicapp-deep-dive.md",
+            title: "I wanted my own music player. Then Android Studio got involved.",
+            kicker: "Android · Kotlin · learning by building",
+            lede: "The motivation was not especially profound: I'm a cheapskate. I caught myself thinking, 'How hard could it be to make the music app I actually want?' The answer, it turns out, included a surprising amount of arguing with Android Studio and the build system before I got to the fun part.",
+            sections: [
+                {
+                    title: "The scope was deliberately selfish",
+                    paragraphs: [
+                        "I was not setting out to replace every music service or build a social platform. I wanted a small tool that could find and keep the music I use, play it reliably, make playlists, and cover my very limited list of needs. The personal scoreboard was simple: I joked that every month I could avoid paying for Spotify Premium was another $14 in my pocket.",
+                        "That constraint was useful. I could make decisions based on the workflow I actually cared about instead of inventing features just because a commercial streaming app has them.",
+                    ],
+                },
+                {
+                    title: "The build system was the first boss fight",
+                    paragraphs: [
+                        "I expected learning Kotlin to be the main learning curve. Instead, getting Android Studio and the project build to behave consistently was a hurdle on its own. Kotlin almost became the afterthought after all the time spent getting the project to build and run the way I expected.",
+                        "That experience changed how I think about Android projects. The app code is only one part of the product; the IDE, Gradle configuration, SDK versions, and platform lifecycle are all part of the thing you are building.",
+                    ],
+                },
+                {
+                    title: "Once the plumbing worked, the app had three jobs",
+                    paragraphs: [
+                        "First, it needed a local library. Room stores the song records, playlists, and membership between them. The UI can observe database changes through flows, which keeps the screens from having to become a pile of manual refresh calls.",
+                        "Second, it needed a player that survives the screen. Media3 ExoPlayer handles playback, while an Android service owns the media session and exposes previous, play/pause, and next actions through the system notification. That gives Android and connected devices a way to control playback without keeping the app in the foreground.",
+                        "Third, it needed a way to get music into the library. The app includes YouTube search and a direct-download flow, with the search API key supplied by the user rather than hard-coded into the project. After that, playlists organize the downloads; background playback and shuffle cover the parts I actually use day to day.",
+                    ],
+                },
+                {
+                    title: "What I got out of it",
+                    paragraphs: [
+                        "The useful result was not just that I had a music player. I had to learn how the Android app lifecycle, persistent local data, playback services, and system media controls fit together. That was much more educational than making another screen that only works while it is open.",
+                        "And yes, the cheapskate motivation still counts. The app exists because I wanted a modest tool for myself, and I got a better understanding of Android development along the way.",
+                    ],
+                },
+            ],
+            resources: [
+                {
+                    title: "MusicApp source code",
+                    note: "The project repository and implementation.",
+                    url: "https://github.com/abdurisaq/MusicApp",
+                },
+                {
+                    title: "Android Media3 documentation",
+                    note: "The official AndroidX media stack used for playback and media sessions.",
+                    url: "https://developer.android.com/media/media3",
+                },
+            ],
+        },
+        {
+            id: "versatiletraining-reverse-engineering",
+            projectId: "versatiletraining",
+            filename: "versatiletraining-deep-dive.md",
+            title: "I wanted Rocket League training to feel like Rocket League",
+            kicker: "Rocket League · BakkesMod · UE3 · C++",
+            lede: "Rocket League had been out for years, and a training feature introduced early in its life could still feel frozen in time. I was making training packs long before VersatileTraining existed, but as I got better and the skill ceiling kept rising, the editor's standard options stopped describing the situations I actually wanted to practise. I wanted to build a shot that felt like a real match, save it, and repeat it until I could do it consistently.",
+            sections: [
+                {
+                    title: "It started with a very specific kind of frustration",
+                    paragraphs: [
+                        "I'm a competitive Rocket League player, and making training packs has always been one of the parts of the game I enjoy. The problem was that the built-in editor's options felt increasingly disconnected from the game I was actually playing. I could make the usual setups, but the more precise situations I wanted to isolate were difficult or impossible to express with the stock controls.",
+                        "The idea behind VersatileTraining was to make the training setup as customizable as I needed it to be: take the state of a real play, turn it into an isolated shot, and then practise that exact situation over and over. Car and ball positions, rotations, velocities, boost, jump state, and blockers all mattered because the starting state is the exercise.",
+                    ],
+                },
+                {
+                    title: "The interface was the visible part; the game state was the hard part",
+                    paragraphs: [
+                        "A custom editor is straightforward to imagine. The harder question was how to get the right information out of Rocket League and know when the game had reached the moment I wanted to capture. This is where the project turned into an investigation of the game rather than just a UI project.",
+                        "I needed two kinds of evidence. Static inspection helps answer what classes, properties, and functions exist. Runtime observation helps answer which one actually fires when I perform a particular action. I spent a lot of time narrowing those two worlds together instead of choosing a function name because it sounded plausible.",
+                    ],
+                },
+                {
+                    title: "The BakkesMod ecosystem gave me a practical entry point",
+                    paragraphs: [
+                        "Rocket League has a long-running modding community built around BakkesMod. The SDK exposes a C++ plugin interface and wrappers for common game-facing objects, while the plugin workflow turns a compiled DLL into something you can load inside the game. That meant I could focus on the feature I wanted instead of building the whole integration layer myself.",
+                        "The BakkesMod Function Scanner became one of my most useful discovery tools. The documented workflow is to launch Rocket League with the development option enabled, open the BakkesMod console, and bring up DevTools. You can whitelist relevant words and blacklist noise; matching function names appear as the game calls them. I would perform one controlled action, watch what appeared, adjust the filters, and repeat. It made the investigation feel like an experiment instead of guesswork.",
+                    ],
+                },
+                {
+                    title: "UE3 metadata: turning addresses into names and relationships",
+                    paragraphs: [
+                        "The lower-level Rocket League research community gave me a way to understand what the engine was doing underneath the wrappers. Unreal Engine 3 uses reflected objects, classes, functions, and properties. Two names that show up repeatedly in community research are GObjects and GNames: one is associated with the live object collection, and the other with the engine's name table. Once an object can be connected to its class and name metadata, it becomes much easier to reason about what an address represents.",
+                        "The RocketLeague-Data-Dumper project is a useful educational walkthrough of that process. It describes inspecting UE3 object and name structures and explains how runtime dispatch through ProcessEvent can help observe reflected function calls. It also explicitly warns that the offsets in its examples are tied to the game build at the time of writing. That warning matters: a remembered offset is not a permanent property of Rocket League.",
+                        "RLSDK-Generator approaches the same ecosystem from the SDK-generation side. The repository describes a C++20 generator based on the CodeRed Generator lineage, with generated headers, configuration for global initialization, and member-registration macros used to calculate structure layout. These projects are community research tools, not an official promise that every layout will remain stable after an update.",
+                    ],
+                },
+                {
+                    title: "Finding a function and understanding its parameters are two different jobs",
+                    paragraphs: [
+                        "Once I had a candidate function name, BakkesMod hooks let my plugin react to it. HookEvent runs the callback as a function is called; HookEventPost runs after it returns. Caller-aware variants can also provide a wrapper for the calling object and a void pointer to the parameter block.",
+                        "That void pointer is where it becomes easy to fool yourself. A cast can make bytes look like a C++ struct, but it does not prove that the struct is correct. The BakkesMod documentation is unusually direct about this: the generic caller helper performs a blind cast without type checks, and the wrong wrapper type can crash the game. I treated raw parameter dumps as clues, not as a finished schema.",
+                    ],
+                },
+                {
+                    title: "Two examples of the abstraction trade-off",
+                    paragraphs: [
+                        "When a named SDK wrapper exists, I much prefer it. It says what I am asking for and leaves the layout details inside the wrapper. There are situations where an event gives me a raw block and I need a known layout, but that is a different level of confidence: I need the event contract, alignment, offsets, and field order to be checked against the exact build before I rely on it.",
+                        "The two C++ examples below show that contrast. The first asks the wrapper for values by name. The second describes a structure sitting after a padding region. The second is not inherently better because it looks more powerful; it is simply lower-level, and the burden of validation moves onto me.",
+                    ],
+                },
+                {
+                    title: "Then it escaped the friend group",
+                    paragraphs: [
+                        "The plugin was initially made for me. I asked a friend to playtest it, and because I was excited about what it could do, I made an unlisted walkthrough video and sent the link around. I did not expect much from an unlisted video shared directly with people I knew.",
+                        "Then I noticed it had around 600 views. That number might be ordinary to someone with an audience, but seeing hundreds of people find and watch something I had made for myself was surreal. Two Rocket League creators whose content I already watched also found it: one with a channel around 300,000 subscribers and another around 50,000. They commented, and one reached out privately about early access for a potential video. That video never ended up being published, but even having that conversation was a strange, very cool moment.",
+                        "For a passion project I thought would stay inside my friend group, the month where the community started picking it up was memorable. I got into the habit of checking download counts in the morning. It was a small reminder that a tool made to solve one person's very specific problem can turn out to be useful to other people too.",
+                    ],
+                },
+            ],
+            technicalDive: true,
+            resources: [
+                {
+                    title: "BakkesMod SDK documentation",
+                    note: "The broader community documentation for plugin development, wrappers, and API usage.",
+                    url: "https://bakkesplugins.com/wiki/bakkesmod-sdk",
+                },
+                {
+                    title: "Function Scanner guide",
+                    note: "How to discover functions by filtering names as they fire in-game.",
+                    url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/function-scanner",
+                },
+                {
+                    title: "Using Function Hooks",
+                    note: "Explains HookEvent, HookEventPost, and caller-aware hook variants.",
+                    url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/using-function-hooks",
+                },
+                {
+                    title: "Hook Event With Any Caller",
+                    note: "Documents the blind-cast caveat for generic caller wrappers.",
+                    url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/hook-event-with-any-caller",
+                },
+                {
+                    title: "RocketLeague-Data-Dumper",
+                    note: "Community tutorial for understanding UE3 object/name structures and runtime inspection.",
+                    url: "https://github.com/DRKn1ght/RocketLeague-Data-Dumper",
+                },
+                {
+                    title: "RLSDK-Generator",
+                    note: "Community C++20 SDK generator for Rocket League, forked from the CodeRed Generator project.",
+                    url: "https://github.com/matix2/RLSDK-Generator",
+                },
+                {
+                    title: "BakkesMod SDK source",
+                    note: "The public SDK repository and wrapper interfaces.",
+                    url: "https://github.com/bakkesmodorg/BakkesModSDK",
+                },
+            ],
+        },
+        {
+            id: "organize-my-bakkesmod-garage-story",
+            projectId: "organize-my-bakkesmod-garage",
+            filename: "organize-my-bakkesmod-garage-deep-dive.md",
+            title: "The project with 13,000 downloads that started as a tiny annoyance",
+            kicker: "Rocket League · BakkesMod · C++",
+            lede: "This one is funny because it is by far the most successful thing I've made, and it started with the same question as half my other projects: 'How hard can this be?' The first pass really was not that hard. The annoying part was turning a basic garage modification into something I actually wanted to use every day.",
+            sections: [
+                {
+                    title: "An abstraction layer on top of an abstraction layer",
+                    paragraphs: [
+                        "BakkesMod already made it possible to modify the Rocket League garage, but the built-in workflow felt awkward once I had a lot of presets. I did not want to keep navigating one long collection and manually doing the same little management tasks. So I made another layer over the garage modification: something that treated presets as a library I could organize, search, and rotate through.",
+                        "The first version was mostly about making the built-in functionality less annoying. Then I kept finding small things I wanted to do that were not exposed as a comfortable workflow, and the plugin grew from there.",
+                    ],
+                },
+                {
+                    title: "Groups made the garage feel like a library",
+                    paragraphs: [
+                        "I could create named groups, add presets, edit the groups later, and sort them by name, date, or size in either direction. Search meant I did not have to remember exactly where a preset lived. The small convenience of having a structure became much more useful once the collection started to grow.",
+                        "A group could also become the main group. From there, the plugin could shuffle through its presets in Freeplay or, when enabled, in online matches. Instead of treating the garage as a static list, I could let the game cycle through a collection I had already curated.",
+                    ],
+                },
+                {
+                    title: "The features that made it more than organization",
+                    paragraphs: [
+                        "You can equip a preset from a group, swap its car body with one you already have saved in-game, and copy a preset out of a replay. That last one is especially satisfying: someone else's replay can become a source for a preset you want to keep in your own garage.",
+                        "The README walkthroughs show the flow better than a wall of screenshots, so I kept the original short demonstrations below: creating and editing groups, sorting, swapping a body, shuffling the main group, and copying from a replay.",
+                    ],
+                },
+                {
+                    title: "The less glamorous part: understanding the car data",
+                    paragraphs: [
+                        "Most of the real work was not the group UI. It was figuring out the car information the game stores in Base64-encoded strings, decoding it into something I could inspect, changing the pieces I wanted to change, and encoding it back without corrupting the preset. The plugin is effectively taking opaque serialized game data and giving it a workflow that makes sense to a player.",
+                        "That kind of work is easy to underestimate from the outside. The interface can look like a simple list with buttons, but every action depends on understanding what data represents a car body, its cosmetics, and the rest of the loadout well enough to preserve the parts that should not change.",
+                    ],
+                },
+                {
+                    title: "A useful tool still has boundaries",
+                    paragraphs: [
+                        "The current README says the plugin works with Steam and Epic, but is not supported on Linux and may crash there. It also notes an incompatibility with AlphaConsole custom decals. For car-body swapping, the target body needs to exist in one of the player's in-game presets. And if a preset is edited after it has been added to a group, the stored group copy does not automatically refresh; it has to be removed and added again.",
+                        "Those are not footnotes I want to hide. They are part of the real story of a utility plugin: what it makes easier, and what still depends on the game or the underlying modding environment.",
+                    ],
+                },
+                {
+                    title: "The numbers still make me laugh",
+                    paragraphs: [
+                        "At the time I wrote this, I was reporting more than 13,000 downloads. It is oddly satisfying that this relatively straightforward quality-of-life plugin ended up reaching more people than projects that took much longer to build. It is a good reminder that a small fix for a common annoyance can be more useful than a technically ambitious project nobody asked for.",
+                    ],
+                },
+            ],
+            media: [
+                {
+                    src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/adding.gif",
+                    alt: "Adding a Rocket League preset to a named garage group",
+                    caption: "Adding presets to a group",
+                },
+                {
+                    src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/editing.gif",
+                    alt: "Editing a preset group",
+                    caption: "Editing an existing group",
+                },
+                {
+                    src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/sort.png",
+                    alt: "Sorting groups by name, date, and size",
+                    caption: "Sorting groups by name, date, and size",
+                },
+                {
+                    src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/swapWithCarBody.gif",
+                    alt: "Swapping a preset to another owned car body",
+                    caption: "Swapping the car body",
+                },
+                {
+                    src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/shufflePresets.gif",
+                    alt: "Shuffling presets from the selected main group",
+                    caption: "Shuffling the main group",
+                },
+                {
+                    src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/copyPreset.png",
+                    alt: "Copying a preset from a Rocket League replay",
+                    caption: "Copying a preset from a replay",
+                },
+            ],
+            resources: [
+                {
+                    title: "OrganizeMyBakkesModGarage source and README",
+                    note: "Original project, feature list, limitations, and walkthrough assets.",
+                    url: "https://github.com/abdurisaq/OrganizeMyBakkesModGarage",
+                },
+                {
+                    title: "BakkesPlugins listing",
+                    note: "The plugin's community listing.",
+                    url: "https://bakkesplugins.com/plugins/view/534",
+                },
+            ],
+        },
+        {
+            id: "localtether-cross-platform-kvm",
+            projectId: "localtether",
+            filename: "localtether-deep-dive.md",
+            title: "I wanted my laptop to stop feeling like a second-class computer",
+            kicker: "C++ · networking · Windows + Linux · input systems",
+            lede: "My desk is too small for two proper monitors, so I usually keep my laptop beside my desktop and use it as a second machine. The problem was that every time I needed to interact with the laptop, I had to reach for its worse keyboard and touchpad. I had a perfectly good keyboard and mouse on my desktop and wanted them to work across both machines.",
+            sections: [
+                {
+                    title: "A software KVM sounded cheaper than a hardware KVM",
+                    paragraphs: [
+                        "I had heard of software tools that share a mouse and keyboard between computers, but I specifically needed Windows and Linux to work together. The solutions I found tended to assume both machines used the same operating system, or they did not fit the way I wanted to work. I also did not feel like spending around $100 on a physical KVM switch for a desk that was already too small.",
+                        "So I asked the usual question: how hard could this be? It became a project that pulled together pieces of networking, input handling, operating-system APIs, and build-system knowledge I had picked up in other projects and classes.",
+                    ],
+                },
+                {
+                    title: "First I had to understand what 'connect two computers' actually means",
+                    paragraphs: [
+                        "A computer on my home network has a local address, often something like 192.168.1.x. That is an address used inside the local network; it is not the same thing as the public-facing address my router uses on the wider internet. The router sits between those two worlds. A private LAN address lets LocalTether find and talk to machines on the same network without turning every local connection into an internet service.",
+                        "I wanted LAN to be the normal path. The app can scan a local subnet, find candidate addresses, and then check which ones actually have a LocalTether server listening on its port. The scripts in this source snapshot look for IPv4 interfaces with a /24 prefix, ping addresses in that subnet, and then the app probes port 8080. That is useful for a simple home network, but it is not universal discovery: devices that do not answer ping, networks with a different subnet size, or more complicated routing can be missed.",
+                    ],
+                },
+                {
+                    title: "The operating systems do not hand you the same mouse",
+                    paragraphs: [
+                        "The next problem was input. I wanted one interface in the app, but Windows and Linux expose input through very different APIs. The project uses a common InputManager interface and chooses a WindowsInput or LinuxInput implementation at compile time. That gave the rest of the app one set of operations to ask for — start, stop, poll events, and simulate input — while each platform handled its own details.",
+                        "The Linux side uses evdev/libevdev and a helper process for low-level input access. The Windows side uses Windows hooks and input simulation. That division was the first real lesson in cross-platform development: the abstraction is not that the operating systems behave identically; it is that I have to decide which differences the common interface can hide and which differences need to remain explicit.",
+                    ],
+                },
+                {
+                    title: "Trackpads forced me to rethink what a coordinate means",
+                    paragraphs: [
+                        "I initially treated mouse data as if every device told me where the cursor was. That assumption broke on the Linux laptop. With the trackpad path, libevdev can report absolute positions for the finger on the device surface, not the cursor's current position on the display. Those are two different coordinate systems. Sending the raw numbers to another machine does not magically make them equivalent.",
+                        "I had to track an anchor position on the touch surface, remember the last simulated cursor position, convert small finger movements into cursor deltas, and treat large jumps as a reset rather than a giant cursor teleport. The actual code has a threshold comparison and clamps the final normalized coordinates to the screen bounds. The important part was not the arithmetic itself; it was finally recognizing which physical thing each number described.",
+                    ],
+                    code: "// Simplified from InputManager::processSimulatedMouseCoordinates\nconst float dx = payloadX - anchorDeviceX;\nconst float dy = payloadY - anchorDeviceY;\nconst float distanceSq = dx * dx + dy * dy;\n\nif (distanceSq > jumpThresholdSq) {\n    // Re-anchor after a discontinuity; keep the cursor stable.\n} else {\n    outX = lastSimulatedX + dx;\n    outY = lastSimulatedY + dy;\n}",
+                },
+                {
+                    title: "Keyboard events had to arrive as events, not vague intentions",
+                    paragraphs: [
+                        "The same kind of mismatch showed up with keyboards. I needed to distinguish key-down from key-up, avoid treating a long press as a stream of unrelated new presses, and preserve combinations when multiple keys were held together. The input payload therefore carries a list of key events, each with a key code and a pressed/released flag, alongside mouse state, coordinates, and scroll deltas.",
+                        "Windows has both hook-driven and polling paths, with a small debounce window in the polling code. The Linux helper reads key events through the input subsystem. When a machine sends multiple key changes, the payload can carry those changes together rather than flattening everything into one current-key value. That is what makes modifier combinations and simultaneous input representable at the protocol level.",
+                    ],
+                },
+                {
+                    title: "My first queue idea was becoming its own research project",
+                    paragraphs: [
+                        "At first I tried to solve the streaming problem with my own queue. I got too deep into throughput, ordering, atomic operations, and what happens when events arrive faster than the other side can consume them. I did not have enough confidence in the queue design to make it reliable, so I put that version aside for a while. The earlier HTTP Server From Scratch repository is the side trail from that period; it is no longer presented as a standalone portfolio project, but it is part of how I arrived here.",
+                        "The LocalTether source uses a much more straightforward per-session write queue: serialized messages are posted onto the Asio executor, protected by a mutex, and written asynchronously one at a time. The queue is not a custom lock-free structure. That was a useful change in mindset — use the concurrency model the networking library already gives me, and make message ordering explicit instead of trying to win an optimization contest I did not need.",
+                    ],
+                },
+                {
+                    title: "The cross-platform build was a project inside the project",
+                    paragraphs: [
+                        "The code was not the only thing that needed an operating-system branch. The build process did too. The repository has a Bash build script for Linux and a PowerShell build script for Windows, because package installation, compiler setup, SDK paths, and dependency bootstrapping are not identical. Both paths use CMake and vcpkg, but the scripts have to speak the language of their host environment.",
+                        "That was my first project where Windows and Linux were both real targets instead of one being an afterthought. It taught me that 'cross-platform' is not a compiler flag. It is a commitment that reaches into input capture, permissions, dependencies, process management, build scripts, and the assumptions you make about the machine.",
+                    ],
+                },
+                {
+                    title: "A security note I do not want to gloss over",
+                    paragraphs: [
+                        "The project wraps its client/server traffic in TLS and supports password-protected sessions. The README describes LAN-only access as the default, with an optional WAN mode that requires deliberate router port forwarding. However, in the supplied source snapshot the client sets its TLS verification mode to verify_none. That means the connection is encrypted, but the client does not authenticate the server certificate in the usual way. I would address that before describing this version as fully hardened against an active man-in-the-middle attacker.",
+                        "I am including this because a networking project should be honest about its trust model. 'TLS is enabled' and 'the peer is authenticated' are not interchangeable statements.",
+                    ],
+                    callout:
+                        "Source review note: TLS is enabled, but this snapshot disables certificate verification on the client. Treat that as a known limitation, not as a security guarantee.",
+                },
+                {
+                    title: "The result is a little monster, but it solves my desk problem",
+                    paragraphs: [
+                        "LocalTether is not the smallest project I have made, and the first version was definitely not the cleanest route from idea to working software. But it now does the thing I wanted: my desktop can be the machine whose keyboard and mouse I use, while the laptop beside it stays useful without becoming a second set of peripherals I have to reach for.",
+                        "The project is a mix of lessons from previous attempts, operating-system quirks, network basics, and a few moments where I had to stop trying to be clever and choose a simpler design. That is why I like it as a portfolio project: the feature is easy to explain, but the path to making it behave across two operating systems was anything but one button.",
+                    ],
+                },
+            ],
+            resources: [
+                {
+                    title: "LocalTether source code",
+                    note: "The source archive used to verify the input, networking, discovery, and build-system details described here.",
+                    url: "https://github.com/abdurisaq/LocalTether",
+                },
+                {
+                    title: "HTTP Server From Scratch",
+                    note: "An earlier networking experiment referenced as part of the learning path, not as a separate portfolio project.",
+                    url: "https://github.com/abdurisaq/HTTP-Server-From-Scratch",
+                },
+                {
+                    title: "Linux input subsystem documentation",
+                    note: "Background on the event devices and event codes used by the Linux input path.",
+                    url: "https://docs.kernel.org/input/input.html",
+                },
+                {
+                    title: "Standalone Asio",
+                    note: "The asynchronous networking library used for the client/server sessions.",
+                    url: "https://think-async.com/Asio/",
+                },
+            ],
+        },
+    ],
 };
