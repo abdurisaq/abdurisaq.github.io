@@ -21,14 +21,20 @@ Then visit `http://localhost:8000`.
 - Skills are grouped under `experience/skills.md`; smaller projects live in
   `projects/smaller-projects/`, with one page per project
 - `setup.md` describes a Fedora Linux laptop and a Windows + Arch Linux (Omarchy) dual-boot desktop
-- Persistent open-buffer tabs with close and cycle behavior
+- Persistent open-buffer tabs with close and cycle behavior; the header and tab row stay visible
+  while the active buffer scrolls, and the statusline stays at the bottom with the `:` command row
+  directly above it
 - Telescope-style search with **Files** and **Grep** modes (`Ctrl+K`, `Ctrl+P`, or `Space Space`);
-  Grep searches project descriptions, technical walkthroughs, skills and setup details
+  Files matches filenames only, while Grep returns each text occurrence with a highlighted preview
+  in the right pane. Press `/` to open Grep, `Ctrl+F` / `Ctrl+G` to choose a mode, and `Tab` to
+  switch modes
 - Ex command line (`:`): `:e about.md`, `:e setup.md`, `:e experience/skills.md`,
   `:e projects/localtether`, `:e projects/smaller-projects/musicapp.md`, `:Telescope`,
   `:Telescope live_grep`, `:bn`, `:bp`, `:bd`, `:colorscheme melange`, `:help`
-- Keyboard navigation: `j/k`, `gg/G`, `Ctrl+D/Ctrl+U`, `Space e`, `Space Space`, `]b/[b`,
-  `Space b d`, `?`
+- Keyboard navigation: `j/k`, `gg/G`, `Ctrl+D/Ctrl+U`, `Space e` / `Space l`, `Esc`, `Ctrl+w h/l`,
+  `/` for Grep, `Space Space` for Files, `]b/[b`, `Space b d`, `?`. Focus the Explorer with
+  `Space e`, move through it with `j/k/h/l`, open a file with `Enter`, then return to the editor
+  with `Space l`, `Esc`, or `Ctrl+w l`.
 - Melange light/dark palettes; theme selection is saved locally and initially follows the OS
   preference
 - Project pages use conversational walkthroughs, video demos (where available), and screenshot

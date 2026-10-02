@@ -2299,3 +2299,163 @@ pre.code {
         font-size: 15px;
     }
 }
+
+/* Keep the editor chrome in view; only the active buffer scrolls. */
+html,
+body {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+.editor-shell {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+}
+.topbar {
+    position: relative;
+    z-index: 30;
+    flex: none;
+}
+.workspace {
+    min-height: 0;
+    height: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+.explorer {
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+}
+.editor-main {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+.bufferline {
+    position: relative;
+    z-index: 20;
+    flex: none;
+}
+.breadcrumb {
+    position: relative;
+    z-index: 10;
+    flex: none;
+}
+.editor-content {
+    min-height: 0;
+    height: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+}
+.statusline {
+    position: relative;
+    z-index: 30;
+    flex: none;
+}
+.command-row {
+    position: fixed;
+    z-index: 60;
+    left: 0;
+    right: 0;
+    bottom: 27px;
+    min-height: 35px;
+    box-shadow: 0 -8px 22px var(--shadow);
+}
+.command-row[hidden] {
+    display: none;
+}
+.palette {
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 40px);
+    overflow: hidden;
+}
+.palette-split {
+    height: min(58vh, 560px);
+    min-height: 280px;
+    max-height: none;
+    overflow: hidden;
+}
+.palette-results {
+    height: 100%;
+    min-height: 0;
+    max-height: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+.palette-preview {
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+}
+.palette-preview-inner {
+    min-height: 0;
+}
+.palette-preview-path {
+    margin-top: 3px;
+    color: var(--dim);
+    font-size: 9px;
+    overflow-wrap: anywhere;
+}
+.palette-preview-excerpt {
+    max-height: none;
+    overflow: visible;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+.search-hit {
+    color: var(--bg);
+    background: var(--yellow);
+    border-radius: 2px;
+    padding: 0 1px;
+}
+@media (max-width: 760px) {
+    .explorer {
+        min-height: 0;
+        height: auto;
+    }
+    .workspace {
+        min-height: 0;
+        height: 0;
+    }
+    .editor-content {
+        height: 0;
+    }
+    .palette-split {
+        height: min(68vh, 640px);
+        min-height: 260px;
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .palette-results {
+        height: 100%;
+        max-height: none;
+        min-height: 0;
+        overflow-y: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .palette-preview {
+        height: 100%;
+        min-height: 0;
+        max-height: none;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+}
+
+.article-video-section {
+    margin: 34px 0;
+}
+.article-video-section h2 {
+    margin-bottom: 14px;
+}

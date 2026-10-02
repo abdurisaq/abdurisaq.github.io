@@ -26,7 +26,7 @@ const renderProjectSections = (sections) =>
 const renderDeepDive = (dive) =>
     !dive
         ? ""
-        : `<section class="deep-dive"><div class="section-heading-row"><h2>Under the hood: reverse engineering Rocket League</h2><span class="section-kicker">UE3 reflection · runtime hooks · binary inspection</span></div><p class="page-intro">${esc(dive.intro)}</p>${(dive.sections || []).map((section) => `<section class="project-story-section"><h3>${esc(section.title)}</h3>${(section.paragraphs || []).map((text) => `<p>${esc(text)}</p>`).join("")}</section>`).join("")}<section class="project-story-section"><h3>My investigation loop</h3><div class="research-flow">${(dive.workflow || []).map((step, i) => `<div class="research-step"><span>${String(i + 1).padStart(2, "0")}</span><strong>${esc(step)}</strong></div>`).join("")}</div></section><figure class="debug-snippet"><figcaption><strong>${esc(dive.snippetTitle || "Debugging excerpt")}</strong><span>${esc(dive.snippetNote || "")}</span></figcaption><pre><code>${esc(dive.snippet || "")}</code></pre></figure>${(dive.resources || []).length ? `<section class="project-story-section research-resources"><h3>Further reading</h3><ul>${dive.resources.map((resource) => `<li><a href="${esc(resource.url)}" target="_blank" rel="noopener">${esc(resource.title)} ↗</a> — ${esc(resource.note)}</li>`).join("")}</ul></section>` : ""}</section>`;
+        : `<section class="deep-dive"><div class="section-heading-row"><h2>Okay, so how did I figure out what Rocket League was doing?</h2><span class="section-kicker">UE3 · BakkesMod · C++</span></div><p class="page-intro">${esc(dive.intro)}</p>${(dive.sections || []).map((section) => `<section class="project-story-section"><h3>${esc(section.title)}</h3>${(section.paragraphs || []).map((text) => `<p>${esc(text)}</p>`).join("")}</section>`).join("")}<section class="project-story-section"><h3>The loop I kept repeating</h3><div class="research-flow">${(dive.workflow || []).map((step, i) => `<div class="research-step"><span>${String(i + 1).padStart(2, "0")}</span><strong>${esc(step)}</strong></div>`).join("")}</div></section><figure class="debug-snippet"><figcaption><strong>${esc(dive.snippetTitle || "Debugging excerpt")}</strong><span>${esc(dive.snippetNote || "")}</span></figcaption><pre><code>${esc(dive.snippet || "")}</code></pre></figure>${(dive.resources || []).length ? `<section class="project-story-section research-resources"><h3>Further reading</h3><ul>${dive.resources.map((resource) => `<li><a href="${esc(resource.url)}" target="_blank" rel="noopener">${esc(resource.title)} ↗</a> — ${esc(resource.note)}</li>`).join("")}</ul></section>` : ""}</section>`;
 const dataAccessExamples = [
     {
         title: "Read values through a game-facing wrapper",
@@ -54,7 +54,7 @@ cBall_GameEditor_TA* caller = (cBall_GameEditor_TA*)cw.memory_address;`,
     },
 ];
 const renderDataAccessExamples = () =>
-    `<section class="project-story-section"><div class="section-heading-row"><h2>Two ways I read game data</h2><span class="section-kicker">wrapper API · verified layout</span></div><p>These examples show two different levels of abstraction. I prefer a named SDK wrapper where one exists; a layout-based view is useful only after the callback payload and field offsets have been checked against the running build.</p>${dataAccessExamples.map((example, i) => `<figure class="debug-snippet"><figcaption><strong>${String(i + 1).padStart(2, "0")} · ${esc(example.title)}</strong><span>${esc(example.note)}</span></figcaption><pre><code>${esc(example.code)}</code></pre><p class="snippet-explanation">${esc(example.explanation)}</p></figure>`).join("")}</section>`;
+    `<section class="project-story-section"><div class="section-heading-row"><h2>A couple of ways I pulled values out of the game</h2><span class="section-kicker">wrapper API · verified layout</span></div><p>These examples show two different levels of abstraction. I prefer a named SDK wrapper where one exists; a layout-based view is useful only after the callback payload and field offsets have been checked against the running build.</p>${dataAccessExamples.map((example, i) => `<figure class="debug-snippet"><figcaption><strong>${String(i + 1).padStart(2, "0")} · ${esc(example.title)}</strong><span>${esc(example.note)}</span></figcaption><pre><code>${esc(example.code)}</code></pre><p class="snippet-explanation">${esc(example.explanation)}</p></figure>`).join("")}</section>`;
 const articleForProject = (projectId) =>
     (DATA.articles || []).find((article) => article.projectId === projectId);
 const deepDiveLink = (p) => {
@@ -68,6 +68,14 @@ const projectRoute = (p) =>
     isSmallerProject(p.id)
         ? `#/smaller-projects/${encodeURIComponent(p.id)}`
         : `#/projects/${encodeURIComponent(p.id)}`;
+const featuredProjects = () =>
+    ["localtether", "versatiletraining", "privateconvert"]
+        .map((id) => DATA.projects.find((project) => project.id === id))
+        .filter(Boolean);
+const additionalProjects = () =>
+    DATA.projects.filter(
+        (project) => !featuredProjects().some((featured) => featured.id === project.id),
+    );
 const projectCard = (p) =>
     `<a class="card" href="${projectRoute(p)}"><h3>${esc(p.name)}</h3><p>${esc(p.summary)}</p>${p.metrics ? `<div class="metric-row">${p.metrics.map((m) => `<span class="metric"><strong>${esc(m.value)}</strong><small>${esc(m.label)}</small></span>`).join("")}</div>` : ""}${tags(p.stack.slice(0, 4))}</a>`;
 const fileFor = (page, id) =>
@@ -90,7 +98,7 @@ const routeFor = (page, id) =>
     id ? `#/${page}/${encodeURIComponent(id)}` : `#/${page === "home" ? "" : page}`;
 const pages = {
     home: () => `<section class="hero"><div class="hi">-- hello, world</div><div class="big">${esc(P.name)}<span style="color:var(--yellow)">.</span></div><p class="sub">${esc(P.tagline)}</p><div class="btns"><a class="btn" href="#/projects">Explore projects <span>↗</span></a><a class="btn alt" href="#/resume">View resume</a><a class="btn alt" href="#/about">About me</a></div></section>
-    <section><h2>Featured projects</h2><div class="grid">${DATA.projects.slice(0, 3).map(projectCard).join("")}</div><p style="margin-top:15px"><a href="#/projects">Browse all projects →</a></p></section>
+    <section><h2>Featured projects</h2><div class="grid">${featuredProjects().map(projectCard).join("")}</div><p style="margin-top:15px"><a href="#/projects">Browse all projects →</a></p></section>
     <section><div class="section-heading-row"><h2>Built for a community</h2><span class="section-kicker">community project</span></div><div class="grid">${DATA.communityProjects.map(projectCard).join("")}</div></section>
     <section><h2>Open-source contributions</h2><p>Ongoing work on a personal Mihon fork, including an upstream bug fix and an extension-filtering contribution.</p><a href="#/community">Read about community contributions →</a></section>
     <section class="home-vim-callout"><div><span class="section-kicker">interactive tutorial</span><h2>Learn vim motions</h2><p>Seven small challenges for the motions that travel with you across Neovim, VS Code, and other editors.</p></div><a class="btn" href="#/vim-motions">Start the lesson <span>↗</span></a></section>
@@ -100,7 +108,7 @@ const pages = {
     experience: () =>
         `<h1>experience</h1><section class="timeline">${DATA.experience.map((j) => `<div class="job"><h3>${t(j.role)}</h3><div class="meta">${t(j.org)} · ${t(j.dates)} · ${t(j.place)}</div><ul>${j.bullets.map((b) => `<li>${t(b)}</li>`).join("")}</ul></div>`).join("")}</section>`,
     projects: () =>
-        `<h1>projects</h1><p class="page-intro">Selected work first, followed by community software and smaller independent projects.</p><section><h2>Featured projects</h2><div class="grid">${DATA.projects.slice(0, 3).map(projectCard).join("")}</div></section><section><div class="section-heading-row"><h2>Community project</h2><span class="section-kicker">player adoption</span></div><div class="grid">${DATA.communityProjects.map(projectCard).join("")}</div></section>${DATA.projects.length > 3 ? `<section><h2>Additional selected work</h2><div class="grid">${DATA.projects.slice(3).map(projectCard).join("")}</div></section>` : ""}<section><div class="section-heading-row"><h2>Smaller projects</h2><span class="section-kicker">more experiments</span></div><p>Smaller applications, coursework and systems exercises. Each project has its own page in <code>projects/smaller-projects/</code>.</p><div class="grid">${DATA.smallerProjects.map(projectCard).join("")}</div></section>`,
+        `<h1>projects</h1><p class="page-intro">Selected work first, followed by community software and smaller independent projects.</p><section><h2>Featured projects</h2><div class="grid">${featuredProjects().map(projectCard).join("")}</div></section><section><div class="section-heading-row"><h2>Community project</h2><span class="section-kicker">player adoption</span></div><div class="grid">${DATA.communityProjects.map(projectCard).join("")}</div></section>${additionalProjects().length ? `<section><h2>Additional selected work</h2><div class="grid">${additionalProjects().map(projectCard).join("")}</div></section>` : ""}<section><div class="section-heading-row"><h2>Smaller projects</h2><span class="section-kicker">more experiments</span></div><p>Smaller applications, coursework and systems exercises. Each project has its own page in <code>projects/smaller-projects/</code>.</p><div class="grid">${DATA.smallerProjects.map(projectCard).join("")}</div></section>`,
     project: (id) => {
         const p = [...DATA.projects, ...DATA.communityProjects, ...DATA.smallerProjects].find(
             (x) => x.id === id,
@@ -122,7 +130,7 @@ const pages = {
       ${(p.videos || []).length ? `<section><h2>Demo</h2>${p.videos.map(video).join("")}</section>` : ""}`;
     },
     blog: () =>
-        `<h1>writing</h1><p class="page-intro">Project pages give you the quick tour. These are the longer, more personal versions: why I started each thing, what went wrong, what I learned, and which technical rabbit holes turned out to matter.</p><section class="blog-list">${(DATA.articles || []).map((article) => `<a class="blog-card" href="#/blog/${encodeURIComponent(article.id)}"><span class="section-kicker">${esc(article.kicker)}</span><h2>${esc(article.title)}</h2><p>${esc(article.lede)}</p><span class="blog-read">Read the story ↗</span></a>`).join("")}</section>`,
+        `<h1>writing</h1><p class="page-intro">The project pages are the quick version. These are the stories behind them: what annoyed me enough to start, what broke along the way, and the bits I had to figure out as I went.</p><section class="blog-list">${(DATA.articles || []).map((article) => `<a class="blog-card" href="#/blog/${encodeURIComponent(article.id)}"><span class="section-kicker">${esc(article.kicker)}</span><h2>${esc(article.title)}</h2><p>${esc(article.lede)}</p><span class="blog-read">Read the story ↗</span></a>`).join("")}</section>`,
     blogArticle: (id) => {
         const article = (DATA.articles || []).find((item) => item.id === id);
         if (!article) return pages.notfound();
@@ -136,7 +144,10 @@ const pages = {
             )
             .join("");
         const media = article.media?.length
-            ? `<section class="article-media-section"><div class="section-heading-row"><h2>From the original README</h2><span class="section-kicker">project walkthroughs</span></div><div class="article-media-grid">${article.media.map((item) => `<figure class="article-media"><img src="${esc(item.src)}" alt="${esc(item.alt)}" loading="lazy"><figcaption>${esc(item.caption || item.alt)}</figcaption></figure>`).join("")}</div><p class="article-media-note">These images are embedded from the project's public repository so the original GIF demonstrations remain intact.</p></section>`
+            ? `<section class="article-media-section"><div class="section-heading-row"><h2>Some clips from the project</h2><span class="section-kicker">original walkthroughs</span></div><div class="article-media-grid">${article.media.map((item) => `<figure class="article-media"><img src="${esc(item.src)}" alt="${esc(item.alt)}" loading="lazy"><figcaption>${esc(item.caption || item.alt)}</figcaption></figure>`).join("")}</div><p class="article-media-note">These are the original project demonstrations; the GIFs are loaded from the public repository.</p></section>`
+            : "";
+        const videos = article.videos?.length
+            ? `<section class="article-video-section"><h2>Here's the walkthrough</h2>${article.videos.map(video).join("")}</section>`
             : "";
         const technical =
             article.technicalDive && project?.deepDive
@@ -145,7 +156,7 @@ const pages = {
         const resources = article.resources?.length
             ? `<section class="article-section article-resources"><h2>Sources and further reading</h2><ul>${article.resources.map((resource) => `<li><a href="${esc(resource.url)}" target="_blank" rel="noopener">${esc(resource.title)} ↗</a><span> — ${esc(resource.note)}</span></li>`).join("")}</ul></section>`
             : "";
-        return `<div class="crumb"><a href="#/blog">writing</a> / <span>${esc(article.filename || `${article.id}.md`)}</span></div><article class="blog-article"><div class="article-meta"><span>PROJECT DEEP DIVE</span><span>${esc(article.kicker)}</span></div><h1>${esc(article.title)}</h1><p class="article-lede">${esc(article.lede)}</p>${project ? `<p class="article-project-link">Part of <a href="${projectRoute(project)}">${esc(project.name)}</a> · <a href="${esc(project.repo)}" target="_blank" rel="noopener">source code ↗</a></p>` : ""}${sectionMarkup}${media}${technical}${resources}<div class="btns"><a class="btn alt" href="${project ? projectRoute(project) : "#/projects"}">Back to the project</a><a class="btn alt" href="#/blog">All writing</a></div></article>`;
+        return `<div class="crumb"><a href="#/blog">writing</a> / <span>${esc(article.filename || `${article.id}.md`)}</span></div><article class="blog-article"><div class="article-meta"><span>PROJECT DEEP DIVE</span><span>${esc(article.kicker)}</span></div><h1>${esc(article.title)}</h1><p class="article-lede">${esc(article.lede)}</p>${project ? `<p class="article-project-link">Part of <a href="${projectRoute(project)}">${esc(project.name)}</a> · <a href="${esc(project.repo)}" target="_blank" rel="noopener">source code ↗</a></p>` : ""}${sectionMarkup}${videos}${media}${technical}${resources}<div class="btns"><a class="btn alt" href="${project ? projectRoute(project) : "#/projects"}">Back to the project</a><a class="btn alt" href="#/blog">All writing</a></div></article>`;
     },
     "vim-motions": () => renderVimTutorialMarkup(),
     skills: () =>
@@ -291,6 +302,7 @@ function renderEditor() {
               ? pages.blogArticle(id)
               : (pages[page] || pages.notfound)();
     $("#app").innerHTML = target;
+    $("#app").scrollTop = 0;
     document.querySelectorAll(".screenshot-slot img").forEach((img) => {
         img.addEventListener(
             "load",
@@ -305,11 +317,7 @@ function renderEditor() {
     if (key === "vim-motions") initVimTutorial();
 }
 function renderProjectTree() {
-    const ordered = [
-        ...DATA.projects.slice(0, 3),
-        ...DATA.communityProjects,
-        ...DATA.projects.slice(3),
-    ];
+    const ordered = [...featuredProjects(), ...DATA.communityProjects, ...additionalProjects()];
     $("#project-tree").innerHTML = ordered
         .map(
             (p) =>
@@ -362,7 +370,13 @@ $("#collapse-explorer").addEventListener("click", () => toggleExplorer(false));
 $("#explorer-toggle").addEventListener("click", () => toggleExplorer());
 $("#file-tree").addEventListener("click", (e) => {
     const a = e.target.closest("a");
-    if (a && innerWidth <= 760) toggleExplorer(false);
+    if (a) {
+        treeNavigationActive = false;
+        setTimeout(() => {
+            if (innerWidth <= 760) toggleExplorer(false);
+            focusEditor();
+        }, 0);
+    }
 });
 $("#bufferline").addEventListener("click", (e) => {
     const close = e.target.closest("[data-close-buffer]");
@@ -415,18 +429,6 @@ function projectSearchContent(p) {
               ]),
           ]
         : [];
-    const story = (DATA.articles || [])
-        .filter((article) => article.projectId === p.id)
-        .flatMap((article) => [
-            article.title,
-            article.lede,
-            ...(article.sections || []).flatMap((section) => [
-                section.title,
-                ...(section.paragraphs || []),
-                ...(section.bullets || []),
-                section.code || "",
-            ]),
-        ]);
     return [
         p.name,
         p.summary,
@@ -439,7 +441,6 @@ function projectSearchContent(p) {
             ...(section.bullets || []),
         ]),
         ...deepDive,
-        ...story,
     ];
 }
 function buildSearchItems() {
@@ -544,14 +545,9 @@ function buildSearchItems() {
             route: "#/blog",
             kind: "PAGE",
             content: (DATA.articles || []).flatMap((article) => [
+                article.kicker,
                 article.title,
                 article.lede,
-                ...(article.sections || []).flatMap((section) => [
-                    section.title,
-                    ...(section.paragraphs || []),
-                    ...(section.bullets || []),
-                    section.code || "",
-                ]),
             ]),
         },
         {
@@ -647,6 +643,7 @@ function scoreSearch(query, fields) {
     return score;
 }
 function searchExcerpt(item, query) {
+    if (item.matchExcerpt) return item.matchExcerpt;
     const content = (item.content || []).map((x) => String(x)).filter(Boolean);
     const tokens = normalizeSearch(query).trim().split(/\s+/).filter(Boolean);
     const matching =
@@ -659,27 +656,82 @@ function searchExcerpt(item, query) {
             .map((token) => normalized.indexOf(token))
             .filter((index) => index >= 0)
             .sort((a, b) => a - b)[0] ?? 0;
-    const start = Math.max(0, first - 52),
-        end = Math.min(matching.length, start + 150);
+    const start = Math.max(0, first - 62),
+        end = Math.min(matching.length, start + 190);
     return `${start > 0 ? "…" : ""}${matching.slice(start, end).trim()}${end < matching.length ? "…" : ""}`;
+}
+function highlightSearchText(value, query) {
+    const text = String(value || "");
+    const terms = String(query || "")
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .sort((a, b) => b.length - a.length);
+    if (!terms.length) return esc(text);
+    const pattern = new RegExp(
+        `(${terms.map((term) => term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|")})`,
+        "gi",
+    );
+    return text
+        .split(pattern)
+        .map((part) =>
+            terms.some((term) => part.toLowerCase() === term.toLowerCase())
+                ? `<mark class="search-hit">${esc(part)}</mark>`
+                : esc(part),
+        )
+        .join("");
+}
+function buildGrepMatches(query) {
+    const needle = String(query || "").trim();
+    if (!needle) return [];
+    const matches = [];
+    const lowered = needle.toLowerCase();
+    for (const item of searchItems) {
+        if (item.kind === "DIR") continue;
+        const chunks = (item.content || []).map((value) => String(value || "")).filter(Boolean);
+        let itemOccurrence = 0;
+        for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+            const chunk = chunks[chunkIndex],
+                haystack = chunk.toLowerCase();
+            let from = 0;
+            while ((from = haystack.indexOf(lowered, from)) !== -1) {
+                const start = Math.max(0, from - 78),
+                    end = Math.min(chunk.length, from + needle.length + 112);
+                matches.push({
+                    ...item,
+                    matchText: chunk,
+                    matchStart: from,
+                    matchEnd: from + needle.length,
+                    matchExcerpt: `${start > 0 ? "…" : ""}${chunk.slice(start, end).trim()}${end < chunk.length ? "…" : ""}`,
+                    occurrence: ++itemOccurrence,
+                    chunkIndex,
+                });
+                from += Math.max(needle.length, 1);
+                if (matches.length >= 160) return matches;
+            }
+        }
+    }
+    return matches;
 }
 function previewMarkup(item, query) {
     if (!item)
-        return `<div class="palette-preview-empty">Select a result to preview it here.</div>`;
+        return `<div class="palette-preview-empty">Type a filename or search term to see a preview.</div>`;
     const content = (item.content || []).map((value) => String(value || "").trim()).filter(Boolean);
     const fullPreview = content.join("\n\n") || item.detail;
-    const matchPreview = query.trim() ? searchExcerpt(item, query) : "";
-    const preview =
-        searchMode === "grep"
-            ? matchPreview
-            : matchPreview
-              ? `MATCHED CONTENT\n${matchPreview}\n\n— FILE CONTENT —\n${fullPreview}`
-              : fullPreview;
-    return `<div class="palette-preview-meta"><span>${esc(item.kind)}</span><span>${searchMode === "grep" ? "MATCH PREVIEW" : "FILE PREVIEW"}</span></div><h3>${esc(item.path || item.label)}</h3><p class="palette-preview-detail">${esc(item.detail)}</p><div class="palette-preview-rule"></div><pre class="palette-preview-excerpt">${esc(String(preview || "").slice(0, 4200))}</pre><div class="palette-preview-open">↵ open selected file · preview follows ↑ / ↓ and mouse hover</div>`;
+    const preview = searchMode === "grep" ? searchExcerpt(item, query) : fullPreview;
+    const shown = String(preview || "").slice(0, 14000);
+    const pathLabel = item.path || item.label;
+    const detail =
+        searchMode === "grep" ? `Match ${item.occurrence || 1} · ${item.detail}` : item.detail;
+    const pathMarkup =
+        searchMode === "grep" ? `<div class="palette-preview-path">${esc(pathLabel)}</div>` : "";
+    return `<div class="palette-preview-inner"><div class="palette-preview-meta"><span>${esc(item.kind)}</span><span>${searchMode === "grep" ? "MATCHING TEXT" : "FILE PREVIEW"}</span></div><h3>${esc(item.label || pathLabel)}</h3><p class="palette-preview-detail">${esc(detail)}</p>${pathMarkup}<div class="palette-preview-rule"></div><pre class="palette-preview-excerpt">${highlightSearchText(shown, query)}</pre><div class="palette-preview-open">↵ open file · preview follows ↑ / ↓ and mouse hover</div></div>`;
 }
 function updateSearchSelection() {
     const buttons = [...$("#palette-results").querySelectorAll("[data-search-index]")];
     buttons.forEach((button, index) => button.classList.toggle("selected", index === searchIndex));
+    const selected = buttons[searchIndex];
+    if (selected && !selected.matches(":hover")) selected.scrollIntoView({ block: "nearest" });
     $("#palette-preview").innerHTML = previewMarkup(
         searchMatches[searchIndex],
         $("#palette-input").value,
@@ -691,6 +743,8 @@ function openSearch(mode = "files") {
     const overlay = $("#search-overlay");
     overlay.hidden = false;
     $("#palette-input").value = "";
+    $("#palette-input").placeholder =
+        mode === "grep" ? "Search text across files..." : "Find a file by name...";
     searchIndex = 0;
     renderSearchResults("");
     $("#palette-input").focus();
@@ -700,34 +754,31 @@ function closeSearch() {
     const target =
         searchReturnFocus && searchReturnFocus !== document.body && searchReturnFocus.isConnected
             ? searchReturnFocus
-            : $("#search-open");
-    target?.focus?.();
+            : $("#app");
+    target?.focus?.({ preventScroll: true });
     searchReturnFocus = null;
 }
 function setSearchMode(mode) {
     searchMode = mode;
     searchIndex = 0;
+    $("#palette-input").placeholder =
+        mode === "grep" ? "Search text across files..." : "Find a file by name...";
     renderSearchResults($("#palette-input").value);
     $("#palette-input").focus();
 }
 function renderSearchResults(query) {
     const q = query.trim();
-    searchMatches = searchItems
-        .map((item) => {
-            const content = item.content || [],
-                fields =
-                    searchMode === "grep"
-                        ? content
-                        : [item.label, item.path || "", item.detail, ...content];
-            return {
-                ...item,
-                score: scoreSearch(q, fields),
-                excerpt: searchMode === "grep" ? searchExcerpt(item, q) : item.detail,
-            };
-        })
-        .filter((item) => item.score > 0)
-        .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label))
-        .slice(0, 30);
+    if (searchMode === "grep") {
+        searchMatches = buildGrepMatches(q);
+    } else {
+        // Find files behaves like Telescope find_files: match the filename only, never the parent path or file contents.
+        searchMatches = searchItems
+            .filter((item) => item.kind !== "DIR")
+            .map((item) => ({ ...item, score: scoreSearch(q, [item.label]), excerpt: item.detail }))
+            .filter((item) => item.score > 0)
+            .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label))
+            .slice(0, 80);
+    }
     searchIndex = Math.min(searchIndex, Math.max(0, searchMatches.length - 1));
     $("#palette-modes")
         .querySelectorAll("[data-search-mode]")
@@ -740,10 +791,10 @@ function renderSearchResults(query) {
         ? searchMatches
               .map(
                   (item, index) =>
-                      `<button class="palette-result ${index === searchIndex ? "selected" : ""}" data-search-index="${index}" data-search-route="${esc(item.route)}"><span class="result-symbol">${item.kind === "PROJECT" ? "◇" : item.kind === "DIR" ? "▰" : item.kind === "PLAY" ? "▶" : "▤"}</span><span class="result-copy"><strong>${esc(item.path || item.label)}</strong><small>${esc(item.excerpt || item.detail)}</small></span><span class="result-kind">${esc(item.kind)}</span></button>`,
+                      `<button class="palette-result ${index === searchIndex ? "selected" : ""}" data-search-index="${index}" data-search-route="${esc(item.route)}"><span class="result-symbol">${item.kind === "PROJECT" ? "◇" : item.kind === "PLAY" ? "▶" : "▤"}</span><span class="result-copy"><strong>${esc(item.label || item.path)}</strong><small>${esc(searchMode === "grep" ? item.matchExcerpt || item.detail : item.detail)}</small></span><span class="result-kind">${esc(item.kind)}</span></button>`,
               )
               .join("")
-        : `<div class="palette-empty">No ${searchMode === "grep" ? "content matches" : "matching files"}.</div>`;
+        : `<div class="palette-empty">${searchMode === "grep" ? "No matching text occurrences." : "No files with that name."}</div>`;
     updateSearchSelection();
 }
 $("#search-open").addEventListener("click", () => openSearch("files"));
@@ -845,12 +896,7 @@ function runCommand(raw) {
         case "Explore":
         case "Ex":
             closeCommand();
-            toggleExplorer(true);
-            {
-                const nodes = visibleTreeNodes();
-                const active = nodes.find((node) => node.classList.contains("active"));
-                focusTreeNode(active || nodes[0]);
-            }
+            focusExplorer();
             break;
         default:
             flashCommand(`E492: Not an editor command: ${name}`);
@@ -890,7 +936,9 @@ let lastG = 0,
     treeNavigationActive = false,
     treePendingG = false,
     siteWindowPending = false,
-    vimWindowReturnFocus = null;
+    vimWindowReturnFocus = null,
+    explorerReturnFocus = null,
+    pendingKeysAt = 0;
 function inEditable(el) {
     return !!(el && (el.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName)));
 }
@@ -902,12 +950,41 @@ function visibleTreeNodes() {
 function focusTreeNode(node) {
     if (!node) return;
     treeNavigationActive = true;
-    node.focus();
+    node.focus({ preventScroll: true });
     document
         .querySelectorAll("#file-tree .keyboard-selected")
         .forEach((item) => item.classList.remove("keyboard-selected"));
     node.classList.add("keyboard-selected");
     node.scrollIntoView({ block: "nearest" });
+}
+function focusExplorer() {
+    explorerReturnFocus = document.activeElement;
+    toggleExplorer(true);
+    const nodes = visibleTreeNodes();
+    const active = nodes.find((node) => node.classList.contains("active"));
+    focusTreeNode(active || nodes[0]);
+}
+function focusEditor() {
+    treeNavigationActive = false;
+    treePendingG = false;
+    if (innerWidth <= 760) toggleExplorer(false);
+    const target = vimWindowReturnFocus?.isConnected ? vimWindowReturnFocus : $("#app");
+    target?.focus?.({ preventScroll: true });
+}
+function openCurrentFileFromTree(node) {
+    if (!node) return;
+    if (node.matches(".tree-folder")) {
+        treeFolderAction(true);
+        return;
+    }
+    if (node.matches(".tree-file")) {
+        node.click();
+        treeNavigationActive = false;
+        setTimeout(() => {
+            if (innerWidth <= 760) toggleExplorer(false);
+            focusEditor();
+        }, 0);
+    }
 }
 function moveTreeSelection(delta) {
     const nodes = visibleTreeNodes();
@@ -957,7 +1034,7 @@ $("#file-tree").addEventListener("focusin", (event) => {
 });
 $("#file-tree").addEventListener("click", (event) => {
     const node = event.target.closest(".tree-file,.tree-folder");
-    if (node) focusTreeNode(node);
+    if (node?.matches(".tree-folder")) focusTreeNode(node);
 });
 addEventListener("keydown", (event) => {
     const paletteOpen = !$("#search-overlay").hidden;
@@ -975,15 +1052,8 @@ addEventListener("keydown", (event) => {
     if (siteWindowPending) {
         siteWindowPending = false;
         event.preventDefault();
-        if (event.key.toLowerCase() === "l" && vimWindowReturnFocus?.isConnected) {
-            vimWindowReturnFocus.focus();
-            treeNavigationActive = false;
-        } else if (event.key.toLowerCase() === "h") {
-            toggleExplorer(true);
-            const nodes = visibleTreeNodes();
-            const active = nodes.find((node) => node.classList.contains("active"));
-            focusTreeNode(active || nodes[0]);
-        }
+        if (event.key.toLowerCase() === "l") focusEditor();
+        else if (event.key.toLowerCase() === "h") focusExplorer();
         return;
     }
     if (paletteOpen) {
@@ -1030,7 +1100,8 @@ addEventListener("keydown", (event) => {
     if (!$("#command-row").hidden || inEditable(event.target)) return;
     if (
         event.key === " " &&
-        event.target.closest?.("button,[role=button],input,textarea,select,summary")
+        event.target.closest?.("button,[role=button],input,textarea,select,summary") &&
+        !$("#file-tree").contains(event.target)
     )
         return;
     if ((event.ctrlKey || event.metaKey) && ["k", "p"].includes(event.key.toLowerCase())) {
@@ -1038,7 +1109,22 @@ addEventListener("keydown", (event) => {
         openSearch("files");
         return;
     }
+    if (event.ctrlKey && !event.metaKey && event.key.toLowerCase() === "f") {
+        event.preventDefault();
+        openSearch("files");
+        return;
+    }
+    if (event.ctrlKey && !event.metaKey && event.key.toLowerCase() === "g") {
+        event.preventDefault();
+        openSearch("grep");
+        return;
+    }
     if (event.key === "Escape") {
+        if (treeNavigationActive && $("#explorer").contains(document.activeElement)) {
+            event.preventDefault();
+            focusEditor();
+            return;
+        }
         pendingKeys = "";
         treeNavigationActive = false;
         return;
@@ -1053,7 +1139,13 @@ addEventListener("keydown", (event) => {
         openCommand();
         return;
     }
-    if (event.key === " " && pendingKeys === "space") {
+    if (event.key === "/") {
+        event.preventDefault();
+        pendingKeys = "";
+        openSearch("grep");
+        return;
+    }
+    if (event.key === " " && pendingKeys === "space" && Date.now() - pendingKeysAt < 1000) {
         event.preventDefault();
         pendingKeys = "";
         openSearch("files");
@@ -1062,21 +1154,24 @@ addEventListener("keydown", (event) => {
     if (event.key === " ") {
         event.preventDefault();
         pendingKeys = "space";
+        pendingKeysAt = Date.now();
         return;
     }
     if (pendingKeys === "space") {
         pendingKeys = "";
-        if (event.key === "e") {
-            toggleExplorer(true);
-            const nodes = visibleTreeNodes();
-            const active = nodes.find((node) => node.classList.contains("active"));
-            focusTreeNode(active || nodes[0]);
-        } else if (event.key === "b") pendingKeys = "space-b";
+        if (Date.now() - pendingKeysAt > 1000) return;
+        if (event.key.toLowerCase() === "e") {
+            event.preventDefault();
+            focusExplorer();
+        } else if (event.key.toLowerCase() === "l") {
+            event.preventDefault();
+            focusEditor();
+        } else if (event.key.toLowerCase() === "b") pendingKeys = "space-b";
         return;
     }
     if (pendingKeys === "space-b") {
         pendingKeys = "";
-        if (event.key === "d") closeBuffer(activeBuffer);
+        if (event.key.toLowerCase() === "d") closeBuffer(activeBuffer);
         return;
     }
     if (event.key === "]") {
@@ -1087,19 +1182,21 @@ addEventListener("keydown", (event) => {
         pendingKeys = "[";
         return;
     }
-    if (pendingKeys === "]" && event.key === "b") {
+    if (pendingKeys === "]" && event.key.toLowerCase() === "b") {
         pendingKeys = "";
         cycleBuffer(1);
         return;
     }
-    if (pendingKeys === "[" && event.key === "b") {
+    if (pendingKeys === "[" && event.key.toLowerCase() === "b") {
         pendingKeys = "";
         cycleBuffer(-1);
         return;
     }
     pendingKeys = "";
-    const focusInTree = event.target.closest?.("#file-tree");
-    if (focusInTree || (treeNavigationActive && $("#explorer").contains(document.activeElement))) {
+    const focusInTree =
+        event.target.closest?.("#file-tree") ||
+        (treeNavigationActive && $("#explorer").contains(document.activeElement));
+    if (focusInTree) {
         if (["j", "ArrowDown"].includes(event.key)) {
             event.preventDefault();
             moveTreeSelection(1);
@@ -1118,14 +1215,12 @@ addEventListener("keydown", (event) => {
         if (event.key === "l" || event.key === "ArrowRight") {
             event.preventDefault();
             if (!treeFolderAction(true) && document.activeElement.matches(".tree-file"))
-                document.activeElement.click();
+                openCurrentFileFromTree(document.activeElement);
             return;
         }
         if (event.key === "Enter") {
             event.preventDefault();
-            const node = document.activeElement;
-            if (node.matches(".tree-folder")) treeFolderAction(true);
-            else if (node.matches(".tree-file")) node.click();
+            openCurrentFileFromTree(document.activeElement);
             return;
         }
         if (event.key === "g") {
@@ -1144,30 +1239,31 @@ addEventListener("keydown", (event) => {
             return;
         }
     }
+    const content = $("#app");
     if (event.key === "g") {
         const now = Date.now();
-        if (now - lastG < 650) window.scrollTo({ top: 0, behavior: "smooth" });
+        if (now - lastG < 650) content?.scrollTo({ top: 0, behavior: "smooth" });
         lastG = now;
         return;
     }
     if (event.key === "G") {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+        content?.scrollTo({ top: content.scrollHeight, behavior: "smooth" });
         return;
     }
     if (event.key === "j") {
-        window.scrollBy({ top: 42, behavior: "smooth" });
+        content?.scrollBy({ top: 42, behavior: "smooth" });
         return;
     }
     if (event.key === "k") {
-        window.scrollBy({ top: -42, behavior: "smooth" });
+        content?.scrollBy({ top: -42, behavior: "smooth" });
         return;
     }
     if (event.ctrlKey && event.key.toLowerCase() === "d") {
-        window.scrollBy({ top: innerHeight * 0.5, behavior: "smooth" });
+        content?.scrollBy({ top: innerHeight * 0.5, behavior: "smooth" });
         return;
     }
     if (event.ctrlKey && event.key.toLowerCase() === "u") {
-        window.scrollBy({ top: -innerHeight * 0.5, behavior: "smooth" });
+        content?.scrollBy({ top: -innerHeight * 0.5, behavior: "smooth" });
         return;
     }
 });
@@ -1430,6 +1526,12 @@ function vimHandleKey(event) {
     const state = vimState,
         key = event.key;
     if (event.target?.id === "vim-command-input") return;
+    if (key === "/" && state.mode === "normal") {
+        event.preventDefault();
+        event.stopPropagation();
+        openSearch("grep");
+        return;
+    }
     if (event.ctrlKey && !event.metaKey && !event.altKey && key.toLowerCase() === "w") {
         event.preventDefault();
         event.stopPropagation();
@@ -1784,7 +1886,7 @@ function renderVimTutorialMarkup() {
                   : vimState.index === 4
                     ? `<div class="motion-grid"><kbd>i</kbd><span>insert mode</span><kbd>Esc</kbd><span>normal mode</span></div>`
                     : `<div class="motion-grid"><kbd>ciw</kbd><span>change inside word</span><kbd>Esc</kbd><span>return to normal</span></div>`;
-    return `<div class="vim-lesson"><div class="vim-lesson-intro"><div class="section-kicker">INTERACTIVE TUTORIAL · 7 STAGES</div><h1>Vim motions</h1><p>I'm not going to convince you to switch to Neovim. But the best part of the ecosystem — vim motions — travels with you. VS Code, your browser, your IDE. Once it clicks, going back to the mouse feels like a downgrade.</p></div><div class="vim-progress" aria-label="Lesson progress">${stepDots}</div><div class="vim-stage-heading"><div><span class="section-kicker">STAGE ${vimState.index + 1} OF ${VIM_STAGES.length}</span><h2>${esc(stage.title)} <span>— ${esc(stage.subtitle)}</span></h2></div><button class="vim-reset-inline" type="button" id="vim-reset-top">Reset stage ↺</button></div><div class="vim-layout"><section class="vim-instructions"><div class="vim-goal"><span class="section-kicker">YOUR GOAL</span><p>${esc(stage.goal)}</p></div>${stage.freePlay ? `<div class="vim-key-hints no-hints"><span class="section-kicker">FREE PLAY</span><p>No hints. Use the same motions you have learned. The lesson checks both the operations and the finished text.</p></div>` : `<div class="vim-key-hints"><span class="section-kicker">MOTIONS IN THIS STAGE</span>${hints}</div>`}<div class="vim-key-hints vim-workspace-help"><span class="section-kicker">MOVE AROUND THE WORKSPACE</span><div class="motion-grid"><kbd>Ctrl+w h</kbd><span>focus file Explorer</span><kbd>j / k</kbd><span>move through files</span><kbd>h / l</kbd><span>collapse / expand</span><kbd>Enter</kbd><span>open selected file</span><kbd>Ctrl+w l</kbd><span>return to practice</span><kbd>Ctrl+p</kbd><span>Telescope file search</span><kbd>Ctrl+g</kbd><span>Telescope grep</span><kbd>Tab</kbd><span>switch Files / Grep</span><kbd>:e file</kbd><span>open a portfolio file</span></div></div><div id="vim-teach" class="vim-teach" ${vimState.passed ? "" : "hidden"}><span class="section-kicker">WHAT YOU LEARNED</span><p>${esc(stage.teach)}</p>${vimState.index < 6 ? `<button class="btn" id="vim-next" type="button">Next stage <span>→</span></button>` : ""}</div></section><section class="vim-practice" aria-label="Practice editor"><div class="vim-editor-window"><div class="vim-editor-title"><span class="vim-file-dot"></span><span>practice.txt</span><span class="vim-editor-title-right">${String(vimState.lines.length).padStart(2, "0")} lines</span></div><div id="vim-buffer" class="vim-buffer" tabindex="0" role="application" aria-label="Vim practice buffer. Use Vim normal and insert mode keys. Press colon for commands."></div><div class="vim-editor-footer"><span id="vim-mode-pill" class="vim-mode-pill normal">NORMAL</span><span id="vim-pending" class="vim-pending"></span><span class="vim-footer-spacer"></span><span id="vim-position">1:1</span><span>utf-8</span></div><div class="vim-command-row" id="vim-command-row" hidden><span>:</span><input id="vim-command-input" aria-label="Vim lesson command" autocomplete="off" spellcheck="false" placeholder="w · q · Explore · Telescope"><small>Enter runs · Esc returns</small></div></div><div class="vim-editor-actions"><button class="btn" id="vim-check" type="button" ${vimState.passed ? "disabled" : ""}>:w Save / Check</button><button class="btn alt" id="vim-reset" type="button">Reset stage</button><span id="vim-feedback" class="vim-feedback" aria-live="polite">${esc(vimState.message || "Use :w to submit. Then press Enter on Next stage. :q resets this stage.")}</span></div><p class="vim-editor-hint">Keyboard only: focus the buffer, edit with Vim keys, type :w and press Enter. After a pass, Next stage receives focus automatically. Press Enter to continue. The mouse remains optional.</p></section></div></div>`;
+    return `<div class="vim-lesson"><div class="vim-lesson-intro"><div class="section-kicker">INTERACTIVE TUTORIAL · 7 STAGES</div><h1>Vim motions</h1><p>I'm not going to convince you to switch to Neovim. But the best part of the ecosystem — vim motions — travels with you. VS Code, your browser, your IDE. Once it clicks, going back to the mouse feels like a downgrade.</p></div><div class="vim-progress" aria-label="Lesson progress">${stepDots}</div><div class="vim-stage-heading"><div><span class="section-kicker">STAGE ${vimState.index + 1} OF ${VIM_STAGES.length}</span><h2>${esc(stage.title)} <span>— ${esc(stage.subtitle)}</span></h2></div><button class="vim-reset-inline" type="button" id="vim-reset-top">Reset stage ↺</button></div><div class="vim-layout"><section class="vim-instructions"><div class="vim-goal"><span class="section-kicker">YOUR GOAL</span><p>${esc(stage.goal)}</p></div>${stage.freePlay ? `<div class="vim-key-hints no-hints"><span class="section-kicker">FREE PLAY</span><p>No hints. Use the same motions you have learned. The lesson checks both the operations and the finished text.</p></div>` : `<div class="vim-key-hints"><span class="section-kicker">MOTIONS IN THIS STAGE</span>${hints}</div>`}<div class="vim-key-hints vim-workspace-help"><span class="section-kicker">MOVE AROUND THE WORKSPACE</span><div class="motion-grid"><kbd>Ctrl+w h</kbd><span>focus file Explorer</span><kbd>j / k</kbd><span>move through files</span><kbd>h / l</kbd><span>collapse / expand</span><kbd>Enter</kbd><span>open selected file</span><kbd>Ctrl+w l</kbd><span>return to practice</span><kbd>Ctrl+p</kbd><span>Telescope file search</span><kbd>Ctrl+g / /</kbd><span>Telescope grep</span><kbd>Tab</kbd><span>switch Files / Grep</span><kbd>:e file</kbd><span>open a portfolio file</span></div></div><div id="vim-teach" class="vim-teach" ${vimState.passed ? "" : "hidden"}><span class="section-kicker">WHAT YOU LEARNED</span><p>${esc(stage.teach)}</p>${vimState.index < 6 ? `<button class="btn" id="vim-next" type="button">Next stage <span>→</span></button>` : ""}</div></section><section class="vim-practice" aria-label="Practice editor"><div class="vim-editor-window"><div class="vim-editor-title"><span class="vim-file-dot"></span><span>practice.txt</span><span class="vim-editor-title-right">${String(vimState.lines.length).padStart(2, "0")} lines</span></div><div id="vim-buffer" class="vim-buffer" tabindex="0" role="application" aria-label="Vim practice buffer. Use Vim normal and insert mode keys. Press colon for commands."></div><div class="vim-editor-footer"><span id="vim-mode-pill" class="vim-mode-pill normal">NORMAL</span><span id="vim-pending" class="vim-pending"></span><span class="vim-footer-spacer"></span><span id="vim-position">1:1</span><span>utf-8</span></div><div class="vim-command-row" id="vim-command-row" hidden><span>:</span><input id="vim-command-input" aria-label="Vim lesson command" autocomplete="off" spellcheck="false" placeholder="w · q · Explore · Telescope"><small>Enter runs · Esc returns</small></div></div><div class="vim-editor-actions"><button class="btn" id="vim-check" type="button" ${vimState.passed ? "disabled" : ""}>:w Save / Check</button><button class="btn alt" id="vim-reset" type="button">Reset stage</button><span id="vim-feedback" class="vim-feedback" aria-live="polite">${esc(vimState.message || "Use :w to submit. Then press Enter on Next stage. :q resets this stage.")}</span></div><p class="vim-editor-hint">Keyboard only: focus the buffer, edit with Vim keys, type :w and press Enter. After a pass, Next stage receives focus automatically. Press Enter to continue. The mouse remains optional.</p></section></div></div>`;
 }
 function renderVimTutorialPage() {
     const app = $("#app");
