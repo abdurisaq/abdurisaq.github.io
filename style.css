@@ -2916,3 +2916,52 @@ body {
         padding: 12px;
     }
 }
+
+/* Resume preview: keep the file location and direct-open fallback visible even if no PDF is deployed. */
+.resume-viewer {
+    margin-top: 20px;
+    min-width: 0;
+}
+.resume-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 12px 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-bottom: 0;
+}
+.resume-toolbar > span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    font-size: 12px;
+}
+.resume-file-path {
+    font-size: 10px;
+    color: var(--dim);
+    overflow-wrap: anywhere;
+}
+.resume-viewer .pdf {
+    display: block;
+    height: 78vh;
+    min-height: 480px;
+    background: var(--panel);
+}
+.resume-fallback {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 11px;
+}
+#deep-dive-tree .tree-file {
+    padding-left: 52px;
+}
+@media (max-width: 600px) {
+    .resume-viewer .pdf {
+        height: 65vh;
+        min-height: 360px;
+    }
+}

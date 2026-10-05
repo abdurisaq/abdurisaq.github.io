@@ -131,14 +131,14 @@ const pages = {
             )}</div></section><p class="community-footnote">This is ongoing personal work for a tablet-oriented workflow; upstream status is shown explicitly so proposed and fork-only changes are not presented as merged contributions.</p>`;
     },
     resume: () =>
-        `<h1>resume.pdf</h1><section class="resume-missing"><div class="resume-file-icon">PDF</div><div><strong>resume.pdf</strong><p>The PDF is not included in this portfolio copy yet. Add the file at <code>${esc(P.resume)}</code> and this page can display it here.</p><span class="resume-file-path">${esc(P.resume)}</span></div></section>`,
+        `<h1>resume.pdf</h1><p class="page-intro">A PDF copy of my resume.</p><section class="resume-viewer"><div class="resume-toolbar"><span><strong>resume.pdf</strong> <span class="resume-file-path">${esc(P.resume)}</span></span><a class="btn alt" href="${esc(P.resume)}" target="_blank" rel="noopener">Open PDF ↗</a></div><iframe class="pdf" src="${esc(P.resume)}#view=FitH" title="Resume PDF"><p>Your browser cannot display the PDF. <a href="${esc(P.resume)}">Open resume.pdf</a>.</p></iframe><p class="resume-fallback">If the preview is empty, the PDF is not present at <code>${esc(P.resume)}</code>. Add the actual file at that path in the deployed portfolio.</p></section>`,
     style: () =>
         `<h1>colorscheme</h1><p>This portfolio takes its interaction model from Neovim: file navigation, open buffers, keyboard mappings and a command line. The colors come from the Melange colorscheme in my current dotfiles, hosted on GitHub.</p><div class="btns" style="margin:0 0 24px"><a class="btn" href="${REPO}" target="_blank" rel="noopener">My dotfiles ↗</a></div><section><h2>Live dotfiles</h2><div id="live"><div class="box todo">Loading dotfiles from GitHub...</div></div></section>`,
     blog: (id) => {
         if (!id) {
             const stories = DATA.blogPosts.filter((item) => item.type !== "technical");
             const notes = DATA.blogPosts.filter((item) => item.type === "technical");
-            return `<div class="page-eyebrow">~/blog</div><h1>blog</h1><p class="page-intro">The projects, why I started them, what went wrong, and how they turned out.</p><section class="blog-list">${stories.map(blogCard).join("")}</section>${notes.length ? `<section class="blog-technical-list"><h2>Technical notes</h2><p>Longer implementation write-ups for when the story leaves you wanting the details.</p><div class="blog-list">${notes.map(blogCard).join("")}</div></section>` : ""}`;
+            return `<div class="page-eyebrow">~/blog</div><h1>blog</h1><p class="page-intro">The projects, why I started them, what went wrong, and how they turned out.</p><section class="blog-list">${stories.map(blogCard).join("")}</section>${notes.length ? `<section class="blog-technical-list"><div class="section-heading-row"><h2>Deep dives</h2><span class="section-kicker">~/blog/deep-dives</span></div><p>Project-specific implementation notes: the lower-level details behind the decisions, experiments and debugging.</p><div class="blog-list">${notes.map(blogCard).join("")}</div></section>` : ""}`;
         }
         const post = DATA.blogPosts.find((item) => item.id === id);
         if (!post) return pages.notfound();
@@ -1036,9 +1036,19 @@ function renderProjectTree() {
                 `<a class="tree-file" href="${projectRoute(p)}" data-project="${esc(p.id)}" aria-label="${esc(p.id)}.md"><span class="file-type md">MD</span><span class="tree-label">${esc(p.id)}.md</span></a>`,
         )
         .join("");
-    const blogTree = $("#blog-tree");
+    const blogTree = $("#blog-tree"),
+        deepDiveTree = $("#deep-dive-tree");
     if (blogTree)
         blogTree.innerHTML = DATA.blogPosts
+            .filter((post) => post.type !== "technical")
+            .map(
+                (post) =>
+                    `<a class="tree-file" href="#/blog/${encodeURIComponent(post.id)}" data-route="blog" data-route-id="${esc(post.id)}" aria-label="${esc(post.id)}.md"><span class="file-type md">MD</span><span class="tree-label">${esc(post.id)}.md</span></a>`,
+            )
+            .join("");
+    if (deepDiveTree)
+        deepDiveTree.innerHTML = DATA.blogPosts
+            .filter((post) => post.type === "technical")
             .map(
                 (post) =>
                     `<a class="tree-file" href="#/blog/${encodeURIComponent(post.id)}" data-route="blog" data-route-id="${esc(post.id)}" aria-label="${esc(post.id)}.md"><span class="file-type md">MD</span><span class="tree-label">${esc(post.id)}.md</span></a>`,

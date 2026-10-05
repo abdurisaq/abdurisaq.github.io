@@ -1,4 +1,3 @@
-/* ===== ALL CONTENT LIVES HERE. Lines starting with "TODO" render greyed-out so you can spot them. ===== */
 const DATA = {
     profile: {
         name: "Abdurisaq",
@@ -102,9 +101,9 @@ const DATA = {
             name: "LocalTether",
             repo: "https://github.com/abdurisaq/LocalTether",
             summary:
-                "Cross-platform, TLS-encrypted client/server app for sharing keyboard and mouse input, files and sessions in real time.",
+                "A cross-platform software KVM for sharing keyboard, mouse and files across machines on a LAN. I built the Windows and Linux input paths, session roles and encrypted client/server workflow—and learned exactly where the platforms disagree.",
             stack: ["C++", "ASIO", "OpenSSL", "SDL2", "ImGui", "CMake", "vcpkg"],
-            about: "I built LocalTether as a software KVM-style tool: instead of moving between machines or passing around files manually, I can start a session and let other computers join it. The same session handles remote keyboard and mouse input, shared files and host-side controls.",
+            about: "LocalTether began with a practical question: why should moving between two computers mean reaching for another keyboard or copying files by hand? I built a LAN-based software KVM with host, broadcaster and receiver roles, shared input and file browsing. Making it work across Windows and Linux pushed me into platform-specific input handling, session design and the less glamorous parts of getting two machines to agree.",
             sections: [
                 {
                     title: "Start with a shared session",
@@ -172,9 +171,9 @@ const DATA = {
             name: "VersatileTraining",
             repo: "https://github.com/abdurisaq/VersatileTraining",
             summary:
-                "BakkesMod plugin for Rocket League with custom training packs, game-state snapshots, goal blockers and input recording.",
+                "A Rocket League training plugin that lets me build drills around live game state—not just replay a fixed shot. I worked with car and ball physics, boost, goal detection and input recording to make training packs behave like configurable scenarios.",
             stack: ["C++", "BakkesMod SDK", "Dear ImGui", "vcpkg", "Visual Studio"],
-            about: "VersatileTraining is my largest project: a BakkesMod plugin that turns Rocket League training into something you can configure instead of just repeat. I wanted to work with the actual game state—car and ball physics, boost, and the exact moment a shot begins—so a training pack can be built around a situation rather than a fixed preset.",
+            about: "VersatileTraining is where I got closest to the game itself. I wanted training packs to respond to the situation on the field, so I built a BakkesMod plugin around live car and ball state, boost, goal blockers and recorded inputs. The interesting part was not adding another menu; it was making the game state usable enough that a drill could be configured, replayed and inspected instead of simply repeated.",
             sections: [
                 {
                     title: "Build the situation you want to practise",
@@ -258,7 +257,7 @@ const DATA = {
             name: "PrivateConvert",
             repo: "https://github.com/abdurisaq/PrivateConvert",
             summary:
-                "Local-first file converter and editor for images, PDFs and video, with reusable operation pipelines and job history.",
+                "A local-first desktop tool for converting and editing images, PDFs and video without sending files to a random website. It turns one-off chores into reusable operation pipelines, queued jobs and a proper PDF page editor.",
             stack: [
                 "Python",
                 "FastAPI",
@@ -269,7 +268,7 @@ const DATA = {
                 "Docker",
                 "ffmpeg",
             ],
-            about: "PrivateConvert is a local-first converter and editor for the jobs where I would rather not send a file to a third-party website. It brings image, PDF and video operations into one interface, with reusable pipelines and a job history instead of a collection of one-off conversion buttons.",
+            about: "PrivateConvert started with a familiar annoyance: needing to shrink a video, resize an image or move a few PDF pages, then having to hand the file to whichever converter Google put first. I built the tool I wanted instead—a local-first app with reusable operation pipelines, queued jobs and a separate PDF editor. The goal was to make the boring jobs feel straightforward without making the file leave my machine.",
             sections: [
                 {
                     title: "Build a pipeline instead of repeating clicks",
@@ -332,7 +331,7 @@ const DATA = {
             name: "Versatile Training Hub",
             repo: "https://github.com/abdurisaq/VersatileTrainingHub",
             summary:
-                "Full-stack web platform where Rocket League players share, browse, rate and load training packs straight into the game.",
+                "A full-stack home for Rocket League training packs: publish a pack, browse what other players have made, inspect the details and load it straight into the game. It connects the editor-side work to a place the wider community can actually use.",
             stack: [
                 "Next.js",
                 "TypeScript",
@@ -343,7 +342,7 @@ const DATA = {
                 "Tailwind",
                 "Vercel",
             ],
-            about: "The Versatile Training Hub is the web half of the training workflow. I built it so packs made in Rocket League do not stay trapped on one machine: players can publish them, browse what other people have made, inspect the shot data, and bring a pack back into the game through the companion plugin.",
+            about: "The Training Hub grew out of a simple limitation: making a useful training pack is only half the job if it stays on the machine where it was created. I built the web side so players could publish packs, discover other people's work, inspect ratings and details, then bring a pack back into Rocket League. It turns a local tool into a workflow that can be shared.",
             sections: [
                 {
                     title: "A library for community training packs",
@@ -417,12 +416,12 @@ const DATA = {
             name: "OrganizeMyBakkesModGarage",
             repo: "https://github.com/abdurisaq/OrganizeMyBakkesModGarage",
             summary:
-                "A BakkesMod plugin for organizing Rocket League presets into groups, sorting loadouts and managing in-game garage setups.",
+                "A BakkesMod plugin that makes a crowded Rocket League garage manageable: group presets, sort loadouts and switch between setups in-game. A small quality-of-life fix that found an audience well beyond my own setup.",
             stack: ["C++", "BakkesMod SDK", "Dear ImGui", "Windows APIs"],
             image: "assets/organize-my-bakkesmod-garage.png",
             imageAlt:
                 "OrganizeMyBakkesModGarage group and preset management interface shown over Rocket League gameplay.",
-            about: "OrganizeMyBakkesModGarage started as a quality-of-life tool for my own Rocket League garage: once you have a lot of presets, finding and rotating through the ones you actually want becomes its own little chore. The plugin adds named groups and in-game controls around those groups, so a garage can be organized around how you play rather than one long list.",
+            about: "OrganizeMyBakkesModGarage began as a tiny irritation: once a garage fills up, finding the preset you actually want becomes its own task. I built the organization tools directly into the game, so grouping, sorting and managing loadouts did not require a separate website or workflow. It is one of my less complicated projects—and, with around 13,000 downloads, easily one of the most widely used.",
             sections: [
                 {
                     title: "Give presets a structure",
@@ -486,9 +485,9 @@ const DATA = {
             name: "MusicApp",
             repo: "https://github.com/abdurisaq/MusicApp",
             summary:
-                "An Android music app with media downloads, playlists, background playback and Bluetooth controls.",
+                "An Android music player built around the whole listening loop: download media, keep it in a local library, organize playlists and keep playback going in the background with Bluetooth controls.",
             stack: ["Kotlin", "Android", "Media Playback"],
-            about: "MusicApp is an Android music player built around a simple loop: find or download media, keep it in a local library, organize it into playlists, and keep listening when the app is no longer on screen. The project combines a Compose interface with Android's playback and download services.",
+            about: "MusicApp was an exercise in making the everyday path feel complete. Finding or downloading a track is only the start; the app also needs to keep a local library organized, manage playlists and continue playing after the screen goes off. I built it with Kotlin and Compose, then worked through Android's playback and download services to make those pieces behave together.",
             sections: [
                 {
                     title: "Keep a local music library",
@@ -535,7 +534,7 @@ const DATA = {
             name: "353-Project",
             repo: "https://github.com/abdurisaq/353-Project",
             summary:
-                "A collaborative data-analysis project exploring relationships between political freedom measures, terrorist attacks and US defense-company spending.",
+                "A collaborative data-analysis project combining country-level indicators to explore how political freedom measures relate to terrorist attacks and US defence-company spending, using regression and Random Forest workflows.",
             stack: [
                 "Python",
                 "pandas",
@@ -545,7 +544,7 @@ const DATA = {
                 "Matplotlib",
                 "Seaborn",
             ],
-            about: "353-Project is a university group data-analysis project. We brought together country-level datasets to explore how measures such as trade freedom, government integrity and judicial effectiveness relate to terrorist attacks, oil reserves and US defence-company spending. The goal was to build a reproducible analysis pipeline and compare several ways of looking at the data, rather than present one chart as a definitive answer.",
+            about: "This was a group project built around a messy question and several datasets that did not naturally belong together. We combined country-level measures of trade freedom, government integrity and judicial effectiveness with data on terrorist attacks, oil reserves and US defence-company spending. The aim was to build a reproducible analysis and compare statistical approaches—not to pretend a correlation chart could settle a causal question.",
             sections: [
                 {
                     title: "Prepare a common dataset",
