@@ -159,11 +159,13 @@ const DATA = {
             ],
             videos: [
                 {
-                    id: "0U6Gs4i0kbI",
                     title: "LocalTether walkthrough",
+                    id: "0U6Gs4i0kbI",
                 },
             ],
             links: [["Source", "https://github.com/abdurisaq/LocalTether"]],
+            storyPostId: "localtether-story",
+            technicalPostId: "localtether-implementation-notes",
         },
         {
             id: "versatiletraining",
@@ -202,110 +204,6 @@ const DATA = {
                     ],
                 },
             ],
-            deepDive: {
-                intro: "This is the part where I stopped drawing editor panels and started trying to figure out what Rocket League was doing internally. The plugin needed actual game events and real state data. Rocket League runs on UE3, and there is a lot of community work around inspecting that engine. I used a mix of package inspection, runtime observation, the BakkesMod SDK, and a frankly unhealthy amount of testing the same action over and over.",
-                sections: [
-                    {
-                        title: "UE3 gives you names to work with, once you find them",
-                        paragraphs: [
-                            "UE3 has reflected objects, classes, properties, and functions. In Rocket League reverse-engineering discussions, GObjects and GNames come up constantly. GObjects is the live object collection; GNames is the name table. When you can connect a live object to its class and name, you can start describing what you found instead of keeping a notebook full of addresses.",
-                            "UnrealScript class and function metadata is part of that picture, alongside native C++ engine code. The important warning is that addresses and offsets move between builds. A structure layout from one version of Rocket League is not a promise about the next update.",
-                        ],
-                    },
-                    {
-                        title: "Package files help answer what might exist",
-                        paragraphs: [
-                            "I also had to learn about Unreal package files such as .upk and .u. They contain tables for names, imports, and exports, along with serialized object data. Tools like UELib can parse a lot of that structure, while UE Explorer has Rocket League-focused support for some of the game's UE3 changes.",
-                            "Static inspection helps me find class and function names and understand the relationships the package metadata exposes. It does not tell me which function fires when I take one particular shot in freeplay. For that, I need to watch the running game. I think of the package data as a map of what could be there, and runtime tracing as a way to see which route the game actually takes.",
-                        ],
-                    },
-                    {
-                        title: "Then I started watching functions fire in-game",
-                        paragraphs: [
-                            "RocketLeague-Data-Dumper documents a lower-level route through GObjects, GNames, and ProcessEvent. That is useful background for understanding what happens when reflected functions are dispatched. It is community reverse-engineering work, and it is separate from the workflow I used day to day inside BakkesMod.",
-                            "For my own discovery, the BakkesMod Function Scanner was the practical tool. I launched Rocket League with -dev, opened the console with F6, and used togglemenu devtools. From there I could whitelist terms and blacklist noise. I performed one action, watched which function names appeared, changed the filters, and repeated. It still took a while, but at least I was narrowing things down using what the game was doing rather than picking names at random.",
-                        ],
-                    },
-                    {
-                        title: "BakkesMod handled the plugin side",
-                        paragraphs: [
-                            "BakkesMod's injector loads its runtime into the Rocket League process, and the SDK gives plugin authors a C++ interface with wrappers like GameWrapper and CVarManager. I could compile my plugin as a DLL, put it in the plugin folder, and load it from the in-game console. That meant I could spend my time on the training feature instead of implementing a whole loader myself.",
-                            "After I had a likely function, I could hook it. HookEvent runs my callback when the target function is called; HookEventPost runs after it returns. A caller-aware hook can also give me the caller wrapper and a void pointer to the parameters. The scanner helps me find a candidate. The hook is how I respond to it from my plugin. Those are two different jobs.",
-                        ],
-                    },
-                    {
-                        title: "A pointer is not documentation",
-                        paragraphs: [
-                            "When I was looking at one of the callbacks, I used an SDK wrapper to resolve a product ID into a readable finish label and associated it with a player ID when I had one. When I did not have the owner yet, I kept the finish in an unclaimed collection and reconciled it later. I also dumped a 128-byte window from the raw parameter pointer as offset, hex, and printable ASCII so I could compare repeated captures.",
-                            "That dump was a debugging aid. A void pointer does not tell me what type the data is, how long it is, or what the fields mean. I needed to identify the correct event and compare multiple captures before trusting any inferred layout. The BakkesMod documentation also warns that the generic caller helper performs a blind cast; give it the wrong wrapper type and the game can crash. I kept the distinction between an exploratory dump and a verified structure very clear.",
-                        ],
-                    },
-                ],
-                workflow: [
-                    "Recreate one specific in-game action",
-                    "Watch the Function Scanner for candidate events",
-                    "Hook a candidate and log the caller and parameters",
-                    "Compare wrapper values and repeatable byte dumps",
-                    "Check the layout again before using it in the feature",
-                ],
-                snippetTitle: "A small part of the diagnostic approach",
-                snippetNote:
-                    "Adapted from my temporary callback logger: first resolve the finish label and associate it with a player, then inspect a fixed 128-byte window as offset + hex + ASCII. This is an investigation excerpt, not a generic safe parser; the event and readable parameter length must be verified first.",
-                snippet:
-                    "const std::string finishName = gameWrapper->GetItemsWrapper()\n    .GetProduct(id).GetLabel().ToString();\nLOG(\"name is {}\", finishName);\n\nif (currentPlayerId == 0) {\n    if (playerIdString.empty()) {\n        unclaimedPaintFinishes.push_back(currentPaintFinish);\n    } else {\n        paintFinishMap[playerIdString] = currentPaintFinish;\n    }\n} else {\n    paintFinishMap[std::to_string(currentPlayerId)] = currentPaintFinish;\n}\n\nconstexpr std::size_t length = 128;\nconst auto* bytes = static_cast<const std::uint8_t*>(params);\nstd::stringstream dump;\nfor (std::size_t offset = 0; offset < length; offset += 16) {\n    dump << std::hex << std::setw(4) << std::setfill('0') << offset << \": \";\n    for (std::size_t j = 0; j < 16; ++j) {\n        dump << std::setw(2) << std::setfill('0')\n             << static_cast<int>(bytes[offset + j]) << ' ';\n    }\n    dump << \" | \";\n    for (std::size_t j = 0; j < 16; ++j) {\n        const auto c = static_cast<unsigned char>(bytes[offset + j]);\n        dump << (std::isprint(c) ? static_cast<char>(c) : '.');\n    }\n    dump << '\\n';\n}\nLOG(\"Hex dump of params:\\n{}\", dump.str());",
-                resources: [
-                    {
-                        title: "BakkesMod Function Scanner",
-                        note: "Filtering runtime function names and finding events as they fire.",
-                        url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/function-scanner",
-                    },
-                    {
-                        title: "Using Function Hooks",
-                        note: "The SDK's HookEvent and HookEventPost callback model.",
-                        url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/using-function-hooks",
-                    },
-                    {
-                        title: "Hook Event With Any Caller",
-                        note: "Caller-aware hooks, raw parameters and the documented blind-cast warning.",
-                        url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/hook-event-with-any-caller",
-                    },
-                    {
-                        title: "Rocket League Data Dumper",
-                        note: "A community walkthrough of GObjects, GNames, IDA/ReClass inspection and ProcessEvent-based runtime tracing.",
-                        url: "https://github.com/DRKn1ght/RocketLeague-Data-Dumper",
-                    },
-                    {
-                        title: "RLSDK-Generator",
-                        note: "A community C++20 UE3 SDK generator; the repository describes its CodeRed Generator lineage, generated headers and global initialization options.",
-                        url: "https://github.com/matix2/RLSDK-Generator",
-                    },
-                    {
-                        title: "Unreal package file format",
-                        note: "Explains the package header and name, import and export tables behind serialized object references.",
-                        url: "https://wiki.beyondunreal.com/Unreal_package",
-                    },
-                    {
-                        title: "UE Explorer · Rocket League edition",
-                        note: "A package browser/decompiler with Rocket League-specific UE3 token support.",
-                        url: "https://github.com/lauralex/ue-explorer",
-                    },
-                    {
-                        title: "UELib",
-                        note: "A parser/deserializer for Unreal packages and UnrealScript bytecode decompilation.",
-                        url: "https://github.com/EliotVU/Unreal-Library",
-                    },
-                    {
-                        title: "BakkesMod SDK",
-                        note: "Plugin lifecycle, SDK wrappers and loading compiled plugin DLLs.",
-                        url: "https://github.com/bakkesmodorg/BakkesModSDK",
-                    },
-                    {
-                        title: "BakkesMod Injector",
-                        note: "The public injector project that loads bakkesmod.dll into Rocket League.",
-                        url: "https://github.com/bakkesmodorg/BakkesModInjector",
-                    },
-                ],
-            },
             metricsLabel: "BakkesPlugins listing · figures provided",
             metrics: [
                 {
@@ -333,22 +231,6 @@ const DATA = {
                     alt: "VersatileTraining goal blocker configuration",
                     caption: "Goal blocker configuration",
                 },
-                {
-                    src: "assets/screenshots/versatile-training-function-scanner.png",
-                    alt: "BakkesMod function scanner showing candidate Rocket League events",
-                    caption: "Function scanner during a controlled in-game action",
-                },
-                {
-                    src: "assets/screenshots/versatile-training-ue3-object-inspection.png",
-                    alt: "UE3 object, class or function metadata inspected during Rocket League reverse engineering",
-                    caption: "Inspecting UE3 object and function metadata",
-                },
-                {
-                    src: "assets/screenshots/versatile-training-parameter-dump.png",
-                    alt: "Hexadecimal and ASCII parameter dump from an event callback",
-                    caption:
-                        "Inspecting callback parameters while validating an undocumented event",
-                },
             ],
             highlights: [
                 "Custom training packs with control over position, rotation, velocity, boost and jump state.",
@@ -360,14 +242,90 @@ const DATA = {
             ],
             videos: [
                 {
-                    id: "9eDVzMzTQ7c",
                     title: "VersatileTraining walkthrough",
+                    id: "9eDVzMzTQ7c",
                 },
             ],
             links: [
                 ["Source", "https://github.com/abdurisaq/VersatileTraining"],
                 ["Download on BakkesPlugins", "https://bakkesplugins.com/plugins/view/559"],
             ],
+            storyPostId: "versatiletraining-story",
+            technicalPostId: "versatiletraining-ue3-notes",
+        },
+        {
+            id: "privateconvert",
+            name: "PrivateConvert",
+            repo: "https://github.com/abdurisaq/PrivateConvert",
+            summary:
+                "Local-first file converter and editor for images, PDFs and video, with reusable operation pipelines and job history.",
+            stack: [
+                "Python",
+                "FastAPI",
+                "SQLModel",
+                "React",
+                "Vite",
+                "Tailwind",
+                "Docker",
+                "ffmpeg",
+            ],
+            about: "PrivateConvert is a local-first converter and editor for the jobs where I would rather not send a file to a third-party website. It brings image, PDF and video operations into one interface, with reusable pipelines and a job history instead of a collection of one-off conversion buttons.",
+            sections: [
+                {
+                    title: "Build a pipeline instead of repeating clicks",
+                    paragraphs: [
+                        "The File Operations page lets me assemble a sequence of operations, validate it, save it for reuse and queue it as a job. The same idea works across image, PDF and video tasks, so a workflow can be reused when a similar batch comes up later.",
+                    ],
+                },
+                {
+                    title: "Use the right tool for each format",
+                    bullets: [
+                        "Image and PDF operations are handled through the local backend pipeline.",
+                        "Video processing uses ffmpeg; ffprobe is used for metadata inspection and size-target compression.",
+                        "The PDF Editor exposes page-level editing separately from the general operation builder.",
+                    ],
+                },
+                {
+                    title: "Treat conversions as jobs",
+                    paragraphs: [
+                        "The Jobs page is where queued work becomes manageable. Active work can be cancelled, completed jobs and their files can be deleted, and terminal-job retention can be configured. The default retention is 30 days, temporary files are cleaned at startup, and expired jobs are checked hourly.",
+                    ],
+                },
+                {
+                    title: "One local application at runtime",
+                    paragraphs: [
+                        "The FastAPI backend serves the built React interface, so Node.js is needed to build the frontend but not to run the finished app. I can start it through the Python launcher or Docker Compose. Both modes bind to localhost; the Docker setup stores application data in a local ./data directory. This is intentionally a single-user local tool, not a service to expose to an untrusted network.",
+                    ],
+                },
+            ],
+            screenshots: [
+                {
+                    src: "assets/screenshots/privateconvert-file-operations.png",
+                    alt: "PrivateConvert file operations interface with an image conversion pipeline",
+                    caption: "Pipeline builder and file operations",
+                },
+                {
+                    src: "assets/screenshots/privateconvert-pdf-editor.png",
+                    alt: "PrivateConvert PDF editor interface",
+                    caption: "PDF page editor",
+                },
+                {
+                    src: "assets/screenshots/privateconvert-jobs.png",
+                    alt: "PrivateConvert job history and queue interface",
+                    caption: "Job queue and history",
+                },
+            ],
+            highlights: [
+                "File Operations page for building, validating, saving and queuing pipelines for images, PDFs and video.",
+                "Video operations and size-target compression powered by ffmpeg and ffprobe.",
+                "PDF editor for page-level changes.",
+                "Jobs page to cancel work, delete finished jobs, and set retention (30 days by default); hourly cleanup of expired jobs.",
+                "One-command local run or docker compose; bound to localhost by design.",
+            ],
+            videos: [],
+            links: [["Source", "https://github.com/abdurisaq/PrivateConvert"]],
+            storyPostId: "privateconvert",
+            technicalPostId: null,
         },
         {
             id: "versatiletraininghub",
@@ -449,78 +407,8 @@ const DATA = {
                 ["Live site", "https://versatile-training-hub.vercel.app/"],
                 ["Source", "https://github.com/abdurisaq/VersatileTrainingHub"],
             ],
-        },
-        {
-            id: "privateconvert",
-            name: "PrivateConvert",
-            repo: "https://github.com/abdurisaq/PrivateConvert",
-            summary:
-                "Local-first file converter and editor for images, PDFs and video, with reusable operation pipelines and job history.",
-            stack: [
-                "Python",
-                "FastAPI",
-                "SQLModel",
-                "React",
-                "Vite",
-                "Tailwind",
-                "Docker",
-                "ffmpeg",
-            ],
-            about: "PrivateConvert is a local-first converter and editor for the jobs where I would rather not send a file to a third-party website. It brings image, PDF and video operations into one interface, with reusable pipelines and a job history instead of a collection of one-off conversion buttons.",
-            sections: [
-                {
-                    title: "Build a pipeline instead of repeating clicks",
-                    paragraphs: [
-                        "The File Operations page lets me assemble a sequence of operations, validate it, save it for reuse and queue it as a job. The same idea works across image, PDF and video tasks, so a workflow can be reused when a similar batch comes up later.",
-                    ],
-                },
-                {
-                    title: "Use the right tool for each format",
-                    bullets: [
-                        "Image and PDF operations are handled through the local backend pipeline.",
-                        "Video processing uses ffmpeg; ffprobe is used for metadata inspection and size-target compression.",
-                        "The PDF Editor exposes page-level editing separately from the general operation builder.",
-                    ],
-                },
-                {
-                    title: "Treat conversions as jobs",
-                    paragraphs: [
-                        "The Jobs page is where queued work becomes manageable. Active work can be cancelled, completed jobs and their files can be deleted, and terminal-job retention can be configured. The default retention is 30 days, temporary files are cleaned at startup, and expired jobs are checked hourly.",
-                    ],
-                },
-                {
-                    title: "One local application at runtime",
-                    paragraphs: [
-                        "The FastAPI backend serves the built React interface, so Node.js is needed to build the frontend but not to run the finished app. I can start it through the Python launcher or Docker Compose. Both modes bind to localhost; the Docker setup stores application data in a local ./data directory. This is intentionally a single-user local tool, not a service to expose to an untrusted network.",
-                    ],
-                },
-            ],
-            screenshots: [
-                {
-                    src: "assets/screenshots/privateconvert-file-operations.png",
-                    alt: "PrivateConvert file operations interface with an image conversion pipeline",
-                    caption: "Pipeline builder and file operations",
-                },
-                {
-                    src: "assets/screenshots/privateconvert-pdf-editor.png",
-                    alt: "PrivateConvert PDF editor interface",
-                    caption: "PDF page editor",
-                },
-                {
-                    src: "assets/screenshots/privateconvert-jobs.png",
-                    alt: "PrivateConvert job history and queue interface",
-                    caption: "Job queue and history",
-                },
-            ],
-            highlights: [
-                "File Operations page for building, validating, saving and queuing pipelines for images, PDFs and video.",
-                "Video operations and size-target compression powered by ffmpeg and ffprobe.",
-                "PDF editor for page-level changes.",
-                "Jobs page to cancel work, delete finished jobs, and set retention (30 days by default); hourly cleanup of expired jobs.",
-                "One-command local run or docker compose; bound to localhost by design.",
-            ],
-            videos: [],
-            links: [["Source", "https://github.com/abdurisaq/PrivateConvert"]],
+            storyPostId: null,
+            technicalPostId: null,
         },
     ],
     communityProjects: [
@@ -577,14 +465,14 @@ const DATA = {
                 "Equip presets, swap car bodies and shuffle a selected group in supported game modes.",
                 "Copy presets from replays and persist group data locally.",
             ],
-            metricsLabel: "Community adoption · author-reported total",
+            metricsLabel: "Community adoption · figures provided",
             metrics: [
                 {
                     value: "36.2K",
                     label: "views",
                 },
                 {
-                    value: "13K+",
+                    value: "13K",
                     label: "downloads",
                 },
             ],
@@ -739,30 +627,34 @@ const DATA = {
             ],
         },
     },
-    articles: [
+    blogPosts: [
         {
-            id: "privateconvert-local-first-conversion",
+            id: "privateconvert",
+            type: "story",
             projectId: "privateconvert",
-            filename: "privateconvert-deep-dive.md",
-            title: "Why the hell is file conversion still a website?",
-            kicker: "PrivateConvert · local files · FastAPI",
-            lede: "I hate online converters with a passion. Converting a file is basically a solved problem, but the accepted workflow for the average person is still: Google it, click whichever result won the SEO fight, upload your document, and hope you did not just hand something sensitive to a stranger. I wanted the handful of conversions I actually use to happen on my own machine.",
+            title: "Why the Hell Is File Conversion Still a Website?",
+            subtitle:
+                "I wanted to resize an image or compress a video without uploading it to whichever site won Google that day.",
+            category: "PrivateConvert · local-first software",
+            date: "November 16, 2026",
+            readTime: "6–8 min read",
+            intro: "I hate online converters with a passion. Converting a file is basically a solved problem, but the accepted workflow is still: Google it, click whichever result won the SEO fight, upload your document, and hope you did not just hand something sensitive to a stranger. I wanted the handful of conversions I actually use to happen on my own machine.",
             sections: [
                 {
-                    title: "Google it, click the first result, cross your fingers",
+                    title: "I hate uploading files to random websites",
                     paragraphs: [
-                        "The conversion itself is usually dead simple. Shrink an image, compress a video, change a format, move a few PDF pages around. For some reason, when I want to do one of those things, I end up looking for a random website that wants me to upload the file first. I kept wondering why Windows and the other operating systems I use do not make these basic jobs easier to do out of the box.",
+                        "The conversion itself is usually dead simple. Shrink an image, compress a video, change a format, move a few PDF pages around. For some reason, when I want to do one of those things, I end up looking for a random website that wants the file first. I kept wondering why Windows and the other operating systems I use do not make these basic jobs easier to do out of the box.",
                         "And the file might not be disposable. It could be a work document, a scan of an ID, a signed form, or something I would rather not send to a service I found thirty seconds ago. I have no idea who is running that site, how long it keeps my upload, or what it does with the output. Clicking the first Google result is a pretty weak security review.",
                     ],
                 },
                 {
                     title: "Then the FBI warning showed up",
                     paragraphs: [
-                        "In March 2025, the FBI's Denver office warned about a campaign using fake online document converters and downloader tools. The sites advertised ordinary file conversion, but the FBI said the tools could also deliver malware or steal information. Malwarebytes covered the same campaign, and Forbes wrote about the warning a few days later.",
+                        "In March 2025, the FBI’s Denver office warned about a campaign using fake online document converters and downloader tools. The sites advertised ordinary file conversion, but the FBI said the tools could also deliver malware or steal information. Malwarebytes covered the same campaign, and Forbes wrote about the warning a few days later.",
                         "To be clear, this was a specific campaign. It does not mean every converter on the internet is malicious. It does mean the risk is not theoretical: somebody looking for a tiny utility can end up downloading something nasty along with the converted file. I already hated the upload-first workflow. That warning gave me a very concrete reason to stop using it.",
                     ],
                     callout:
-                        "The FBI warning describes a specific scam campaign, not every online converter. My preference is simpler: when I can do the job locally, I do not need to upload the file at all.",
+                        "The FBI warning was about a specific campaign, not every converter site. My preference is simpler: when I can do the job locally, I do not need to upload the file at all.",
                 },
                 {
                     title: "I only needed the conversions I actually do",
@@ -772,383 +664,626 @@ const DATA = {
                     ],
                 },
                 {
-                    title: "I kept repeating the same steps, so I added pipelines",
+                    title: "I got tired of doing the same steps by hand",
                     paragraphs: [
-                        "The File Operations page lets me chain operations together, validate the pipeline, save it, and run it again. If I regularly resize something and then convert it, I do not have to rebuild those steps every time. Image, PDF, and video jobs use the same general workflow, even though the underlying processing tools differ.",
-                        "Video compression uses ffmpeg, and ffprobe provides the metadata needed to inspect the input and work toward a target size. PDF page editing has its own editor because trying to cram page operations into one generic conversion button would be miserable. There is also a job queue where I can see active work, cancel or remove jobs, and manage output retention. Completed terminal jobs default to 30 days; temporary files are cleaned at startup and expired jobs are checked periodically.",
+                        "The File Operations page lets me chain operations together, validate the pipeline, save it, and run it again. One job I care about is getting a video under an upload limit. I can set a target size and let the app work through the compression instead of exporting, checking the size, guessing again, and repeating the whole thing.",
+                        "Video compression uses ffmpeg, and ffprobe gives the app the metadata it needs to inspect the input and work toward a target size. PDF page editing has its own editor because squeezing page operations into one generic conversion button would be miserable. The Jobs page lets me cancel active work, remove completed jobs and their files, and choose retention. The default for finished jobs is 30 days; temporary files are cleaned at startup and expired jobs are removed hourly.",
                     ],
                 },
                 {
-                    title: "Running locally is the point, but it is not a magic security badge",
+                    title: "I wanted it to run on my own machine",
                     paragraphs: [
-                        "The FastAPI backend serves the built React interface. Node is part of the frontend build, but I do not need Node just to launch the finished app. The local launcher and Docker Compose bind the service to localhost, and Docker stores the app data in a local directory. I built this as a single-user tool for my own computer, not another public upload service.",
-                        "Local does not automatically mean perfectly secure. I still have to trust the code I run and the tools it invokes. What it does remove is one unnecessary third party from the middle of a file conversion. For the jobs I use, that is already a much better default.",
+                        "The backend is one FastAPI application that serves the built frontend. Node is needed to create the frontend bundle; it is not part of the running application. Both documented launch options bind to localhost, and Docker keeps application data in a local ./data directory. There is no login or access control because it is a single-user application.",
+                        "That last part matters. I would not expose the port to an untrusted network. Local does not automatically mean perfectly secure, and I still have to trust the code I run and the tools it invokes. What it removes is the random third-party converter in the middle of a job. For the files I use, that is already a much better default.",
                     ],
                 },
                 {
-                    title: "Anyway, I just want my files to stay on my computer",
+                    title: "Running it",
                     paragraphs: [
-                        "That is the whole motivation. I want to shrink a video, resize an image, or shuffle PDF pages around without finding a new website and deciding whether I trust it. PrivateConvert handles the boring operations I actually need. It started because I was annoyed, and I still use it for exactly that reason.",
+                        "The README has a Windows PowerShell setup and a Docker Compose option. The Python launcher builds the static UI if it is missing or out of date. Once it starts, the app is at 127.0.0.1:8000. Video operations need ffmpeg; metadata and size-target compression also need ffprobe.",
+                        "The README does not publish a full operating-system support matrix, so I am not going to invent one. These are the launch options the repository documents.",
+                    ],
+                    code: "# Local Python launch (PowerShell)\npython -m venv .venv\n.\\.venv\\Scripts\\python -m pip install -r backend\\requirements.txt\n.\\.venv\\Scripts\\python run_dev_stack.py\n\n# Or use Docker Compose\ndocker compose up --build\n\n# Open http://127.0.0.1:8000/",
+                },
+                {
+                    title: "I just want my files to stay on my computer",
+                    paragraphs: [
+                        "That is why I made it. I want to shrink a video, resize an image, or shuffle PDF pages around without finding a new website and deciding whether I trust it. PrivateConvert handles the boring operations I actually need.",
                     ],
                 },
             ],
             resources: [
                 {
+                    title: "PrivateConvert source code and README",
+                    note: "Local Python launch, Docker Compose setup, localhost binding, file operations and job history.",
+                    url: "https://github.com/abdurisaq/PrivateConvert",
+                },
+                {
                     title: "FBI Denver: Online File Converter Scam (March 7, 2025)",
-                    note: "The original warning describes fake converter/downloader tools, malicious downloads, and possible data theft.",
+                    note: "The original warning about fake converter/downloader tools.",
                     url: "https://www.fbi.gov/contact-us/field-offices/denver/news/fbi-denver-warns-of-online-file-converter-scam",
                 },
                 {
                     title: "Malwarebytes: Warning over free online file converters (March 17, 2025)",
-                    note: "A security write-up of the same campaign and the ways the tools can deliver malware or steal information.",
+                    note: "A technical write-up of the same campaign.",
                     url: "https://www.malwarebytes.com/blog/news/2025/03/warning-over-free-online-file-converters-that-actually-install-malware",
                 },
                 {
-                    title: "Forbes: FBI Issues Document Converter Warning (March 18, 2025)",
-                    note: "Additional coverage of the FBI warning and the case for local conversion where practical.",
+                    title: "Forbes: FBI issues document-converter warning (March 18, 2025)",
+                    note: "Coverage of the FBI warning.",
                     url: "https://www.forbes.com/sites/zakdoffman/2025/03/18/fbi-warns-chrome-safari-and-edge-users-do-not-use-these-websites/",
                 },
             ],
         },
         {
-            id: "musicapp-own-music-player",
+            id: "musicapp",
+            type: "story",
             projectId: "musicapp",
-            filename: "musicapp-deep-dive.md",
-            title: "How hard can it be? I only wanted to stop paying Spotify.",
-            kicker: "MusicApp · Android · Kotlin",
-            lede: "I'm a cheapskate. I looked at Spotify Premium, looked at the $14 a month, and thought: how hard can it be to make the little music app I actually need? I wanted to search for music, download it, keep it in a local library, make playlists, and play it. I was not asking for Spotify 2.",
+            title: "Fighting the Demon That Is Android Studio",
+            subtitle: "I only wanted a music player that did the handful of things I actually use.",
+            category: "MusicApp · Android · Kotlin",
+            date: "November 16, 2026",
+            readTime: "5–7 min read",
+            intro: "I’m a cheapskate. I looked at Spotify Premium, looked at the $14 a month, and thought: how hard can it be to make the little music app I actually need? I wanted to search for music, download it, keep it in a local library, make playlists, and play it. I was not asking for Spotify 2.",
             sections: [
                 {
                     title: "My requirements were embarrassingly specific",
                     paragraphs: [
                         "I wanted to search for a track, download it, keep it in my library, put it into a playlist, and listen with the app in the background. That was pretty much the list. I did not need recommendations, podcasts, social features, or a year-end slideshow telling me what I listened to.",
-                        "The maths was the motivating factor: if I used my own app for the way I listen to music, I would be $14 a month richer. Whether that makes the project financially sensible after the time I spent on it is a separate discussion. I had already decided I was doing it.",
+                        "I know there are existing players. I still wanted to build this one because I had a very particular idea of the workflow I wanted, and I wanted to learn Android development along the way.",
                     ],
                 },
                 {
                     title: "Android Studio got in the way before Kotlin did",
                     paragraphs: [
                         "I expected learning Kotlin to be the hard part. It was an afterthought. Before I could get to the app itself, I had to deal with Android Studio, Gradle, SDK versions, dependencies, and a build system that seemed to find a new way to complain every day.",
-                        "There were stretches where getting a clean build was the project. I was spending more time figuring out why the build would not behave than writing the thing I opened Android Studio to make. Once I got past that, Kotlin and the actual UI work were much less painful.",
+                        "There were stretches where getting a clean build was the project. A dependency or version change could send me back through Gradle files and SDK settings, trying to work out which part Android Studio was unhappy with this time. I was spending more time getting the build to behave than writing the app. Once I got past that, Kotlin and the actual UI work were much less painful.",
                     ],
                 },
                 {
-                    title: "Once it built, the app had a pretty short job description",
+                    title: "I wanted the music to keep playing after I left the app",
                     paragraphs: [
-                        "Room stores the local library, playlists, and the relationship between songs and playlists. The DAO exposes the data as flows, so the Compose screens update when the library changes instead of me manually refreshing everything.",
-                        "Playback uses Media3 ExoPlayer. An Android service owns the media session and exposes previous, play/pause, and next controls through the system notification, so I can leave the app and keep listening. There is also YouTube search and a direct-download flow. The search API key is supplied locally in the build configuration rather than committed to the repository.",
+                        "I used Room for the local library and playlists, and Jetpack Compose for the screens. The bit I cared about most was playback: I put Media3 ExoPlayer behind an Android foreground service and a media session so Android could keep the music playing when the app was no longer on screen.",
+                        "The notification gets previous, play/pause, and next controls, and the README also lists Bluetooth controls. I wanted to be able to put the phone away and keep listening without having to keep the app open. There is YouTube search and a direct download flow too. The search API key goes in local.properties because YouTube search calls are rate-limited; it is not committed to the repository.",
                     ],
                 },
                 {
                     title: "The subscription is still cancelled",
                     paragraphs: [
-                        "I can search for music, download it, organize it, make playlists, and play it in the background. I also ended up learning Kotlin, Compose, Room, Android services, and Media3 because apparently a small music player needed to become an Android build-system endurance test first.",
-                        "But the original reason is still the best one: I did not want another subscription. I get to keep the $14 a month, and I have an app that does the things I personally use. Cheapskate engineering worked out this time.",
+                        "The app covers the things I wanted: search, download, playlists, background playback, shuffle and Bluetooth controls. I use my own tool for those limited needs, and I am happy with it. I also learned Kotlin, Compose, Room, Android services, Media3, and far more Gradle than I planned.",
+                        "The subscription is still cancelled. Worth it. Probably.",
                     ],
                 },
             ],
             resources: [
                 {
-                    title: "MusicApp source code",
-                    note: "The project repository and implementation.",
+                    title: "MusicApp source code and README",
+                    note: "Features, YouTube API key setup and command-line build instructions.",
                     url: "https://github.com/abdurisaq/MusicApp",
                 },
                 {
                     title: "Android Media3 documentation",
-                    note: "The official AndroidX media stack used for playback and media sessions.",
+                    note: "The Android playback and media-session APIs used by the app.",
                     url: "https://developer.android.com/media/media3",
                 },
             ],
         },
         {
-            id: "versatiletraining-reverse-engineering",
+            id: "versatiletraining-story",
+            type: "story",
             projectId: "versatiletraining",
-            filename: "versatiletraining-deep-dive.md",
-            title: "I wanted one Rocket League training shot. Then UE3 got involved.",
-            kicker: "VersatileTraining · BakkesMod · UE3 · C++",
-            lede: "I've played competitive Rocket League for years, and making training packs has always been one of the parts of the game I enjoy. The editor just stopped keeping up with the shots I wanted to practise. I wanted to take a real situation from a match, save that exact state, and turn it into one repeatable shot. I did not expect that to send me digging around inside a decade-old UE3 game.",
+            title: "The Epitome of Type 2 Fun: Staring at Data Dumps for One Training Shot",
+            subtitle:
+                "A training pack started as a personal annoyance and somehow reached people I watched on YouTube.",
+            category: "VersatileTraining · Rocket League · BakkesMod",
+            date: "November 16, 2026",
+            readTime: "6–8 min read",
+            intro: "It still astonishes me that a game can be out for a decade, add a feature in year two, and leave that feature barely updated for almost half of my lifetime. I play competitive Rocket League, and I have always liked making training packs. The standard cookie-cutter options in the archaic editor stopped being useful for the shots I wanted to practise.",
+            videos: [
+                {
+                    title: "VersatileTraining walkthrough",
+                    id: "9eDVzMzTQ7c",
+                },
+            ],
             sections: [
                 {
-                    title: "I was tired of making training packs that did not feel like my games",
+                    title: "The editor had not kept up with the game I was playing",
                     paragraphs: [
-                        "The better I got, the less useful the standard editor options became. I could make a shot from a preset position, but real games do not politely put the ball and car where the editor expects. I wanted to reproduce the situation I had just played: car position and rotation, ball position and velocity, boost, jump state, and whatever else made that shot possible.",
-                        "The idea was to isolate one moment from a real game and practise it over and over. If I had just missed a difficult touch in a match, I wanted to turn that exact situation into a drill. The existing editor was not giving me enough control to do that.",
+                        "The better I got and the higher the skill ceiling went, the less useful the standard editor became. Every scenario I could make felt almost completely inapplicable to the game as it was being played now. I wanted to port a genuine situation from the match I had just played, turn it into an isolated shot, and practise it over and over.",
+                        "I wanted to control the car and ball state closely enough that the setup actually felt like the match: positions, rotations, velocities, boost, jump state and the rest of the situation. The tool was made for me and me alone to begin with.",
                     ],
                 },
                 {
-                    title: "The UI was the easy part. Finding the data was not.",
+                    title: "The UI was familiar. Getting the game state was the hard part.",
                     paragraphs: [
-                        "I could make configuration panels. That was familiar work. The awkward part was finding where the game stored the information I needed and figuring out which functions ran when I clicked something in the editor. I kept bouncing between the game's metadata and the live game: what objects and functions exist, and which ones actually run when I perform a particular action?",
-                        "That is where a training-pack project turned into a reverse-engineering project. Before I could save a game state, I had to figure out what the game considered a game state and how to get at it without relying on a guess that happened to work once.",
+                        "Building the editor panels was not what held me up. I needed to figure out where the game kept the values I wanted and which functions ran when I performed a particular action. That is where I started staring at data dumps and using the BakkesMod tools to narrow down what was happening.",
+                        "I spent a lot of time repeating the same action, filtering function names, inspecting callbacks, and checking whether a value actually changed when I thought it should. I have put the UE3 and BakkesMod details in a separate technical write-up so this post can stay about the project and how it grew.",
                     ],
                 },
                 {
-                    title: "BakkesMod got me through the door",
+                    title: "I asked a friend to playtest it, then made an unlisted video",
                     paragraphs: [
-                        "Rocket League has a big BakkesMod plugin scene, and its SDK gave me a starting point. I could build a C++ plugin DLL and use the SDK's wrappers and game-facing helpers instead of writing my own loader and recreating all of the integration from scratch. That let me spend more time on the feature I actually wanted.",
-                        "The Function Scanner became part of my routine. I would launch Rocket League with the development option, open the BakkesMod console and DevTools, filter function names with terms that looked relevant, and then perform one repeatable action in-game. If the list was full of noise, I changed the filters and tried again. It was still a lot of trial and error, but at least I had a way to narrow the search using what the game was doing.",
+                        "The project only started getting attention when I asked a friend to playtest it. I was excited about what it could do, so I made an unlisted video to walk them through it. I sent the link around to the people I expected to care about it. Then I checked the view count and it was around 600. (I guess to a lot of people that is trivial, but to me that was kind of crazy that 600 people were sent the link and watched it.)",
                     ],
                 },
                 {
-                    title: "UE3 names, objects, and a lot of staring at metadata",
+                    title: "Two creators I watched found the video",
                     paragraphs: [
-                        "The Rocket League modding scene has people who have spent years working out the engine internals. UE3 keeps reflected information about objects, classes, functions, and properties. GObjects points into the live object collection, while GNames is the engine's name table. Once you can connect an object to a class and a name, you can stop writing down mystery addresses and start reasoning about what you found.",
-                        "RocketLeague-Data-Dumper documents parts of the GObjects/GNames and ProcessEvent side of the puzzle. RLSDK-Generator takes a different route and generates C++ headers and structure metadata from the game. Those projects were useful research material, but their docs also make the important caveat clear: offsets and layouts can move when Rocket League updates. I did not want to copy a structure from an old build and assume it was still gospel.",
+                        "Two creators from the Rocket League scene found the video and commented. One had a channel around 300,000 subscribers and the other around 50,000. One of them privately contacted me about early access because they were interested in making a video on it. That video never ended up being published, but even having that conversation was surreal. I was talking to people whose channels I had watched about a tool I had originally made for my friend group.",
                     ],
                 },
                 {
-                    title: "Finding the function was one headache. Understanding its arguments was another.",
+                    title: "I started checking the download count every morning",
                     paragraphs: [
-                        "Once I had a candidate, I could hook it through BakkesMod. HookEvent runs my callback when the function is called; HookEventPost runs after it returns. Some caller-aware variants also pass the caller and a pointer to the parameter data. That pointer is an address. It does not explain what the bytes mean, which is where the fun starts.",
-                        "I compared repeatable actions by dumping a fixed range of bytes as hex and ASCII, then triggering the same action again to see what changed. When the SDK already had a wrapper that resolved a value, I used that rather than guessing. The generic caller helper uses a blind cast, so giving it the wrong wrapper type can crash the game. A pointer is useful, but it is not documentation.",
-                    ],
-                },
-                {
-                    title: "Two snippets from two very different levels of certainty",
-                    paragraphs: [
-                        "The first example uses TrainingEditorSaveDataWrapper to get the training code and name. I like this version because the intent is obvious from the code: ask the wrapper for the value and use it.",
-                        "The second example defines a structure at an offset inside a callback's memory and casts the address to that structure. That can work when the layout has been verified for the build being used. The cast itself does not verify anything. Padding, alignment, field order, the event contract, and the game version all matter. One is a typed wrapper doing work for me; the other is me taking responsibility for every byte in that structure.",
-                    ],
-                },
-                {
-                    title: "Then the unlisted walkthrough got around 600 views",
-                    paragraphs: [
-                        "I made the plugin for myself to begin with. I asked a friend to playtest it, got carried away explaining how it worked, and recorded an unlisted walkthrough so I could send them the link. I was expecting my friend and maybe a couple of people to watch it. Then I checked the view count and it was around 600. For a video that was only shared by link, I thought that was pretty crazy.",
-                        "Two creators I had watched in the Rocket League scene found the video and commented. Their channels were around 300,000 and 50,000 subscribers, and one of them privately asked about early access because they were interested in making a video. That video never ended up coming out, but even having that conversation was surreal. I was talking to people whose videos I already watched, about a tool I had originally made for my friend group.",
-                        "For about a month, the download count became part of my morning routine. I would wake up, check whether anybody else had downloaded it, and be a little surprised when the number had moved again. I never expected the project to leave my group of friends, so that was a pretty fun problem to have.",
+                        "For about a month, watching the download counts became a morning ritual. I would wake up, check whether anybody else had downloaded it, and see the number move again. I never expected this project to get outside my friend group. It was kinda cool for the month it rapidly grew.",
                     ],
                 },
             ],
-            technicalDive: true,
-            resources: [
+            relatedId: "versatiletraining-ue3-notes",
+            relatedLabel: "Okay, so how did I figure out what Rocket League was doing?",
+            projectLink: "versatiletraining",
+        },
+        {
+            id: "versatiletraining-ue3-notes",
+            title: "Okay, so how did I figure out what Rocket League was doing?",
+            subtitle:
+                "The UE3, BakkesMod, Function Scanner and callback notes behind VersatileTraining.",
+            category: "VersatileTraining · technical notes",
+            date: "November 16, 2026",
+            readTime: "12–15 min read",
+            intro: "This is not a polished modding guide, and I am not pretending I know every corner of Rocket League's internals. It is a dump of what I learned after spending months banging my head against a wall, piecing together scattered docs, trying things in-game, and figuring out why an event I thought I understood was not the event I actually needed. I wrote it because I could not find one place that connected the pieces in a way that made sense to me. If you found this while trying to understand Rocket League modding, hopefully it saves you some of the same trial and error.",
+            sections: [
                 {
-                    title: "BakkesMod SDK documentation",
-                    note: "The broader community documentation for plugin development, wrappers, and API usage.",
-                    url: "https://bakkesplugins.com/wiki/bakkesmod-sdk",
+                    title: "First: what do people mean by Rocket League modding?",
+                    paragraphs: [
+                        "There is not one single thing called a Rocket League mod. The community has built several kinds of tools around the game: BakkesMod plugins that extend the running game, training and Freeplay utilities, replay and broadcast tools, cosmetic customization, and tools that inspect or work with the game's packaged content. They solve different problems and use different techniques. A replay tool does not need to work like a plugin that changes a training scenario, and a package browser is doing a different job again.",
+                        "A big part of the scene is practical rather than academic. People want to recreate a shot, inspect a replay, try a different camera, organize a garage, build a training aid, or get information the normal interface does not show. BakkesMod became a shared foundation for a lot of that work. It gives plugin authors a common runtime and SDK, so every project does not have to solve loading, drawing UI and talking to the game from scratch.",
+                        "The community has been building around the game since launch. By the time of BakkesMod's April 28, 2026 EAC announcement, Bakkes described the ecosystem as having more than 800 published community-submitted plugins, over 750,000 daily users and over 1.5 million weekly users. Those are the project's own figures from that announcement, not a current post-EAC user count, but they give a sense of how much community tooling had grown around one game.",
+                        "That is the context for VersatileTraining. I was not trying to build an anti-cheat bypass or modify competitive matches. I wanted to make offline training more configurable: save a situation, set up the car and ball, repeat a shot, and build practice around a state that the normal training editor did not expose in the way I needed.",
+                    ],
                 },
                 {
-                    title: "Function Scanner guide",
-                    note: "How to discover functions by filtering names as they fire in-game.",
+                    title: "Why Unreal Engine 3 gives the community something to work with",
+                    paragraphs: [
+                        "Rocket League is built on Unreal Engine 3. The fact that UE3 is old is not, by itself, what makes a game moddable. What matters for this particular scene is the combination of an object-oriented engine, reflected metadata, UnrealScript, native engine/game code, and a community that has spent years building tools around the way those pieces are represented.",
+                        "The useful mental model is that the game is not just a giant anonymous block of machine code. Unreal has objects, classes, properties and functions. UnrealScript declares a lot of the game-side structure and behavior; native C++ functions can sit behind that script-facing interface. The engine's reflection system keeps metadata about many of those things, which is why tools can sometimes display a readable class or function name instead of only an address.",
+                        "You will see two names come up a lot in Rocket League reverse-engineering material: GObjects and GNames. At a high level, GObjects is the runtime object collection and GNames is the name table used by the engine. They are useful because they help researchers relate live objects and function metadata to names. They do not magically reveal every native function's implementation, and the exact structures and offsets are tied to a particular game build. They are a way into the problem, not a complete map of it.",
+                    ],
+                },
+                {
+                    title: "There are two different views of the game: packages and runtime",
+                    paragraphs: [
+                        "One view is static: inspect the files the game ships. Unreal packages such as .upk and .u files are structured serialized containers. They include tables and references for names, imports, exports and object data. A package tool can turn those structures into something browsable: classes, dependencies, properties, script functions and, where the format and tool support it, reconstructed UnrealScript bytecode.",
+                        "UE Explorer is one of the tools people use for this. The Rocket League-focused build adds support for game-specific UE3 tokens and reversed native-function information. UELib and related package tooling are useful background too. This kind of inspection answers questions like 'does this class exist?', 'what is this function called?', or 'what properties does the script-visible type declare?'. It does not tell you which function fires when you click a particular button in the live game, and it does not turn native C++ implementation into clean source code.",
+                        "The other view is runtime: observe the game while it is doing the exact thing you care about. That is where I spent most of my time. Static inspection gives you names and possible places to look. Runtime investigation helps connect one repeatable action to the function, caller and data that actually matter. I found it much less confusing once I stopped expecting either view to answer every question on its own.",
+                    ],
+                },
+                {
+                    title: "Where BakkesMod fits",
+                    paragraphs: [
+                        "BakkesMod is the bridge between the running game and plugin code. In broad strokes, the injector loads the BakkesMod runtime into Rocket League, and BakkesMod provides a plugin environment that native C++ DLLs can use through its SDK. A plugin can register console commands, draw UI, respond to game events and use wrapper classes for familiar game objects. The SDK gives names and helper methods around parts of the game that would otherwise be awkward to work with directly.",
+                        "That changes the starting point for a plugin author. You do not have to build your own loader just to run code in the game process, or reverse-engineer every common object from zero. You build against the SDK, load the plugin through BakkesMod, and use the wrapper/event layer where it is available. When the SDK does not expose the value or event you need, that is when the more investigative part begins.",
+                        "BakkesMod is also more than the loader. It is the ecosystem around it: the SDK, documentation, plugin listings, examples, and people who have already found useful hooks. Looking through existing plugins is often as valuable as reading the formal API because it shows how other developers solved a real game-specific problem.",
+                    ],
+                },
+                {
+                    title: "Finding the function: make the game tell you what it is doing",
+                    paragraphs: [
+                        "My main discovery tool was the BakkesMod Function Scanner. The documented workflow is to launch Rocket League with the -dev option, restart with BakkesMod injected, open the console with F6, and run togglemenu devtools. The scanner lets you include and exclude words from function names; matching functions appear as they fire. That turns a vague question—'what gets called when I save this training setup?'—into something I could test.",
+                        "I would set up one repeatable action, perform it once, watch what appeared, then narrow the filters and repeat. If I changed several things at once, the results became noise. If I changed one thing and repeated the same action, it became easier to tell which function was related and whether it happened before or after the state I cared about had changed. It is still trial and error, but at least the trial is controlled.",
+                        "You will also find lower-level reverse-engineering write-ups that locate GObjects and GNames or trace ProcessEvent, a central Unreal object-function dispatch path. Those are useful examples of how people investigate the engine from closer to the runtime internals. I am mentioning them as part of the wider scene; my own day-to-day route for this project was the BakkesMod Function Scanner and SDK hooks, not a claim that I built a custom ProcessEvent tracer.",
+                    ],
+                },
+                {
+                    title: "A scanner result is only the start: turning it into a hook",
+                    paragraphs: [
+                        "Once I had a candidate function name, the BakkesMod SDK gave me a way to subscribe to it. HookEvent runs my callback when the target function is called; HookEventPost runs after it returns. The caller-aware variants also pass a wrapper for the object that invoked the function, along with a void* parameter pointer and the event name. That is a useful amount of context: the function name tells me what path I am looking at, the caller tells me which object is involved, and params points to the arguments supplied to that call.",
+                        "The event name often contains a class path, for example a function under a Rocket League class ending in _TA. The SDK documentation describes how that naming convention can map to wrapper types such as CarWrapper. The important thing is to confirm that mapping rather than guess. A caller-aware hook is not a type-discovery system; if the wrapper type does not match the object, the cast can be invalid.",
+                        "The same goes for params. A void* is just an address. It does not arrive with a C++ struct attached, and the SDK cannot infer a parameter schema that nobody has documented. A hook gives you a reliable point to observe a call. It does not automatically tell you how to interpret every byte passed to it.",
+                    ],
+                },
+                {
+                    title: "The frustrating part: figuring out what the bytes mean",
+                    paragraphs: [
+                        "This is where the hours went. I would find an event that looked promising, hook it, and compare the caller and parameter memory while repeating the same action with one value changed. A hex dump is useful here because it gives you a stable view of a memory region: offsets down the side, bytes in hexadecimal, and an ASCII column where printable characters happen to exist. It is not a decoded structure. It is just a way to compare captures without guessing from a single integer printed to the log.",
+                        "The trick was to look for relationships. If I changed the ball's starting speed and the same four bytes changed in a consistent way, that was a lead. If a pointer-sized region stayed stable while the data behind it changed, that was another lead. If the same event fired for unrelated actions, it might not be specific enough. I kept going back to the game, repeating the action, and trying to eliminate assumptions one at a time.",
+                        "I also had to separate three things that are easy to blur together: the function's parameter block, the caller object, and an object reached through a pointer inside one of those regions. They are different memory bases. An offset only means something when you can say exactly what address it is measured from.",
+                    ],
+                },
+                {
+                    title: "When a pattern emerged, I sketched a provisional struct",
+                    paragraphs: [
+                        "Once I had enough repeated captures to suspect a layout, I would make an intentionally boring C++ struct: a byte array for the unknown gap, then a field at the offset I had evidence for. It is not elegant, and it is not me claiming I reconstructed the entire Unreal type. It is a temporary way to express a specific observation so I can test it against the same callback again.",
+                        "In one path, the pointer I wanted appeared 0xE8 bytes into an RPC parameter block. I represented the preceding bytes as padding, read a uintptr_t at that position, and treated it as a pointer to the training-data object. Passing that address into TrainingEditorSaveDataWrapper let me use the wrapper's GetCode() and GetTM_Name() methods to obtain the in-game code and map name as readable strings. The wrapper did the higher-level interpretation; the offset was how I reached the object in the first place.",
+                        "In another investigation, I was looking at a GameEditor ball caller. The fields I was interested in—start location, start rotation, velocity start speed and velocity start rotation—appeared after 0xB10 bytes of padding from caller->memory_address. This was not +0xB10 from params. It was a different base address and a different structure. Keeping that distinction explicit prevented me from treating two unrelated memory regions as if they shared one layout.",
+                        "These padded structs are hypotheses, not public engine APIs. The padding says 'I have not identified this region yet'. The field says 'this location appears to behave like this value in the captures I tested'. Offsets can move between game builds, object layouts can change, and an incorrect type or alignment assumption can turn a plausible value into a crash. I would only keep an inferred field after checking it with multiple captures and, ideally, different values.",
+                    ],
+                },
+                {
+                    title: "How that investigation fed back into VersatileTraining",
+                    paragraphs: [
+                        "The reason I went down this rabbit hole was not to collect offsets. I wanted the plugin to save and restore useful training states. That means the editor needs real values: where the ball starts, how it is rotated, how fast it moves, what training data is associated with a setup, and which event marks the point where those values are available. The UI is the part people see, but the reliability of the feature depends on understanding the game's state well enough to populate it correctly.",
+                        "Once I could connect a repeatable in-game action to a function and then to a value I could read through a wrapper or a validated layout, I could stop treating the data as a mystery and build an actual feature around it. That is the step that matters: investigation becomes a named concept in the plugin, not a pile of addresses and debug output spread across the codebase.",
+                    ],
+                },
+                {
+                    title: "A quick reality check about EAC and BakkesMod",
+                    paragraphs: [
+                        "EAC changed where community mods can run, but the first announcement was not the final word on BakkesMod's future. Psyonix announced on April 28, 2026 that Easy Anti-Cheat would be required for online play on PC and that community mods would not run while EAC is enabled. The same announcement explicitly kept a non-EAC path for training, offline matches, LAN matches and replay work.",
+                        "There was an initial BakkesMod post on April 28 saying active updates would stop. Then the story changed: on May 12, BakkesMod announced that it had been updated for the newest Rocket League build in non-EAC mode and that Psyonix had offered support so the team could continue providing updates sustainably. Rocket League's own account confirmed that BakkesMod was available on the latest version in non-EAC mode and would continue to be supported in future updates.",
+                        "So the accurate summary is: BakkesMod is continuing, but the supported modded workflow is non-EAC mode. EAC-enabled online play and non-EAC modded training are separate launch paths. I normally use the plugin while training offline anyway, so this does not change the way I use VersatileTraining. This describes the public May 12 confirmation; it is not a promise that a third-party mod can run in EAC-enabled online matches.",
+                    ],
+                },
+                {
+                    title: "If you found this while trying to do something similar",
+                    paragraphs: [
+                        "Start by getting one small question answered. Do not begin by trying to reconstruct all of Rocket League. Find the object or action you care about, learn its vocabulary from package inspection or existing plugin code, then reproduce it in-game with one variable changed at a time. Use the scanner to find a candidate event, confirm whether you need a pre- or post-hook, record the caller and parameter context, and keep notes about which offsets are relative to which base address.",
+                        "Be suspicious of the first result that looks right. Try another value. Repeat the same action. Check whether the function also fires in a different context. Prefer a BakkesMod wrapper when it gives you the value you need, and keep raw offsets contained behind a small helper when you genuinely need them. Do not assume an undocumented layout is stable just because it worked on one build.",
+                        "Most importantly, look through other people's plugins, SDK examples and community tools. A lot of the scene's knowledge is scattered across docs, repositories, forum posts and old experiments. This page is not a definitive reference. It is the set of notes I wish I had found when I started pulling at this particular thread. If it helps somebody else spend fewer evenings staring at a memory window, it has done its job.",
+                    ],
+                },
+            ],
+            workflow: [
+                "Choose one repeatable action in offline training and change one thing at a time",
+                "Use package tools and existing plugins to learn the names and types that might matter",
+                "Use the BakkesMod Function Scanner to find candidate functions as they fire",
+                "Register a hook and record the event name, caller, timing and parameter pointer",
+                "Compare wrapper values and memory captures to identify relationships",
+                "Sketch a padded struct only after a pattern repeats, then validate it against more captures",
+                "Wrap the verified access in a named helper and use it to implement the training feature",
+            ],
+            resources: [
+                {
+                    title: "BakkesMod Function Scanner",
+                    note: "How to launch the DevTools scanner, filter function names and find candidate events as they fire.",
                     url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/function-scanner",
                 },
                 {
-                    title: "Using Function Hooks",
-                    note: "Explains HookEvent, HookEventPost, and caller-aware hook variants.",
+                    title: "Using BakkesMod function hooks",
+                    note: "HookEvent, HookEventPost, caller-aware hooks and the meaning of the params pointer.",
                     url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/using-function-hooks",
                 },
                 {
                     title: "Hook Event With Any Caller",
-                    note: "Documents the blind-cast caveat for generic caller wrappers.",
+                    note: "Important warning: this helper uses a blind cast, so the caller type must be correct.",
                     url: "https://bakkesplugins.com/wiki/bakkesmod-sdk/functions/hook-event-with-any-caller",
                 },
                 {
+                    title: "BakkesMod SDK",
+                    note: "The SDK source, wrappers and plugin development interface.",
+                    url: "https://github.com/bakkesmodorg/BakkesModSDK",
+                },
+                {
                     title: "RocketLeague-Data-Dumper",
-                    note: "Community tutorial for understanding UE3 object/name structures and runtime inspection.",
+                    note: "A community write-up on UE3 object structures, GObjects/GNames and runtime data discovery. This is a separate, lower-level approach from my own scanner workflow.",
                     url: "https://github.com/DRKn1ght/RocketLeague-Data-Dumper",
                 },
                 {
-                    title: "RLSDK-Generator",
-                    note: "Community C++20 SDK generator for Rocket League, forked from the CodeRed Generator project.",
-                    url: "https://github.com/matix2/RLSDK-Generator",
+                    title: "UE Explorer — Rocket League edition",
+                    note: "A package browser/decompiler with support for Rocket League's customized UE3 tokens and UnrealScript data.",
+                    url: "https://github.com/lauralex/ue-explorer",
                 },
                 {
-                    title: "BakkesMod SDK source",
-                    note: "The public SDK repository and wrapper interfaces.",
-                    url: "https://github.com/bakkesmodorg/BakkesModSDK",
+                    title: "BakkesMod plugins",
+                    note: "Browse the wider ecosystem of community-built tools and plugins.",
+                    url: "https://bakkesplugins.com/",
                 },
-            ],
-            videos: [
                 {
-                    id: "9eDVzMzTQ7c",
-                    title: "VersatileTraining walkthrough",
+                    title: "Bakkes' April 28, 2026 ecosystem update",
+                    note: "The original EAC announcement also gives BakkesMod's own historical figures for community plugins and usage; treat them as a dated snapshot, not current analytics.",
+                    url: "https://updater2.bakkesmod.com/articles/bakkesmod-eac.html",
+                },
+                {
+                    title: "Rocket League: Easy Anti-Cheat on PC",
+                    note: "Psyonix's April 28, 2026 announcement describing EAC-enabled online play and the non-EAC offline mod path.",
+                    url: "https://www.rocketleague.com/news/easy-anti-cheat-comes-to-rocket-league-on-pc-today",
+                },
+                {
+                    title: "BakkesMod: May 12 update",
+                    note: "BakkesMod's confirmation that it was updated for the latest build in non-EAC mode, with Psyonix support for sustainable future updates.",
+                    url: "https://x.com/BakkesMod/status/2054249895448461494",
+                },
+                {
+                    title: "Rocket League: May 12 confirmation",
+                    note: "Psyonix/Rocket League's confirmation that BakkesMod would continue to be supported in future updates (non-EAC mode only).",
+                    url: "https://x.com/RocketLeague/status/2054253085094994064",
                 },
             ],
+            offsetNotes: [
+                {
+                    title: "Training-data RPC payload",
+                    base: "RPC parameter block (params)",
+                    offset: "+0xE8",
+                    detail: "A uintptr_t at this observed offset pointed to the training-data object. I passed that pointer into TrainingEditorSaveDataWrapper and used GetCode() and GetTM_Name() to read the in-game code and map name.",
+                    fields: [
+                        "uintptr_t TrainingData",
+                        "TrainingEditorSaveDataWrapper",
+                        "GetCode()",
+                        "GetTM_Name()",
+                    ],
+                },
+                {
+                    title: "GameEditor ball caller",
+                    base: "caller->memory_address (not params)",
+                    offset: "+0xB10",
+                    detail: "This offset was measured from the caller object's memory. The values I was mapping after that gap were the ball's start location, start rotation, initial velocity speed and velocity rotation.",
+                    fields: [
+                        "Vector StartLocation",
+                        "Rotator StartRotation",
+                        "float VelocityStartSpeed",
+                        "Rotator VelocityStartRotation",
+                    ],
+                },
+            ],
+            screenshots: [],
+            statusNote:
+                "These notes describe the public EAC/BakkesMod announcements referenced above. Modded training uses the non-EAC launch path; EAC-enabled online play is a separate mode.",
+            type: "technical",
+            projectId: "versatiletraining",
+            parentId: "versatiletraining-story",
+            parentLabel: "Back to the training-shot story",
+            relatedId: null,
         },
         {
-            id: "organize-my-bakkesmod-garage-story",
+            id: "organize-my-bakkesmod-garage",
+            type: "story",
             projectId: "organize-my-bakkesmod-garage",
-            filename: "organize-my-bakkesmod-garage-deep-dive.md",
-            title: "How hard can it be? Part 2: a garage plugin and 13,000 downloads",
-            kicker: "OrganizeMyBakkesModGarage · Rocket League · BakkesMod",
-            lede: "This one is still funny to me. It is by far the most downloaded thing I've made, at 13,000+ downloads, and the first pass really was not that complicated. I was annoyed with the built-in BakkesMod garage workflow, so I put another abstraction layer on top of it. Then I kept adding the little things I wanted until people started using it too.",
+            title: "Wasted Success: 13,000 Downloads for a Garage Menu",
+            subtitle: "By far and away my most downloaded project started as a small annoyance.",
+            category: "OrganizeMyBakkesModGarage · Rocket League · BakkesMod",
+            date: "November 16, 2026",
+            readTime: "5–7 min read",
+            intro: "This one is hilarious and kind of infuriating. It is by far and away the most successful thing I have made, at 13,000+ downloads, and the first pass just wasn’t hard. It was another “hey, how hard can this be?” moment. I was annoyed with the built-in garage workflow, so I made another layer over it and kept adding the things I wanted.",
             sections: [
                 {
-                    title: "An abstraction layer on top of an abstraction layer",
+                    title: "BakkesMod already had a garage modification. It was still annoying.",
                     paragraphs: [
-                        "BakkesMod already had a way to modify the garage, but managing a growing pile of presets through it was a pain. I wanted groups, search, and a way to get to the presets I actually use without scrolling through one long list. So I built a second layer over the existing garage modification.",
-                        "The first version was genuinely small. It made the built-in flow less annoying, and that was enough. Then I kept catching myself thinking 'it would be nice if it could also do this', and the plugin slowly collected all the conveniences I wanted for my own garage.",
+                        "The built-in garage modification had not been updated in years and was just kind of annoying to deal with once I had a lot of presets. I wanted groups, search, and a way to get to the presets I actually used without scrolling through one enormous list.",
+                        "So I built a second abstraction layer over it. Hey, how hard can it be. The first pass really was small: make the existing workflow less annoying for me. Then I kept thinking of little things I wanted it to do.",
                     ],
                 },
                 {
-                    title: "Groups, sorting, and the shuffle button",
+                    title: "Groups, sorting, and shuffling through presets",
                     paragraphs: [
-                        "You can make named groups, add presets, edit groups later, and sort by name, date, or size in either direction. Search means I do not have to remember which group I filed something under. I can also pick a main group and shuffle through its presets in Freeplay or, when enabled, in online games.",
-                        "That last bit is one of the reasons I kept using it. I liked being able to cycle through the main group after games instead of manually changing my car every time. It is a small thing, but it made the garage feel less like an inventory screen I had to babysit.",
+                        "You can organize presets into groups, edit existing groups, and sort by name, date and size in either ascending or descending order. I can pick a main group and shuffle through those presets in Freeplay or toggle shuffling in online games. I wanted to get through a match and cycle to another preset without opening the garage and doing the whole thing manually.",
                     ],
                 },
                 {
-                    title: "Then I wanted to steal presets from replays",
+                    title: "Taking presets out of other people’s replays",
                     paragraphs: [
-                        "The plugin can equip a preset from a group, swap its car body with one I already have in my garage, and copy a preset out of a replay. That replay feature is probably my favourite: somebody has a car setup I like, I save the replay, and I can pull the preset from their car instead of trying to recreate it by hand.",
-                        "I kept the original GIF walkthroughs because they are a much better explanation than a paragraph of me saying 'click this, then click that'. They show adding and editing groups, sorting, swapping bodies, shuffling the main group, and copying a preset from a replay.",
+                        "The plugin can equip a preset from a group, swap its car body to one of my existing in-game presets, and copy a preset from a replay. That last one is probably my favourite: I see a car setup in somebody else’s replay, save the replay, and take the preset out of it.",
+                        "The original GIFs are from the README. They show adding and editing groups, sorting, swapping car bodies, shuffling the main group, and copying a preset from a replay. They explain the clicks much faster than I can.",
                     ],
                 },
                 {
-                    title: "Base64 ate most of the time",
+                    title: "Most of the work was decoding and encoding Base64",
                     paragraphs: [
-                        "The UI was not the hard part. A lot of the car information is stored in Base64-encoded strings. I had to decode those strings, figure out what the data represented, change the parts I wanted, and encode it again without breaking everything else in the preset. That was where most of the actual work went.",
-                        "From the outside it looks like groups and a few buttons. Underneath, I was trying to understand enough of the game's serialized car data to manipulate it without throwing away information I did not mean to touch.",
+                        "Most of the work was decoding and encoding Base64 strings holding the car information that could be found in the game. I had to figure out what the strings represented, change the data I wanted to change, and encode it again without breaking the rest of the preset. The UI was the easy part.",
                     ],
                 },
                 {
-                    title: "A few things worth knowing before installing it",
+                    title: "The README has a few caveats",
                     paragraphs: [
-                        "The README has a few caveats: it works on Steam and Epic, but Linux is not supported and may crash when the plugin opens. It is also not compatible with AlphaConsole custom decals. For body swapping, you need at least one in-game preset with the body you want to use.",
-                        "One other gotcha: if you change a preset after adding it to a group, the saved copy in that group does not update by itself. You need to remove it and add it again. It is a little annoying, but at least you know where to look if a preset seems out of date.",
+                        "The plugin works with both Epic and Steam. It does not currently work with Linux and will probably crash when opened there. It is not compatible with AlphaConsole custom decals. If you want to swap car bodies, you need at least one in-game preset with that body. Also, updating a BakkesMod preset does not automatically update the copy saved in a group; you need to remove it and add it again.",
                     ],
                 },
                 {
-                    title: "13,000 downloads still makes me laugh",
+                    title: "The plugin got 13,000 downloads. The website did not.",
                     paragraphs: [
-                        "I have spent more time on other projects, and some of them are a lot more complicated. Somehow this little quality-of-life plugin is the one that crossed 13,000 downloads. I made it because the existing garage workflow annoyed me; I did not sit down thinking I was about to build my most-used Rocket League project.",
+                        "I also built a website version of this, which was a miss. By the time it went up, the first wave of plugin users had already come and gone, and the plugin was self-sufficient anyway — you could do everything from inside the game. The website solved a problem that did not exist. So the plugin has 13,000 downloads and the website has roughly none, which I think is the funniest possible outcome for a project I started because a menu annoyed me.",
+                        "Somehow this little quality-of-life plugin is the one that crossed 13,000 downloads. I have spent more time on other projects that were much more complicated. This one is hilarious and kind of infuriating.",
                     ],
                 },
             ],
             media: [
                 {
                     src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/adding.gif",
-                    alt: "Adding a Rocket League preset to a named garage group",
-                    caption: "Adding presets to a group",
+                    alt: "Adding a preset to a garage group",
+                    caption: "Adding a preset to a group",
                 },
                 {
                     src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/editing.gif",
-                    alt: "Editing a preset group",
-                    caption: "Editing an existing group",
+                    alt: "Editing an existing garage group",
+                    caption: "Editing groups",
                 },
                 {
                     src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/sort.png",
-                    alt: "Sorting groups by name, date, and size",
-                    caption: "Sorting groups by name, date, and size",
+                    alt: "Preset group sorting options",
+                    caption: "Sorting groups by name, date and size",
                 },
                 {
                     src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/swapWithCarBody.gif",
-                    alt: "Swapping a preset to another owned car body",
-                    caption: "Swapping the car body",
+                    alt: "Swapping a preset to an existing car body",
+                    caption: "Swapping a car body",
                 },
                 {
                     src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/shufflePresets.gif",
-                    alt: "Shuffling presets from the selected main group",
+                    alt: "Shuffling the main group presets",
                     caption: "Shuffling the main group",
                 },
                 {
                     src: "https://raw.githubusercontent.com/abdurisaq/OrganizeMyBakkesModGarage/master/assets/copyPreset.png",
-                    alt: "Copying a preset from a Rocket League replay",
+                    alt: "Copying a preset from a replay",
                     caption: "Copying a preset from a replay",
                 },
             ],
             resources: [
                 {
                     title: "OrganizeMyBakkesModGarage source and README",
-                    note: "Original project, feature list, limitations, and walkthrough assets.",
+                    note: "Original feature list, demonstrations and compatibility notes.",
                     url: "https://github.com/abdurisaq/OrganizeMyBakkesModGarage",
-                },
-                {
-                    title: "BakkesPlugins listing",
-                    note: "The plugin's community listing.",
-                    url: "https://bakkesplugins.com/plugins/view/534",
                 },
             ],
         },
         {
-            id: "localtether-cross-platform-kvm",
+            id: "localtether-story",
+            type: "story",
             projectId: "localtether",
-            filename: "localtether-deep-dive.md",
-            title: "In this next episode of how the hell this came to be: I built a software KVM",
-            kicker: "LocalTether · C++ · Windows + Linux · networking",
-            lede: "My desk is too small for two monitors, so my laptop usually sits next to my desktop and handles whatever I do not want on the main screen. The catch is that every time I need to use it, I have to reach over and deal with its keyboard and crappy touchpad. I already have a perfectly good keyboard and mouse plugged into my desktop. I wanted those to control both machines.",
+            title: "In This Next Episode of How the Hell This Came to Be: a Software KVM",
+            subtitle:
+                "A cramped desk, a laptop with a worse keyboard, and a question that caused a shit ton of problems.",
+            category: "LocalTether · C++ · Windows + Linux",
+            date: "November 16, 2026",
+            readTime: "7–9 min read",
+            intro: "I’m notoriously cluttered, my desk is too small for two monitors, and I normally work with my laptop sitting beside my desktop. Every time I wanted to do something on the laptop, I had to reach over and use its inferior keyboard and crappy touchpad. I already had a perfectly good keyboard and mouse plugged into my desktop. I wanted those to work on both machines.",
+            videos: [
+                {
+                    title: "LocalTether walkthrough",
+                    id: "0U6Gs4i0kbI",
+                },
+            ],
             sections: [
                 {
-                    title: "I tried to solve it by buying something. That got expensive.",
+                    title: "I did not want to buy a $100 KVM switch",
                     paragraphs: [
-                        "I had heard of Mouse Without Borders and tools in that general category, but I needed something that worked between my Windows desktop and Linux laptop. The Windows options I found were not going to work for that setup, and the Linux options I came across tended to assume the other computer was Linux too. Then I looked at a physical KVM switch and saw the price. Who has $100 lying around for a desk that barely fits one monitor? Apparently not me.",
-                        "So I did the sensible thing and asked how hard it could be to build one. That question has caused me a shit ton of problems across my projects. This time I ended up with LocalTether.",
+                        "I had heard of things like Mouse Without Borders, but I specifically needed something that worked between my Windows desktop and Linux laptop. The Windows options I found were not going to work for that setup, and the Linux options I found tended to assume the other machine was Linux too. Then I looked at a physical KVM switch. Who has $100 lying around for a desk that barely fits one monitor?",
+                        "I asked myself the usual question: how hard can this be? That question has caused me a shit ton of problems across my projects.",
                     ],
                 },
                 {
-                    title: "Okay, but what does it mean for two computers to connect?",
+                    title: "I had to learn what connecting two computers actually meant",
                     paragraphs: [
-                        "I knew I wanted the machines to find each other on my home network. I did not really understand what I was looking at when I saw addresses like 192.168.1.20, or why that was different from the WAN IP my router used on the internet-facing side. I had to get my head around private LAN addresses, the router sitting between the local network and the internet, and why I wanted the machines talking over their local addresses instead of sending input traffic out to some remote service.",
-                        "The discovery code in the source looks for IPv4 interfaces using a /24 prefix, pings candidate addresses in that subnet, and then checks whether the LocalTether service is listening on port 8080. That is fine for the kind of home network I was targeting. It can miss machines that ignore ping, use a different subnet size, or sit in a more complicated layout. I had to learn what the scan was actually doing before I could trust the results.",
+                        "I knew I wanted the machines to find each other on my home network, but I did not really understand what I was looking at when I saw an address like 192.168.1.20, or why that was different from the WAN IP on my router. I had to learn what a local address was, what the router was doing, and how to keep the connection between the machines on the LAN.",
+                        "Keeping the connection local was one of the original requirements. I did not want keyboard and mouse events going through some remote service when the two computers were sitting on the same desk.",
                     ],
                 },
                 {
-                    title: "How do I make Windows and Linux look like the same machine?",
+                    title: "This was my first project that had to work on Windows and Linux",
                     paragraphs: [
-                        "The next question was how to make the rest of the app stop caring which operating system it was running on. Windows and Linux do not hand you input through the same APIs, so I ended up with a shared InputManager interface and separate WindowsInput and LinuxInput implementations. The Windows side uses Windows input hooks and simulation; the Linux side uses evdev/libevdev and a helper process for the lower-level access.",
-                        "The build system also needed two sets of instructions. Linux gets a Bash script; Windows gets PowerShell. Both use CMake and vcpkg, but compiler setup, packages, SDK paths, and process handling have enough differences that I stopped trying to force them into one script. This was my first project where Windows and Linux were both actual targets, and I learned pretty quickly that 'cross-platform' applies to more than the source files.",
+                        "I needed the rest of the app to stop caring which OS was underneath it. Windows and Linux expose input through different APIs, so I ended up putting a shared InputManager in front of separate implementations. That let the rest of the app ask for input without having to know which machine it was running on.",
+                        "The build setup split too. I made a Bash script for Linux and a PowerShell script for Windows, with CMake and vcpkg underneath. This was my first project where both operating systems were actual targets, and I had to learn how much the build process changes between them.",
                     ],
                 },
                 {
                     title: "The trackpad was sending me finger positions, not mouse positions",
                     paragraphs: [
-                        "At first I was just sending mouse data raw and hoping it would mean the same thing on the other machine. It did not. With the libevdev path, the trackpad reports where your finger is on the pad. Windows-style mouse movement expects something closer to where the cursor should end up on the screen. I was treating two completely different kinds of coordinates as if they were interchangeable.",
-                        "I ended up keeping an anchor for the finger position and remembering the last simulated cursor position. From there I could calculate the finger's movement relative to the anchor and apply that delta to the cursor. If the finger jumped too far, I reset the anchor and kept the cursor still instead of teleporting it. Then I clamped the normalized output to the screen bounds. That whole chunk of math came from me making the wrong assumption about what libevdev was giving me.",
+                        "I was sending mouse data raw and hoping it would mean the same thing on the other machine. It did not. libevdev gave me the finger’s position on the trackpad, not the cursor position on the screen. I had to remember an anchor, compare the movement from one finger position to the next, and apply that difference to the simulated cursor.",
+                        "When the finger jumped too far, I reset the anchor instead of teleporting the mouse across the screen. That whole chunk of math came from me making the wrong assumption about what libevdev was giving me.",
                     ],
-                    code: "// Simplified from InputManager::processSimulatedMouseCoordinates\nconst float dx = payloadX - anchorDeviceX;\nconst float dy = payloadY - anchorDeviceY;\nconst float distanceSq = dx * dx + dy * dy;\n\nif (distanceSq > jumpThresholdSq) {\n    // Re-anchor after a discontinuity; keep the cursor stable.\n} else {\n    outX = lastSimulatedX + dx;\n    outY = lastSimulatedY + dy;\n}",
                 },
                 {
-                    title: "Keyboard input turned into another rabbit hole",
+                    title: "Then I had to make keyboard presses arrive properly",
                     paragraphs: [
-                        "Mouse movement was only half of the problem. I also needed the other machine to know whether a key had just gone down, was still being held, or had been released. Short presses and long presses have different timing, and multiple keys can be held at once. If I press Shift and another key together on the desktop, the laptop needs to see that same combination, not some half-remembered list of keys that arrived in the wrong order.",
-                        "The input payload carries key codes with pressed/released state, mouse buttons, coordinates, and scroll deltas. There is debounce handling on the Windows polling path, and the Linux helper reads events from the input subsystem. I had to think about how events get packaged, what happens when several arrive together, and how to stop a release from getting lost behind another press.",
+                        "I needed to distinguish a short press, a long press, and a key release. I also needed multiple keys pressed at the same time to arrive as the same combination on the other machine. If I held Shift and another key on the desktop, the laptop had to see both, in the right order, and the release could not disappear because another event arrived first.",
+                        "That meant learning about debounce, press/release state, and how to package events so the receiver could reconstruct what I was actually doing.",
                     ],
                 },
                 {
                     title: "My first queue was where I gave up for a while",
                     paragraphs: [
-                        "I tried writing my own queue for the input stream. I got stuck on throughput, atomic operations, what happens when events arrive faster than the other side can consume them, and what to do when a bunch of keys are pressed at almost the same time. I wanted the queue to be reliable and fast, but my understanding of atomic queues was not good enough to trust the design I was trying to build. So I parked LocalTether for a while.",
-                        "The HTTP Server From Scratch repository came out of that same period. It is not a full project, so I removed it from the project list. I am leaving the link here because it was one of the places I went while trying to figure out networking and message flow. It was part of the detour, not a separate finished product.",
-                        "The current LocalTether source uses a per-session write queue instead. Messages are serialized, posted through the Asio executor, protected by a mutex, and written asynchronously one at a time. I stopped trying to invent my own lock-free queue and used the asynchronous model the networking library already gave me. That got me moving again.",
+                        "I tried writing my own queue for the input stream. I got stuck on throughput, atomic operations, and what happens when events arrive faster than the other side can consume them. I wanted it to be reliable and fast, but my understanding of atomic queues was not good enough to trust the design I was building, so I parked LocalTether for a while.",
+                        "When I came back, I stopped trying to invent a lock-free queue and used the write queue the networking library already gave me. Messages go through the Asio executor and get written in order. It was less clever than what I was trying to build. It also actually worked.",
                     ],
                 },
                 {
-                    title: "Somehow all the old class notes became relevant",
+                    title: "A bunch of old class notes suddenly became useful",
                     paragraphs: [
-                        "By then I had input capture, input simulation, discovery, networking, shared files, client roles, and two build paths all needing to cooperate. I was pulling in random bits of things I had learned from previous projects and classes. It felt like a Slumdog Millionaire moment where some completely unrelated detail comes back years later and suddenly makes sense.",
-                        "The app has Host, Broadcaster, and Receiver roles. The host controls which receivers can accept input, can remove or rename clients, and can manage the shared session. The file explorer uses a central server-side directory, and the source includes path-traversal checks for file operations. I had started out wanting one keyboard and mouse to work on two computers. Somehow I also ended up with a session manager and file sharing.",
+                        "By the end I was pulling in bits from old projects and information from previous classes. It felt like my own Slumdog Millionaire moment: some detail I had learned ages ago would suddenly come back while I was trying to solve an unrelated problem.",
                     ],
                 },
                 {
-                    title: "One security detail: TLS is on, certificate checks are not",
+                    title: "I started with keyboard and mouse sharing. It kept growing.",
                     paragraphs: [
-                        "The app wraps client/server traffic in TLS and supports password-protected sessions. LAN-only use is the default described in the README, and WAN access requires deliberate port forwarding. But in the source snapshot I reviewed, the TLS client sets its verification mode to verify_none. The connection is encrypted, but the client is not validating the server certificate in the normal way. I would fix that before claiming the current build protects against an active man-in-the-middle attacker.",
-                        "I am spelling that out because 'TLS is enabled' and 'the client knows who it connected to' are different things. I do not want to pretend I solved a security problem that is still sitting there.",
+                        "I ended up with Host, Broadcaster and Receiver roles, host controls, client management and shared file browsing. The HTTP Server From Scratch repository came from an earlier attempt to understand the networking side. It is not a full project, so I removed it from the project list, but it belongs in the story of how I got here.",
                     ],
-                    callout:
-                        "Source review note: this source snapshot disables TLS certificate verification on the client. The traffic is encrypted, but the server identity is not being checked.",
+                },
+                {
+                    title: "I wanted it on the LAN, but I still had to think about security",
+                    paragraphs: [
+                        "LocalTether uses TLS and password-protected sessions, and LAN-only use is the default described in the README. WAN access requires deliberate port forwarding. There is a security caveat in the source snapshot I reviewed: the TLS client sets verify_none, so the connection is encrypted but the client is not validating the server certificate in the normal way.",
+                        "I am spelling that out because “TLS is enabled” and “the client knows who it connected to” are different things. I do not want to pretend I solved a security problem that is still sitting there.",
+                    ],
                 },
                 {
                     title: "At least I can stop reaching for the laptop",
                     paragraphs: [
-                        "LocalTether is the software KVM I wanted: I can use my desktop keyboard and mouse on the laptop beside it, and share files through the same session. There are a lot of moving parts because Windows, Linux, trackpads, keyboards, and the network all have their own ideas about how input should work.",
-                        "I started because I was lazy, my desk was cramped, and I was too cheap to buy a decent hardware switch. I ended up reusing bits from old projects and classes, learning a pile of networking and input details, and making this slightly ridiculous machine-to-machine monstrosity. It solved the problem I was complaining about, which is all I wanted from it.",
+                        "It solved the problem I was complaining about, which is all I wanted from it.",
+                    ],
+                },
+            ],
+            relatedId: "localtether-implementation-notes",
+            relatedLabel: "LocalTether implementation notes",
+            projectLink: "localtether",
+        },
+        {
+            id: "localtether-implementation-notes",
+            type: "technical",
+            projectId: "localtether",
+            title: "LocalTether: the LAN, input and queue notes",
+            subtitle: "The implementation details behind the software KVM story.",
+            category: "LocalTether · technical notes",
+            date: "November 16, 2026",
+            readTime: "8–10 min read",
+            intro: "The story post is about why I built LocalTether. This is the implementation side: how the LAN scan works, what I had to hide behind the InputManager interface, why trackpad coordinates needed special handling, and how I replaced the queue I had abandoned the project over.",
+            sections: [
+                {
+                    title: "Finding other machines on the LAN",
+                    paragraphs: [
+                        "The discovery scripts look for an IPv4 interface with a /24 prefix. They take the first three octets, then ping addresses 1 through 254 in that subnet. The Windows script uses PowerShell and ping.exe; the Linux script uses ping with a one-second timeout and caps the number of concurrent jobs. The application then probes the discovered addresses for the LocalTether service on port 8080.",
+                        "That is a practical first pass for the home network I was targeting. It can miss machines that ignore ping, use a different subnet size, or sit behind a more complicated layout. I had to understand the assumptions in the scan before treating it as a reliable discovery mechanism.",
+                    ],
+                },
+                {
+                    title: "Keeping the operating-system code behind one interface",
+                    paragraphs: [
+                        "InputManager is the shared interface. At build time the project creates WindowsInput or LinuxInput. The Windows side uses Windows input hooks and simulation; the Linux side works through evdev/libevdev and a helper process for lower-level input access.",
+                        "That meant I did not have to put Windows and Linux branches throughout the networking and session code. The differences stayed close to the code that actually talks to each operating system.",
+                    ],
+                },
+                {
+                    title: "The trackpad coordinate conversion",
+                    paragraphs: [
+                        "The TRACKPAD_ABSOLUTE path reports a finger position on the pad. The simulated mouse needs a screen-relative cursor position. I keep an anchor for the last device position and remember the last simulated cursor position. Normal finger movement becomes a delta applied to the cursor; a jump beyond the threshold re-anchors without moving the cursor. The result is clamped to normalized screen bounds.",
+                        "The threshold is currently 0.02 in normalized coordinates. It is a heuristic for separating a continuous drag from a finger reposition, not a universal property of every trackpad.",
+                    ],
+                },
+                {
+                    title: "Keyboard events need both edges",
+                    paragraphs: [
+                        "The input payload carries a vector of KeyEvent entries. Each entry has a keyCode and an isPressed flag, so the receiver can distinguish a press from a release. The payload also includes the source device type, mouse-event flag, normalized coordinates, mouse-button state, and horizontal and vertical scroll deltas.",
+                        "The Windows polling path has debounce handling. The Linux helper reads input events from the evdev subsystem. Several keys can be held together, so the event order matters: Shift plus another key must arrive as a combination, and the release must not get lost behind the next press.",
+                    ],
+                },
+                {
+                    title: "The write queue I ended up keeping",
+                    paragraphs: [
+                        "The old attempt was a custom queue I did not understand well enough to trust under bursts. In the supplied source, the session serializes each message, posts the write work through the Asio executor, protects the queue with a mutex, and sends one queued message at a time with async_write. When a write completes, it pops the queue and continues with the next item.",
+                        "That is the version I was comfortable leaving in the project. I stopped trying to make my own lock-free queue and used the asynchronous write pattern Asio already provides.",
+                    ],
+                },
+                {
+                    title: "The build scripts are different for a reason",
+                    paragraphs: [
+                        "Linux has a Bash build script and Windows has a PowerShell build script. Both bootstrap dependencies and build with CMake and vcpkg, but they need different commands and environment handling. I also had to account for platform-specific process and input APIs, not just the compiler.",
+                    ],
+                },
+                {
+                    title: "The HTTP server experiment",
+                    paragraphs: [
+                        "HTTP Server From Scratch is an earlier repository from the same learning path. I removed it as a standalone portfolio project because it was not a complete project in its own right. It is still part of the LocalTether story: I was learning how clients connect and how messages move before I could build the input stream I wanted.",
+                    ],
+                },
+                {
+                    title: "The TLS caveat",
+                    paragraphs: [
+                        "The supplied client source sets its TLS verification mode to verify_none. The network traffic is encrypted, but the client is not validating the server certificate in the normal way. I would address that before presenting this source snapshot as protected against an active man-in-the-middle attacker.",
                     ],
                 },
             ],
             resources: [
                 {
-                    title: "LocalTether source code",
-                    note: "The source archive used to verify the input, networking, discovery, and build-system details described here.",
+                    title: "LocalTether source and README",
+                    note: "Input managers, scan scripts, Asio sessions, build scripts and usage.",
                     url: "https://github.com/abdurisaq/LocalTether",
                 },
                 {
                     title: "HTTP Server From Scratch",
-                    note: "An earlier networking experiment referenced as part of the learning path, not as a separate portfolio project.",
+                    note: "An earlier networking experiment, linked as part of the development path.",
                     url: "https://github.com/abdurisaq/HTTP-Server-From-Scratch",
                 },
                 {
                     title: "Linux input subsystem documentation",
-                    note: "Background on the event devices and event codes used by the Linux input path.",
+                    note: "Background on event devices and event codes.",
                     url: "https://docs.kernel.org/input/input.html",
                 },
                 {
@@ -1157,12 +1292,8 @@ const DATA = {
                     url: "https://think-async.com/Asio/",
                 },
             ],
-            videos: [
-                {
-                    id: "0U6Gs4i0kbI",
-                    title: "LocalTether walkthrough",
-                },
-            ],
+            parentId: "localtether-story",
+            parentLabel: "Back to the LocalTether story",
         },
     ],
 };

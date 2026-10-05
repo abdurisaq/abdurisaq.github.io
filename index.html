@@ -16,13 +16,11 @@
         <link rel="stylesheet" href="style.css" />
         <script>
             (() => {
-                let saved = null;
-                try {
-                    saved = localStorage.getItem("portfolio-theme");
-                } catch (_) {}
-                const prefersLight =
-                    window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches;
-                document.documentElement.dataset.theme = saved || (prefersLight ? "light" : "dark");
+                const saved = localStorage.getItem("portfolio-theme");
+                const theme =
+                    saved ||
+                    (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+                document.documentElement.dataset.theme = theme;
             })();
         </script>
     </head>
@@ -34,12 +32,20 @@
                     ><span class="brand-mark">⌘</span> abdurisaq
                     <span class="topbar-muted">— portfolio.nvim</span></a
                 >
+                <nav class="boring-nav" id="boring-nav" aria-label="Main navigation" hidden>
+                    <a href="#/">Home</a><a href="#/projects">Projects</a
+                    ><a href="#/blog">Writing</a><a href="#/experience">Experience</a
+                    ><a href="#/skills">Skills</a><a href="#/setup">Setup</a
+                    ><a href="#/community">Community</a><a href="#/about">About</a
+                    ><a href="#/resume">Resume</a>
+                    <button type="button" data-fun-toggle>Back to fun</button>
+                </nav>
                 <div class="topbar-actions">
                     <button
                         class="icon-button"
                         id="search-open"
                         type="button"
-                        title="Telescope search (Ctrl+K / Space Space · / for Grep)"
+                        title="Telescope search (Space Space)"
                         aria-label="Open Telescope search"
                     >
                         ⌕
@@ -107,7 +113,12 @@
                                 ><span class="file-type md">MD</span
                                 ><span class="tree-label">skills.md</span></a
                             >
-                            <a class="tree-file" href="#/resume" data-route="resume"
+                            <a
+                                class="tree-file resume-tree-file"
+                                href="#/resume"
+                                data-route="resume"
+                                title="resume.pdf"
+                                aria-label="resume.pdf"
                                 ><span class="file-type pdf">PDF</span
                                 ><span class="tree-label">resume.pdf</span></a
                             >
@@ -136,24 +147,38 @@
                                 id="smaller-project-tree"
                             ></div>
                         </div>
-                        <a class="tree-file" href="#/community" data-route="community"
-                            ><span class="file-type md">MD</span
-                            ><span class="tree-label">community.md</span></a
-                        >
-                        <button class="tree-folder" type="button" data-folder="writing">
+                        <button class="tree-folder" type="button" data-folder="blog">
                             <span class="tree-chevron">⌄</span
-                            ><span class="folder-icon">▰</span> writing
+                            ><span class="folder-icon">▰</span> blog
                         </button>
-                        <div class="tree-children" data-folder-content="writing">
+                        <div class="tree-children" data-folder-content="blog">
                             <a class="tree-file" href="#/blog" data-route="blog"
                                 ><span class="file-type md">MD</span
                                 ><span class="tree-label">index.md</span></a
                             >
-                            <div id="article-tree"></div>
+                            <div id="blog-tree"></div>
                         </div>
-                        <a class="tree-file" href="#/vim-motions" data-route="vim-motions"
-                            ><span class="file-type lua">PLAY</span
-                            ><span class="tree-label">vim-motions.md</span></a
+                        <button class="tree-folder" type="button" data-folder="vim">
+                            <span class="tree-chevron">⌄</span
+                            ><span class="folder-icon">▰</span> vim
+                        </button>
+                        <div class="tree-children" data-folder-content="vim">
+                            <a class="tree-file" href="#/vim" data-route="vim"
+                                ><span class="file-type md">MD</span
+                                ><span class="tree-label">index.md</span></a
+                            >
+                            <a
+                                class="tree-file"
+                                href="#/vim/play"
+                                data-route="vim"
+                                data-route-id="play"
+                                ><span class="file-type md">MD</span
+                                ><span class="tree-label">play.md</span></a
+                            >
+                        </div>
+                        <a class="tree-file" href="#/community" data-route="community"
+                            ><span class="file-type md">MD</span
+                            ><span class="tree-label">community.md</span></a
                         >
                         <a class="tree-file" href="#/style" data-route="style"
                             ><span class="file-type md">MD</span
@@ -162,7 +187,7 @@
                     </nav>
                     <div class="explorer-bottom">
                         <span class="explorer-dot"></span> WORKSPACE
-                        <span class="explorer-bottom-right">6 folders</span>
+                        <span class="explorer-bottom-right">5 folders</span>
                     </div>
                 </aside>
                 <main class="editor-main">
@@ -173,7 +198,16 @@
                         aria-label="Open files"
                     ></div>
                     <div class="breadcrumb" id="breadcrumb"></div>
-                    <div id="app" class="editor-content" tabindex="-1"></div>
+                    <div class="editor-panes" id="editor-panes">
+                        <section class="editor-pane" id="primary-pane">
+                            <div class="split-pane-title" id="primary-pane-title" hidden></div>
+                            <div id="app" class="editor-content" tabindex="-1"></div>
+                        </section>
+                        <section class="editor-pane" id="secondary-pane" hidden>
+                            <div class="split-pane-title" id="secondary-pane-title"></div>
+                            <div id="split-app" class="editor-content" tabindex="-1"></div>
+                        </section>
+                    </div>
                 </main>
             </div>
             <footer class="statusline" id="status" aria-label="Editor status"></footer>
@@ -219,11 +253,10 @@
                         data-search-mode="files"
                         aria-pressed="true"
                     >
-                        Files <kbd>Ctrl+F</kbd></button
-                    ><button type="button" data-search-mode="grep" aria-pressed="false">
-                        Grep <kbd>Ctrl+G</kbd></button
+                        Files</button
+                    ><button type="button" data-search-mode="grep" aria-pressed="false">Grep</button
                     ><span class="palette-mode-hint"
-                        >Tab toggles modes · selection preview on the right</span
+                        >Tab switches · Files matches names · Grep matches text</span
                     >
                 </div>
                 <div class="palette-split">
@@ -235,8 +268,8 @@
                     ></aside>
                 </div>
                 <div class="palette-footer">
-                    <span>↑↓ navigate</span><span>↵ open result</span
-                    ><span>Tab / Ctrl+F / Ctrl+G switch mode</span><span>Esc close</span>
+                    <span>↑↓ navigate</span><span>↵ open result</span><span>Tab switch mode</span
+                    ><span>/ opens Grep</span><span>Esc close</span>
                 </div>
             </section>
         </div>
@@ -254,19 +287,15 @@
                 </div>
                 <div class="shortcut-grid">
                     <kbd>j / k</kbd><span>Scroll down / up</span><kbd>gg / G</kbd
-                    ><span>Jump to top / bottom</span> <kbd>Ctrl+d / Ctrl+u</kbd
-                    ><span>Half-page down / up</span><kbd>Ctrl+k / Ctrl+p</kbd
-                    ><span>Open Telescope search</span><kbd>Space Space</kbd
-                    ><span>Open Telescope search</span> <kbd>Space e</kbd
-                    ><span>Open and focus file explorer</span><kbd>Space l / Esc</kbd
-                    ><span>Return focus to the editor</span><kbd>j / k / h / l</kbd
-                    ><span>Traverse the focused file tree</span> <kbd>Enter / l / h</kbd
-                    ><span>Open file / expand folder / collapse or go parent</span><kbd>gg / G</kbd
-                    ><span>First / last visible tree item</span><kbd>Ctrl+w h/l</kbd
-                    ><span>Switch Explorer / editor window</span> <kbd>/</kbd
-                    ><span>Search text across files (Grep)</span><kbd>Ctrl+F / Ctrl+G</kbd
-                    ><span>Choose Files / Grep in Telescope</span><kbd>Tab</kbd
-                    ><span>Toggle Files / Grep in Telescope</span> <kbd>]b / [b</kbd
+                    ><span>Jump to top / bottom</span> <kbd>Space Space</kbd
+                    ><span>Open Files search</span><kbd>/</kbd><span>Open text Grep</span>
+                    <kbd>Space e</kbd><span>Focus file Explorer</span><kbd>Space l / Esc</kbd
+                    ><span>Return to the open editor</span> <kbd>j / k / h / l</kbd
+                    ><span>Move, collapse and expand in Explorer</span><kbd>Enter</kbd
+                    ><span>Open the selected file</span> <kbd>Space t v / s</kbd
+                    ><span>Open a vertical / horizontal split</span><kbd>Space t h / l</kbd
+                    ><span>Focus left / right split</span> <kbd>Space t x</kbd
+                    ><span>Close the active split</span><kbd>]b / [b</kbd
                     ><span>Next / previous tab</span> <kbd>Space b d</kbd
                     ><span>Close current tab</span><kbd>:</kbd><span>Open command line</span
                     ><kbd>?</kbd><span>Show this help</span>
@@ -277,6 +306,7 @@
             </section>
         </div>
         <script src="data.js"></script>
+        <script src="vim-engine.js"></script>
         <script src="app.js"></script>
     </body>
 </html>

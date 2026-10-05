@@ -20,28 +20,32 @@ Then visit `http://localhost:8000`.
   and experience folders
 - Skills are grouped under `experience/skills.md`; smaller projects live in
   `projects/smaller-projects/`, with one page per project
+- `blog/` contains longer technical field notes; `blog/rocket-league-modding.md` is the standalone
+  UE3/BakkesMod reverse-engineering deep dive
+- `vim/` contains the fourteen-stage interactive Vim motions tutorial (`/vim`) and its practice
+  route (`/vim/play`)
 - `setup.md` describes a Fedora Linux laptop and a Windows + Arch Linux (Omarchy) dual-boot desktop
-- Persistent open-buffer tabs with close and cycle behavior; the header and tab row stay visible
-  while the active buffer scrolls, and the statusline stays at the bottom with the `:` command row
-  directly above it
-- Telescope-style search with **Files** and **Grep** modes (`Ctrl+K`, `Ctrl+P`, or `Space Space`);
-  Files matches filenames only, while Grep returns each text occurrence with a highlighted preview
-  in the right pane. Press `/` to open Grep, `Ctrl+F` / `Ctrl+G` to choose a mode, and `Tab` to
-  switch modes
+- Persistent open-buffer tabs with close and cycle behavior
+- Telescope-style search with **Files** and **Grep** modes (`Space Space` for filenames, `/` for
+  Grep); Files searches filenames only, while Grep lists individual text matches with highlighted
+  previews in the right pane
 - Ex command line (`:`): `:e about.md`, `:e setup.md`, `:e experience/skills.md`,
   `:e projects/localtether`, `:e projects/smaller-projects/musicapp.md`, `:Telescope`,
   `:Telescope live_grep`, `:bn`, `:bp`, `:bd`, `:colorscheme melange`, `:help`
-- Keyboard navigation: `j/k`, `gg/G`, `Ctrl+D/Ctrl+U`, `Space e` / `Space l`, `Esc`, `Ctrl+w h/l`,
-  `/` for Grep, `Space Space` for Files, `]b/[b`, `Space b d`, `?`. Focus the Explorer with
-  `Space e`, move through it with `j/k/h/l`, open a file with `Enter`, then return to the editor
-  with `Space l`, `Esc`, or `Ctrl+w l`.
+- Keyboard navigation: `j/k`, `gg/G`, `Space e` / `Space l`, `Esc`, `/` for Grep, `Space Space` for
+  Files, `]b/[b`, `Space b d`, `?`. In the Explorer, use `j/k` to move, `h/l` to collapse or expand,
+  and `Enter` to open a file.
+- tmux-style split panes: `:vsplit filename` opens a side-by-side file, `:split filename` stacks
+  panes, `Space t h/l` switches panes, `Space t o` swaps focus, `Space t x` closes the active pane,
+  and `:only` keeps the focused pane. `Space t v/s` makes a split of the current file. These use a
+  `Space t` leader rather than browser-reserved Ctrl combinations.
+- Landing-page **Make it boring** switches to a conventional Melange-styled navigation layout;
+  **Back to fun** restores the editor layout.
 - Melange light/dark palettes; theme selection is saved locally and initially follows the OS
   preference
-- Project pages use conversational walkthroughs, video demos (where available), and screenshot
-  slots. The longer VersatileTraining UE3/BakkesMod investigation is a separate article under
-  `writing/`
-- `vim-motions.md` opens a seven-stage, keyboard-driven Vim motions tutorial with progress checks, a
-  completion key list, and share support
+- Project pages use conversational walkthroughs, technical notes, click-to-load video demos (where
+  available), and screenshot slots; the Rocket League UE3/BakkesMod reverse-engineering deep dive
+  lives separately under `blog/`
 
 ## Add project screenshots
 
@@ -62,26 +66,21 @@ The complete filename list is also in `assets/screenshots/README.md`.
 
 ## YouTube embeds and Error 153
 
-The page includes `strict-origin-when-cross-origin` in the document referrer policy and on each
-privacy-enhanced YouTube iframe. Error 153 means YouTube did not receive an HTTP referrer or
-equivalent client identification. Test through an HTTP(S) server (not a `file://` URL). If it still
-occurs after deployment, check the hosting provider's response headers and make sure it is not
+Videos start as thumbnail previews so a failed embed does not leave an empty black player. Selecting
+**Load video** injects the privacy-enhanced YouTube iframe on demand, and a direct YouTube link
+remains visible underneath as a fallback. Error 153 means YouTube did not receive an HTTP referrer
+or equivalent client identification. Test through an HTTP(S) server (not a `file://` URL). If it
+still occurs after deployment, check the hosting provider's response headers and make sure it is not
 overriding the policy with `no-referrer` or `same-origin`; set the response header to
-`Referrer-Policy: strict-origin-when-cross-origin`. A direct YouTube link is included below each
-embed as a fallback.
+`Referrer-Policy: strict-origin-when-cross-origin`.
 
 ## Personalize before publishing
 
 Update the TODO values and contact details in `data.js`, add your resume PDF at `assets/resume.pdf`,
 and verify project demo links. The colorscheme page reads the configured dotfiles repository from
-GitHub. The writing section contains five conversational project deep dives (PrivateConvert,
-MusicApp, VersatileTraining, OrganizeMyBakkesModGarage, and LocalTether). The longer stories live
-outside the project summaries, which link to their matching article. The standalone HTTP Server From
-Scratch project card was removed; it is mentioned as an earlier experiment in the LocalTether story.
-
-The colorscheme page has independent scroll containers for the file list and source preview: scroll
-the file list to browse dotfiles, and scroll the code pane vertically or horizontally to inspect
-long files.
+GitHub. The colorscheme page has independent scroll containers for the file list and source preview:
+scroll the file list to browse dotfiles, and scroll the code pane vertically or horizontally to
+inspect long files.
 
 All portfolio content is kept in `data.js`; the presentation and interactions are in `app.js`,
 `style.css` and `index.html`.
