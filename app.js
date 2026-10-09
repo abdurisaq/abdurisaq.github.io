@@ -131,7 +131,7 @@ const pages = {
             )}</div></section><p class="community-footnote">This is ongoing personal work for a tablet-oriented workflow; upstream status is shown explicitly so proposed and fork-only changes are not presented as merged contributions.</p>`;
     },
     resume: () =>
-        `<h1>resume.pdf</h1><p class="page-intro">A PDF copy of my resume.</p><section class="resume-viewer"><div class="resume-toolbar"><span><strong>resume.pdf</strong> <span class="resume-file-path">${esc(P.resume)}</span></span><a class="btn alt" href="${esc(P.resume)}" target="_blank" rel="noopener">Open PDF ↗</a></div><iframe class="pdf" src="${esc(P.resume)}#view=FitH" title="Resume PDF"><p>Your browser cannot display the PDF. <a href="${esc(P.resume)}">Open resume.pdf</a>.</p></iframe><p class="resume-fallback">If the preview is empty, the PDF is not present at <code>${esc(P.resume)}</code>. Add the actual file at that path in the deployed portfolio.</p></section>`,
+        `<h1>resume</h1><p class="page-intro">A one-page preview, rendered from LaTeX and presented directly in the portfolio. The original PDF is available as a download.</p><section class="resume-viewer"><div class="resume-toolbar"><div class="resume-toolbar-info"><strong>resume.pdf</strong><span>Generated from <code>resume.tex</code> · image preview</span></div><a class="btn alt" href="${esc(P.resume)}" download="Abdurisaq-Resume.pdf">Download PDF ↓</a></div><figure class="resume-preview-frame"><img src="assets/resume-preview.png" alt="Full-page image preview of the resume" loading="eager" decoding="async"></figure><p class="resume-caption">The page preview is an image, so the browser's built-in PDF controls never appear here. Download the PDF for selectable text and an ATS-friendly copy.</p></section>`,
     style: () =>
         `<h1>colorscheme</h1><p>This portfolio takes its interaction model from Neovim: file navigation, open buffers, keyboard mappings and a command line. The colors come from the Melange colorscheme in my current dotfiles, hosted on GitHub.</p><div class="btns" style="margin:0 0 24px"><a class="btn" href="${REPO}" target="_blank" rel="noopener">My dotfiles ↗</a></div><section><h2>Live dotfiles</h2><div id="live"><div class="box todo">Loading dotfiles from GitHub...</div></div></section>`,
     blog: (id) => {
@@ -1323,10 +1323,10 @@ function buildSearchItems() {
         {
             label: "resume.pdf",
             path: "experience/resume.pdf",
-            detail: "Resume PDF · file not bundled yet",
+            detail: "Resume · LaTeX source with generated image preview and PDF download",
             route: "#/resume",
             kind: "PDF",
-            content: ["resume.pdf", "curriculum vitae"],
+            content: ["resume.pdf", "resume.tex", "curriculum vitae"],
         },
         {
             label: "community.md",

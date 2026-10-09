@@ -2513,42 +2513,6 @@ body {
     flex: 1;
     min-width: 0;
 }
-.resume-missing {
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    max-width: 620px;
-    padding: 20px;
-    border: 1px solid var(--border);
-    background: var(--panel);
-    margin-top: 16px;
-}
-.resume-file-icon {
-    width: 42px;
-    height: 52px;
-    display: grid;
-    place-items: center;
-    flex: none;
-    border: 1px solid var(--red);
-    color: var(--red);
-    font-size: 10px;
-    font-weight: 700;
-}
-.resume-missing strong {
-    display: block;
-    color: var(--fg);
-    font: 600 13px var(--mono);
-    margin-bottom: 7px;
-}
-.resume-missing p {
-    font-size: 11px;
-    color: var(--muted);
-    margin: 0 0 8px;
-}
-.resume-file-path {
-    font: 10px var(--mono);
-    color: var(--yellow);
-}
 
 /* Telescope: list and preview live in a bounded split, each with its own scroll. */
 .palette {
@@ -2912,56 +2876,73 @@ body {
     .boring-nav {
         gap: 7px;
     }
-    .resume-missing {
-        padding: 12px;
-    }
 }
 
-/* Resume preview: keep the file location and direct-open fallback visible even if no PDF is deployed. */
+/* Resume: a page image inside the existing Melange surface, never a browser PDF embed. */
 .resume-viewer {
-    margin-top: 20px;
+    width: min(100%, 900px);
+    margin: 20px auto 0;
     min-width: 0;
 }
 .resume-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 14px;
     flex-wrap: wrap;
     padding: 12px 14px;
     background: var(--panel);
     border: 1px solid var(--border);
     border-bottom: 0;
 }
-.resume-toolbar > span {
+.resume-toolbar-info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     min-width: 0;
     font-size: 12px;
 }
-.resume-file-path {
-    font-size: 10px;
+.resume-toolbar-info strong {
+    color: var(--fg);
+    font: 600 12px var(--mono);
+}
+.resume-toolbar-info span {
     color: var(--dim);
-    overflow-wrap: anywhere;
+    font-size: 10px;
 }
-.resume-viewer .pdf {
+.resume-preview-frame {
+    margin: 0;
+    padding: clamp(8px, 1.8vw, 18px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow: 0 12px 34px var(--shadow);
+}
+.resume-preview-frame img {
     display: block;
-    height: 78vh;
-    min-height: 480px;
-    background: var(--panel);
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
 }
-.resume-fallback {
-    margin-top: 10px;
+.resume-caption {
+    margin: 10px 2px 0;
     color: var(--muted);
-    font-size: 11px;
+    font-size: 10px;
+    line-height: 1.6;
+}
+@media (max-width: 600px) {
+    .resume-toolbar {
+        padding: 10px;
+    }
+    .resume-preview-frame {
+        padding: 6px;
+    }
+    .resume-toolbar .btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 #deep-dive-tree .tree-file {
     padding-left: 52px;
-}
-@media (max-width: 600px) {
-    .resume-viewer .pdf {
-        height: 65vh;
-        min-height: 360px;
-    }
 }

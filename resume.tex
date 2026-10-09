@@ -1,0 +1,204 @@
+%-------------------------
+% Resume in LaTeX
+% Based on the Jake Gutierrez / sb2nov resume template (MIT)
+% Source maintained alongside the portfolio; page preview is generated from this file.
+%------------------------
+
+\documentclass[letterpaper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage{marvosym}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{verbatim}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\input{glyphtounicode}
+
+% PDF metadata: gives the file a useful title in file managers and PDF properties.
+\hypersetup{
+  pdftitle={Resume},
+  pdfsubject={Software engineering resume},
+  pdfkeywords={software engineering, C++, Python, networking, projects},
+  pdfdisplaydoctitle=true
+}
+
+%----------FONT OPTIONS----------
+% sans-serif
+% \usepackage[sfdefault]{FiraSans}
+% \usepackage[sfdefault]{roboto}
+% \usepackage[sfdefault]{noto-sans}
+% \usepackage[default]{sourcesanspro}
+
+% serif
+% \usepackage{CormorantGaramond}
+% \usepackage{charter}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Adjust margins
+\addtolength{\oddsidemargin}{-0.5in}
+\addtolength{\evensidemargin}{-0.5in}
+\addtolength{\textwidth}{1in}
+\addtolength{\topmargin}{-.5in}
+\addtolength{\textheight}{1.0in}
+
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+% Sections formatting
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+% Ensure generated PDF remains machine readable / ATS parsable.
+\pdfgentounicode=1
+
+%-------------------------
+% Custom commands
+\newcommand{\resumeItem}[1]{
+  \item\small{{#1 \vspace{-2pt}}}
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubSubheading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \textit{\small#1} & \textit{\small #2} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeSubItem}[1]{\resumeItem{#1}\vspace{-4pt}}
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+%-------------------------------------------
+%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+%----------HEADING----------
+\begin{center}
+    \textbf{\Huge \scshape Jake Ryan} \\ \vspace{1pt}
+    \small 123-456-7890 $|$ \href{mailto:x@x.com}{\underline{jake@su.edu}} $|$
+    \href{https://linkedin.com/in/...}{\underline{linkedin.com/in/jake}} $|$
+    \href{https://github.com/...}{\underline{github.com/jake}}
+\end{center}
+
+%-----------EDUCATION-----------
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Some University}{Some, Place}
+      {Bachelor of Science in Computer Science}{2023 -- Expected Dec. 2027}
+  \resumeSubHeadingListEnd
+
+%-----------PROJECTS-----------
+\section{Projects}
+  \resumeSubHeadingListStart
+
+  % LocalTether
+  \resumeProjectHeading
+    {\textbf{LocalTether (Input/File Sharing)} $|$ \emph{C++17, Asio, OpenSSL, libevdev}
+    $|$ \href{https://youtu.be/0U6Gs4i0kbI}{\underline{Demo}}
+    $|$ \href{https://github.com/abdurisaq/LocalTether}{\underline{GitHub}}}{}
+    \resumeItemListStart
+      \resumeItem{Built a Windows/Linux desktop app to share keyboard/mouse input and files from one host to multiple receivers.}
+      \resumeItem{Bridged Windows Raw Input and Linux evdev/uinput via an isolated helper process for Wayland compatibility.}
+      \resumeItem{Implemented asynchronous TCP networking with TLS, length-prefixed framing, and per-client routing.}
+      \resumeItem{Created a synchronized file-sharing workspace with push-based directory snapshots and client uploads/downloads.}
+    \resumeItemListEnd
+
+  % Private Converter
+  \resumeProjectHeading
+    {\textbf{Private Converter (Local File Utility)} $|$ \emph{Python, FastAPI, React, SQLite, Docker}
+    $|$ \href{https://github.com/abdurisaq/PrivateConvert}{\underline{GitHub}}}{}
+    \resumeItemListStart
+      \resumeItem{Developed a privacy-first local file-conversion service supporting 50+ image, video, audio, and PDF formats without third-party uploads.}
+      \resumeItem{Designed reusable multi-step pipelines with versioned JSON definitions, supporting up to 20 steps across 13 operation types.}
+      \resumeItem{Added schema-driven parameter validation and input/output compatibility checks to prevent invalid conversions.}
+      \resumeItem{Offloaded long-running conversions to background workers; added automated tests and Docker packaging.}
+    \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{Versatile Training DLL (Rocket League)} $|$
+    \emph{C++20, BakkesMod SDK, Dear ImGui} $|$
+    \href{https://www.youtube.com/watch?v=9eDVzMzTQ7c}{\underline{Demo}} $|$
+    \href{https://github.com/abdurisaq/VersatileTraining}{\underline{GitHub}}}{}
+    \resumeItemListStart
+      \resumeItem{Expanded Rocket League's training editor with custom practice controls; 3,100+ downloads on BakkesPlugins.}
+      \resumeItem{Implemented custom scenario-editing tools by reverse-engineering undocumented editor functions and hooking replay data to extract live car/ball state.}
+      \resumeItem{Designed a compact binary serialization format using bit-packing and fixed-point quantization, reducing a 50-shot pack from $\sim$3 KB to $\sim$1 KB on disk.}
+    \resumeItemListEnd
+
+  \resumeProjectHeading
+    {\textbf{Versatile Training Hub} $|$
+    \emph{Next.js, TypeScript, tRPC, Prisma, PostgreSQL} $|$
+    \href{https://versatile-training-hub.vercel.app/}{\underline{Live Site}} $|$
+    \href{https://github.com/abdurisaq/VersatileTrainingHub}{\underline{GitHub}}}{}
+    \resumeItemListStart
+      \resumeItem{Shipped a community platform for publishing, discovering, and previewing custom Rocket League training packs.}
+      \resumeItem{Connected the website to the locally running game client through a local HTTP API, enabling users to upload/update packs and trigger in-game loading.}
+    \resumeItemListEnd
+
+  % Android Music Player
+  \resumeProjectHeading
+    {\textbf{Android Music Player} $|$ \emph{Kotlin, Jetpack Compose, Ktor, Room}
+    $|$ \href{https://github.com/abdurisaq/MusicApp}{\underline{GitHub}}}{}
+    \resumeItemListStart
+      \resumeItem{Built a music player using Jetpack Compose, Ktor for remote media retrieval, and Room for local playlists.}
+      \resumeItem{Added YouTube downloads, background playback, shuffle, and Bluetooth controls.}
+    \resumeItemListEnd
+
+  \resumeSubHeadingListEnd
+
+\section{Experience}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Control Room Operator}{April 2022 -- Present}
+      {Some Airport}{Some, Place}
+      \resumeItemListStart
+        \resumeItem{Coordinate airport vehicle/equipment movements and relay live updates to ground teams.}
+        \resumeItem{Resolve urgent operational issues and customer escalations across service teams.}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+%-----------PROGRAMMING SKILLS-----------
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{Languages:} C++, Python, Kotlin, TypeScript, JavaScript, SQL, C, Java \\
+     \textbf{Frameworks:} React, Next.js, FastAPI, Flask, tRPC, Prisma, SQLModel, Ktor, Jetpack Compose, Dear ImGui, Cereal \\
+     \textbf{Databases and Tools:} PostgreSQL, SQLite, Supabase, Room, Docker, Git, CMake, vcpkg, pytest \\
+     \textbf{Systems/Networking:} Linux, Windows APIs, SDL2, standalone Asio, OpenSSL, libevdev, TCP/IP, REST APIs
+  }}
+ \end{itemize}
+
+\end{document}

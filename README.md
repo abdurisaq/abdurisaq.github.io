@@ -76,11 +76,18 @@ overriding the policy with `no-referrer` or `same-origin`; set the response head
 
 ## Personalize before publishing
 
-Update the TODO values and contact details in `data.js`, add your resume PDF at `assets/resume.pdf`,
-and verify project demo links. The colorscheme page reads the configured dotfiles repository from
-GitHub. The colorscheme page has independent scroll containers for the file list and source preview:
-scroll the file list to browse dotfiles, and scroll the code pane vertically or horizontally to
-inspect long files.
+Update the TODO values and contact details in `data.js`, edit `resume.tex` for the resume, run
+`./build-resume.sh` to regenerate `assets/resume.pdf` and `assets/resume-preview.png`, and verify
+project demo links. The resume page displays the generated PNG inside the Melange theme; the PDF is
+kept as a correctly titled, downloadable ATS-friendly file. The PDF metadata title is set to
+`Resume`, so file managers have a meaningful document title. Rebuilding requires a LaTeX
+installation (`pdflatex`) and Poppler (`pdftocairo`); use `build-resume.sh` on Linux/macOS or
+`build-resume.bat` on Windows. The source supplied for this checkpoint still contains sample
+identity, school, contact and employer details, so replace those in `resume.tex` before publishing
+your real resume. The colorscheme page reads the configured dotfiles repository from GitHub. The
+colorscheme page has independent scroll containers for the file list and source preview: scroll the
+file list to browse dotfiles, and scroll the code pane vertically or horizontally to inspect long
+files.
 
 All portfolio content is kept in `data.js`; the presentation and interactions are in `app.js`,
 `style.css` and `index.html`.
