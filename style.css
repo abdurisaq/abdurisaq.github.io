@@ -2500,19 +2500,6 @@ body {
 .command-row[hidden] {
     display: none !important;
 }
-.resume-tree-file .tree-label {
-    display: block;
-    flex: 1;
-    min-width: 0;
-    color: var(--fg);
-    visibility: visible;
-    opacity: 1;
-}
-.tree-file .tree-label {
-    display: block;
-    flex: 1;
-    min-width: 0;
-}
 
 /* Telescope: list and preview live in a bounded split, each with its own scroll. */
 .palette {
@@ -2943,6 +2930,63 @@ body {
         justify-content: center;
     }
 }
+
+/* File rows use an explicit grid so labels always receive the remaining width.
+   This also prevents the resume row from collapsing to a zero-width label. */
+#file-tree .tree-file {
+    display: grid;
+    grid-template-columns: 27px minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+#file-tree .tree-file .file-type {
+    width: 27px;
+    box-sizing: border-box;
+}
+#file-tree .tree-file .tree-label {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    flex: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+#file-tree .resume-tree-file {
+    color: var(--fg);
+}
+#file-tree .resume-tree-file .tree-label {
+    color: inherit;
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Keep deep dives at the end of blog/, with a visible boundary around the
+   nested folder contents so it reads as a sibling folder, not another post. */
+.tree-folder-separator {
+    height: 0;
+    border-top: 1px solid var(--border);
+    margin: 7px 12px 5px 34px;
+    opacity: 0.9;
+}
+.tree-folder.deep-dives-folder {
+    margin-bottom: 2px;
+}
+.tree-children.deep-dives-contents {
+    margin: 0 12px 7px 44px;
+    padding: 4px 0 5px 9px;
+    border-left: 1px solid var(--border);
+    background: color-mix(in srgb, var(--surface) 35%, transparent);
+}
 #deep-dive-tree .tree-file {
-    padding-left: 52px;
+    padding-left: 8px;
+    padding-right: 4px;
+}
+#deep-dive-tree .tree-file .tree-label {
+    font-size: 11px;
 }

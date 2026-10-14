@@ -176,7 +176,7 @@ const pages = {
         const status = post.statusNote
             ? `<aside class="blog-status-note"><span class="cta-kicker">Status note</span><p>${esc(post.statusNote)}</p></aside>`
             : "";
-        return `<article class="blog-post"><div class="crumb"><a href="#/blog">blog</a> / <span>${esc(post.id)}.md</span></div><div class="blog-post-meta"><span>${esc(post.category || "")}</span><span>${esc(post.date || "")}</span><span>${esc(post.readTime || "")}</span></div><h1>${esc(post.title)}</h1><p class="blog-subtitle">${esc(post.subtitle || "")}</p><p class="blog-lead">${esc(post.intro || "")}</p>${projectLinks}${aside}${post.sections?.length ? `<nav class="blog-toc" aria-label="In this post"><strong>In this post</strong><ol>${post.sections.map((section, i) => `<li><a href="#blog-section-${i + 1}">${esc(section.title)}</a></li>`).join("")}</ol></nav>${renderBlogSections(post.sections)}` : ""}${related}${parent}${videos}${media}${offsets}${workflow}${resources}${status}<section class="blog-post-end"><a class="btn alt" href="#/blog">← All posts</a>${project ? ` <a class="btn" href="${projectRoute(project)}">Back to ${esc(project.name)} ↗</a>` : ""}</section></article>`;
+        return `<article class="blog-post"><div class="crumb"><a href="#/blog">blog</a> / <span>${esc(post.id)}.md</span></div><div class="blog-post-meta"><span>${esc(post.category || "")}</span><span>${esc(post.date || "")}</span><span>${esc(post.readTime || "")}</span></div><h1>${esc(post.title)}</h1><p class="blog-subtitle">${esc(post.subtitle || "")}</p><p class="blog-lead">${esc(post.intro || "")}</p>${projectLinks}${aside}${post.sections?.length ? `<nav class="blog-toc" aria-label="In this post"><strong>In this post</strong><ol>${post.sections.map((section, i) => `<li><a href="#/blog/${encodeURIComponent(post.id)}?section=blog-section-${i + 1}">${esc(section.title)}</a></li>`).join("")}</ol></nav>${renderBlogSections(post.sections)}` : ""}${related}${parent}${videos}${media}${offsets}${workflow}${resources}${status}<section class="blog-post-end"><a class="btn alt" href="#/blog">← All posts</a>${project ? ` <a class="btn" href="${projectRoute(project)}">Back to ${esc(project.name)} ↗</a>` : ""}</section></article>`;
     },
     vim: () =>
         `<div class="page-eyebrow">~/vim</div><h1>vim motions</h1><p class="vim-pitch">I'm not going to convince you to switch to Neovim. But the best part of the ecosystem — vim motions — travels with you. VS Code, your browser, your IDE. Once it clicks, going back to the mouse feels like a downgrade.</p><p class="page-intro">Fourteen small lessons. No plugins, no config, no editor setup. Just you, a buffer, and a few keys that start to make sense once you use them.</p><div class="vim-landing-actions"><a class="btn" href="#/vim/play">Start the tutorial ↗</a><a class="btn alt" href="#/vim/play?free=1">Jump into free play</a></div><section><h2>The stages</h2><div class="vim-stage-list">${VIM_TUTORIAL_STAGES.map((stage, i) => `<a href="#/vim/play?stage=${i + 1}" class="vim-stage-link"><span>${String(i + 1).padStart(2, "0")}</span><strong>${esc(stage.name)}</strong><small>${esc(stage.goal)}</small></a>`).join("")}</div></section><p class="vim-landing-note">The tutorial saves your stage locally in this browser. You can restart a stage at any time with <kbd>r</kbd> or <kbd>Esc</kbd> in Normal mode.</p>`,
@@ -1020,6 +1020,19 @@ function renderEditor() {
     }
     if (key === "style") loadDotfiles();
     if (key === "vim:play") initVimTutorial(current().query);
+
+    // Blog TOC destinations live inside the hash-router URL. Render first, then
+    // scroll the active editor pane to the requested section without navigating
+    // away from the current post or losing the section on refresh/back/forward.
+    const sectionId = current().query.get("section");
+    if (/^blog-section-\d+$/.test(sectionId || "")) {
+        requestAnimationFrame(() => {
+            const activeRoot = splitState?.active === "right" ? splitApp : primary;
+            activeRoot
+                .querySelector(`#${sectionId}`)
+                ?.scrollIntoView({ behavior: "auto", block: "start" });
+        });
+    }
 }
 
 function renderProjectTree() {

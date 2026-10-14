@@ -17,7 +17,10 @@ Then visit `http://localhost:8000`.
 ## Interface
 
 - File explorer navigation with readable file-type badges and collapsible project, smaller-project
-  and experience folders
+  and experience folders; blog deep dives are grouped in a clearly separated folder at the bottom of
+  `blog/`
+- Blog table-of-contents links preserve the current post route and scroll the editor pane to the
+  selected section, including on refresh and browser back/forward navigation
 - Skills are grouped under `experience/skills.md`; smaller projects live in
   `projects/smaller-projects/`, with one page per project
 - `blog/` contains longer technical field notes; `blog/rocket-league-modding.md` is the standalone
