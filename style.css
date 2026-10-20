@@ -299,6 +299,7 @@ input:focus-visible {
 }
 .file-type.pdf {
     color: var(--red);
+    height: 18px;
 }
 .explorer-bottom {
     margin-top: auto;
@@ -706,13 +707,8 @@ section {
     width: 100%;
     height: 100%;
     border: 0;
-}
-.pdf {
-    width: 100%;
-    height: 78vh;
-    border: 1px solid var(--border);
-    background: var(--panel);
-}
+} /* Do not use a generic .pdf rule here: the file-tree badge also carries that class.
+   The resume preview is styled by .resume-preview-frame and its img instead. */
 .box {
     background: var(--panel);
     border: 1px solid var(--border);
