@@ -13,7 +13,18 @@
             href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap"
             rel="stylesheet"
         />
-        <link rel="stylesheet" href="style.css" />
+        <!-- Theme tokens and base editor shell. Keep the stylesheet order: later files layer on earlier components. -->
+        <link rel="stylesheet" href="styles/00-theme-and-editor-shell.css" />
+        <link rel="stylesheet" href="styles/10-foundation-and-overlays.css" />
+        <link rel="stylesheet" href="styles/20-projects-and-components.css" />
+        <link rel="stylesheet" href="styles/30-reverse-engineering-deep-dives.css" />
+        <link rel="stylesheet" href="styles/40-dotfiles-browser.css" />
+        <link rel="stylesheet" href="styles/50-blog-and-article.css" />
+        <link rel="stylesheet" href="styles/60-vim-tutorial.css" />
+        <link rel="stylesheet" href="styles/70-blog-toc.css" />
+        <link rel="stylesheet" href="styles/80-editor-layout-and-search.css" />
+        <link rel="stylesheet" href="styles/90-conventional-layout.css" />
+        <link rel="stylesheet" href="styles/95-resume-and-explorer.css" />
         <script>
             (() => {
                 const saved = localStorage.getItem("portfolio-theme");
@@ -319,8 +330,23 @@
                 </p>
             </section>
         </div>
-        <script src="data.js"></script>
-        <script src="vim-engine.js"></script>
-        <script src="app.js"></script>
+        <!-- Data is loaded first so every renderer sees the complete DATA object. -->
+        <script src="content/00-site-data.js"></script>
+        <script src="content/10-project-data.js"></script>
+        <script src="content/20-community-data.js"></script>
+        <script src="content/30-blog-posts.js"></script>
+
+        <!-- Keep classic scripts (not modules) in this order: they share top-level bindings. -->
+        <script src="scripts/vim-engine.js"></script>
+        <script src="scripts/00-page-renderers.js"></script>
+        <script src="scripts/10-vim-tutorial.js"></script>
+        <script src="scripts/20-editor-state.js"></script>
+        <script src="scripts/30-editor-rendering.js"></script>
+        <script src="scripts/40-router-startup.js"></script>
+        <script src="scripts/50-explorer-and-theme.js"></script>
+        <script src="scripts/60-search.js"></script>
+        <script src="scripts/70-commands-and-keyboard.js"></script>
+        <script src="scripts/80-layout-mode.js"></script>
+        <script src="scripts/90-dotfiles-panel.js"></script>
     </body>
 </html>

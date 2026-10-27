@@ -1,0 +1,142 @@
+/* Conventional navigation mode and responsive layout overrides. */
+
+/* Conventional portfolio layout, same Melange tokens and same page content. */
+.boring-nav {
+    display: flex;
+    align-items: center;
+    gap: clamp(10px, 2vw, 26px);
+    margin-left: auto;
+    font-size: 11px;
+}
+.boring-nav[hidden] {
+    display: none;
+}
+.boring-nav a {
+    color: var(--muted);
+}
+.boring-nav a:hover {
+    color: var(--yellow);
+    text-decoration: none;
+}
+.boring-nav button {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--fg);
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font: inherit;
+}
+.boring-mode .window-mark,
+.boring-mode .topbar-title,
+.boring-mode .topbar-actions,
+.boring-mode .explorer,
+.boring-mode .bufferline,
+.boring-mode .breadcrumb,
+.boring-mode .statusline,
+.boring-mode .command-row {
+    display: none !important;
+}
+.boring-mode .topbar {
+    height: 58px;
+    padding: 0 clamp(18px, 5vw, 70px);
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+}
+.boring-mode .boring-nav {
+    display: flex;
+}
+.boring-mode .workspace {
+    display: block;
+    height: 0;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+}
+.boring-mode .editor-main {
+    height: 100%;
+    width: 100%;
+    max-width: none;
+    display: block;
+    overflow: hidden;
+}
+.boring-mode .editor-panes {
+    display: block;
+    height: 100%;
+    overflow: hidden;
+}
+.boring-mode .editor-pane {
+    height: 100%;
+    display: block;
+}
+.boring-mode .editor-content {
+    width: min(100%, 980px);
+    max-width: 980px;
+    margin: 0 auto;
+    height: 100%;
+    min-height: 0;
+    padding: 42px clamp(20px, 5vw, 62px) 80px;
+    overflow: auto;
+}
+.boring-mode .project-blog-cta,
+.boring-mode .card,
+.boring-mode .blog-card {
+    border-radius: 7px;
+}
+@media (max-width: 760px) {
+    .editor-panes[data-orientation="vertical"] {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .palette-split {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+        height: min(70vh, 640px);
+        min-height: 240px;
+    }
+    .palette-results {
+        border-right: 0;
+        border-bottom: 1px solid var(--border);
+    }
+    .boring-nav {
+        gap: 9px;
+        font-size: 10px;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .boring-mode .topbar {
+        padding: 0 10px;
+    }
+    .boring-mode .editor-content {
+        padding: 24px 16px 60px;
+    }
+    .vim-two-pane {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .vim-pane.mobile-hidden {
+        display: none;
+    }
+    .vim-text-buffer {
+        max-height: 28vh;
+        min-height: 120px;
+    }
+}
+@media (max-width: 480px) {
+    .editor-content:has(.vim-tutorial) {
+        padding: 6px 8px 10px;
+    }
+    .vim-tutorial-heading h1 {
+        font-size: 21px;
+    }
+    .vim-play-command-hint {
+        display: none;
+    }
+    .editor-panes[data-orientation="vertical"] {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .editor-panes[data-orientation="vertical"] #secondary-pane {
+        display: none;
+    }
+    .boring-nav {
+        gap: 7px;
+    }
+}

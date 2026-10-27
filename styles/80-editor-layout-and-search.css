@@ -1,0 +1,354 @@
+/* Fixed editor frame, split panes, Telescope layout, and tutorial density. */
+
+/* Fixed editor frame: scroll the file contents, not the browser window. */
+html,
+body {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+.editor-shell {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    flex: none;
+}
+.workspace {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 0;
+    overflow: hidden;
+}
+.explorer {
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+}
+.explorer .tree {
+    min-height: 0;
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+.editor-main {
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.bufferline {
+    position: sticky;
+    top: 0;
+    z-index: 25;
+    flex: none;
+}
+.breadcrumb {
+    flex: none;
+}
+.editor-panes {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+}
+.editor-panes[data-orientation="vertical"] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+}
+.editor-panes[data-orientation="horizontal"] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+}
+.editor-pane {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+.editor-pane[hidden] {
+    display: none !important;
+}
+.editor-pane.active-pane {
+    box-shadow: inset 0 0 0 1px var(--yellow);
+}
+.split-pane-title {
+    min-height: 24px;
+    flex: none;
+    padding: 5px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--yellow);
+    font-size: 9px;
+    letter-spacing: 0.05em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.split-pane-title[hidden] {
+    display: none;
+}
+.editor-content {
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    height: 0;
+    flex: 1 1 auto;
+    overflow: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+    padding: 26px clamp(18px, 3.6vw, 52px) 74px;
+    margin: 0;
+}
+#split-app {
+    min-width: 0;
+}
+.statusline {
+    position: relative;
+    z-index: 50;
+    flex: none;
+}
+.command-row {
+    position: absolute;
+    z-index: 55;
+    left: 0;
+    right: 0;
+    bottom: 27px;
+    height: 35px;
+    box-shadow: 0 -8px 22px var(--shadow);
+}
+.command-row[hidden] {
+    display: none !important;
+}
+/* Telescope: list and preview live in a bounded split, each with its own scroll. */
+.palette {
+    width: min(980px, 100%);
+    max-height: calc(100dvh - 32px);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.palette-toolbar button {
+    display: inline-flex;
+    gap: 7px;
+    align-items: center;
+}
+.palette-toolbar button kbd {
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 4px;
+    font: 9px var(--mono);
+    color: var(--dim);
+}
+.palette-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(260px, 0.95fr);
+    height: min(58vh, 600px);
+    min-height: 260px;
+    max-height: calc(100dvh - 210px);
+    overflow: hidden;
+}
+.palette-results {
+    height: 100%;
+    max-height: none;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    border-right: 1px solid var(--border);
+}
+.palette-preview {
+    height: 100%;
+    min-height: 0;
+    max-height: 100%;
+    min-width: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    padding: 16px;
+    background: var(--bg);
+}
+.palette-preview-inner {
+    min-height: 0;
+    max-width: 100%;
+}
+.palette-preview-path {
+    font-size: 9px;
+    color: var(--dim);
+    overflow-wrap: anywhere;
+    margin-top: 5px;
+}
+.palette-preview-excerpt {
+    margin: 0;
+    max-height: none;
+    overflow: visible;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    font: 10px/1.7 var(--mono);
+    color: var(--fg);
+}
+.search-hit {
+    background: var(--yellow);
+    color: var(--bg);
+    padding: 0 1px;
+    border-radius: 2px;
+}
+.palette-preview-open {
+    margin-top: 16px;
+    color: var(--dim);
+    font-size: 9px;
+}
+/* The practice lesson uses the available editor height instead of growing the page. */
+.editor-content:has(.vim-tutorial) {
+    padding: 12px clamp(12px, 2vw, 28px) 18px;
+    overflow-y: auto;
+}
+.vim-tutorial {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+.vim-tutorial-heading {
+    margin-bottom: 10px;
+    align-items: center;
+}
+.vim-tutorial-heading h1 {
+    font-size: 24px;
+    margin-bottom: 3px;
+}
+.vim-tutorial-subtitle {
+    font-size: 10px;
+}
+.vim-stage-toolbar {
+    margin-bottom: 5px;
+}
+.vim-stage-intro {
+    margin: 4px 0 9px;
+}
+.vim-stage-intro h2 {
+    font-size: 15px;
+    margin: 0 0 4px;
+}
+.vim-stage-intro p {
+    font-size: 10px;
+    line-height: 1.5;
+    margin: 0;
+}
+.vim-two-pane {
+    gap: 0;
+}
+.vim-pane header {
+    height: 28px;
+    padding: 0 10px;
+}
+.vim-text-buffer {
+    min-height: 178px;
+    max-height: 30vh;
+    overflow: auto;
+    padding: 9px 0;
+    font-size: 11px;
+    line-height: 1.65;
+}
+.vim-line-number {
+    width: 24px;
+    margin-right: 10px;
+    font-size: 9px;
+}
+.vim-hint {
+    padding: 0 10px 6px;
+    font-size: 9px;
+}
+.vim-key-strip {
+    min-height: 26px;
+    padding: 5px 10px;
+    font-size: 9px;
+}
+.vim-tutorial-status {
+    min-height: 28px;
+}
+.vim-tutorial-status > strong {
+    padding: 6px 10px;
+}
+.vim-tutorial-status button {
+    height: 28px;
+}
+.vim-play-command {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 30px;
+    padding: 4px 10px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    font: 10px var(--mono);
+}
+.vim-play-command[hidden],
+.vim-play-command-message[hidden] {
+    display: none !important;
+}
+.vim-play-command > span:first-child {
+    color: var(--yellow);
+    font-weight: 700;
+}
+.vim-play-command input {
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: var(--fg);
+    font: inherit;
+    flex: 1;
+    min-width: 0;
+}
+.vim-play-command-hint {
+    color: var(--dim);
+    font-size: 9px;
+}
+.vim-play-command-message {
+    margin: 0;
+    padding: 6px 10px;
+    color: var(--red);
+    font-size: 10px;
+    background: var(--panel);
+}
+.vim-explanation {
+    padding: 8px 11px;
+    gap: 10px;
+}
+.vim-explanation p {
+    font-size: 10px;
+    line-height: 1.45;
+}
+.vim-access-note {
+    font-size: 9px;
+    color: var(--dim);
+    margin: 5px 0 0;
+}
+@media (max-height: 820px) {
+    .editor-content:has(.vim-tutorial) {
+        padding-top: 6px;
+        padding-bottom: 10px;
+    }
+    .vim-tutorial-heading {
+        margin-bottom: 6px;
+    }
+    .vim-text-buffer {
+        min-height: 138px;
+        max-height: 25vh;
+        padding: 6px 0;
+    }
+    .vim-stage-intro {
+        margin: 2px 0 5px;
+    }
+}

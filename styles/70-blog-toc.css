@@ -1,0 +1,42 @@
+/* Long-form article table of contents and section anchors. */
+
+/* Editorial table of contents for longer technical notes. */
+.blog-toc {
+    padding: 16px 18px;
+    margin: 24px 0 34px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+}
+.blog-toc > strong {
+    font-size: 10px;
+    color: var(--cyan);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+.blog-toc ol {
+    columns: 2;
+    column-gap: 30px;
+    margin: 12px 0 0;
+    padding-left: 20px;
+}
+.blog-toc li {
+    break-inside: avoid;
+    padding: 3px 0;
+    color: var(--dim);
+    font-size: 11px;
+}
+.blog-toc a {
+    color: var(--muted);
+    text-decoration: none;
+}
+.blog-toc a:hover {
+    color: var(--yellow);
+}
+.blog-section {
+    scroll-margin-top: 24px;
+}
+@media (max-width: 560px) {
+    .blog-toc ol {
+        columns: 1;
+    }
+}

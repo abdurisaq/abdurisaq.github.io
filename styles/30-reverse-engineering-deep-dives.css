@@ -1,0 +1,117 @@
+/* VersatileTraining reverse-engineering walkthrough components. */
+
+/* VersatileTraining reverse-engineering walkthrough. */
+.deep-dive {
+    margin-top: 42px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+}
+.deep-dive > .section-heading-row h2 {
+    max-width: 70ch;
+}
+.deep-dive .project-story-section {
+    margin: 26px 0;
+}
+.deep-dive .project-story-section h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+.research-flow {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+}
+.research-step {
+    min-width: 0;
+    padding: 12px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.research-step span {
+    font-size: 10px;
+    color: var(--yellow);
+}
+.research-step strong {
+    font-size: 11px;
+    line-height: 1.5;
+    font-weight: 500;
+    color: var(--fg);
+}
+.debug-snippet {
+    margin: 24px 0;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    min-width: 0;
+}
+.debug-snippet figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+}
+.debug-snippet figcaption strong {
+    font-size: 12px;
+    color: var(--cyan);
+}
+.debug-snippet figcaption span {
+    font-size: 10px;
+    color: var(--muted);
+}
+.debug-snippet pre {
+    margin: 0;
+    padding: 14px;
+    max-width: 100%;
+    overflow: auto;
+    background: var(--code-bg);
+    font-size: 11px;
+    line-height: 1.6;
+    white-space: pre;
+}
+.debug-snippet code {
+    color: var(--fg);
+}
+.research-resources ul {
+    padding-left: 1.25em;
+}
+.research-resources li {
+    margin-bottom: 9px;
+}
+.link-separator {
+    color: var(--dim);
+    margin: 0 5px;
+}
+@media (max-width: 900px) {
+    .research-flow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 480px) {
+    .research-flow {
+        grid-template-columns: 1fr;
+    }
+    .code-viewport {
+        height: min(390px, 60vh);
+    }
+}
+.debug-snippet pre {
+    max-width: 100%;
+    max-height: 520px;
+    margin: 0;
+    padding: 14px;
+    overflow: auto;
+    white-space: pre;
+    overscroll-behavior: contain;
+    font-size: 11px;
+    line-height: 1.55;
+    color: var(--fg);
+}
+.debug-snippet code {
+    font: inherit;
+}
+.research-resources li {
+    overflow-wrap: anywhere;
+}
