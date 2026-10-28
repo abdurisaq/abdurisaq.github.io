@@ -5,16 +5,39 @@ directly. There is no bundler or module loader.
 
 ## Content
 
-The `content/` files only define the `DATA` object used by the renderers. The first file creates it,
-and the remaining files add their respective data groups. Keep content edits in these files rather
-than embedding project or article copy in the renderers.
+The `content/` directory mirrors the page and folder structure shown in the website's file explorer.
+Each navigable page has a focused data file, rather than sharing one large site-data, project-data
+or blog-data file. These files populate the shared `DATA` object; they do not render HTML or
+implement interactions.
 
-| File                   | Responsibility                                              |
-| ---------------------- | ----------------------------------------------------------- |
-| `00-site-data.js`      | Profile, contact links, setup, about, experience and skills |
-| `10-project-data.js`   | Featured, community and smaller-project catalogue           |
-| `20-community-data.js` | Open-source contribution details                            |
-| `30-blog-posts.js`     | Blog stories and technical deep dives                       |
+| Explorer page or path                    | Data source                                           | Responsibility                             |
+| ---------------------------------------- | ----------------------------------------------------- | ------------------------------------------ |
+| `index.lua`                              | `content/index.js`                                    | Home identity, tagline and contact links   |
+| `about.md`                               | `content/about.js`                                    | Biography and quick facts                  |
+| `setup.md`                               | `content/setup.js`                                    | Machines and development workflow          |
+| `experience/work.md`                     | `content/experience/work.js`                          | Experience entries                         |
+| `experience/skills.md`                   | `content/experience/skills.js`                        | Skill groups                               |
+| `resume.pdf`                             | `resume.tex` plus generated files in `assets/`        | Resume source, PDF and page-image preview  |
+| `projects/index.lua`                     | `content/projects/index.js`                           | Initializes project collections            |
+| `projects/<project>.md`                  | Matching file in `content/projects/`                  | One featured or community project per file |
+| `projects/smaller-projects/<project>.md` | Matching file in `content/projects/smaller-projects/` | One smaller project per file               |
+| `blog/index.md`                          | `content/blog/index.js`                               | Initializes the article catalogue          |
+| `blog/<article>.md`                      | Matching file in `content/blog/`                      | One project story per file                 |
+| `blog/deep-dives/<article>.md`           | Matching file in `content/blog/deep-dives/`           | One technical deep dive per file           |
+| `community.md`                           | `content/community.js`                                | Open-source contribution details           |
+| `colorscheme.md`                         | `content/colorscheme.js`                              | Dotfiles repository configuration          |
+
+The `.js` extensions are intentional: the site is static and loads these as ordinary scripts, while
+the Explorer continues to display the existing `.md`, `.lua` and `.pdf` navigation. The content
+directory mirrors those paths without changing the visible navigation.
+
+`content/00-data-root.js` creates the shared `DATA` namespace. The project and blog `index.js` files
+initialize their respective arrays. Each project/article file appends exactly one entry to the
+appropriate array. Keep the script order in `index.html`: it preserves the original
+featured-project, smaller-project and article ordering. In particular, `blog/index.js` must load
+before its article files, and `projects/index.js` must load before the individual project files. The
+technical article files are loaded in their original positions in the article sequence, even though
+they live in the separate `deep-dives/` folder.
 
 ## Scripts
 

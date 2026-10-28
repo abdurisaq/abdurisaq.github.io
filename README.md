@@ -21,41 +21,55 @@ independently.
 
 ```text
 portfolio/
-├── index.html                 # Document shell and ordered asset loading
-├── content/                   # Portfolio content and configuration data
-│   ├── 00-site-data.js         # Profile, setup, about, experience and skills
-│   ├── 10-project-data.js      # Featured, community and smaller projects
-│   ├── 20-community-data.js    # Open-source contribution details
-│   └── 30-blog-posts.js        # Stories and project-specific deep dives
-├── scripts/                   # Rendering and interactive behavior
-│   ├── vim-engine.js           # Standalone Vim-motion state engine
-│   ├── 00-page-renderers.js    # Shared render helpers and page templates
-│   ├── 10-vim-tutorial.js      # Tutorial stages and practice behavior
-│   ├── 20-editor-state.js      # Routes, buffers, split-pane and editor state
-│   ├── 30-editor-rendering.js # Editor rendering and project/blog tree data
-│   ├── 40-router-startup.js    # Initial route synchronization
-│   ├── 50-explorer-and-theme.js# Explorer controls, keyboard focus and themes
-│   ├── 60-search.js            # Telescope-style file search and Grep
-│   ├── 70-commands-and-keyboard.js # Ex commands, help and global key mappings
-│   ├── 80-layout-mode.js       # Conventional-layout toggle
-│   └── 90-dotfiles-panel.js    # GitHub-backed dotfiles browser
-├── styles/                    # The original stylesheet split into ordered layers
-│   ├── 00-theme-and-editor-shell.css
-│   ├── 10-foundation-and-overlays.css
-│   ├── 20-projects-and-components.css
-│   ├── 30-reverse-engineering-deep-dives.css
-│   ├── 40-dotfiles-browser.css
-│   ├── 50-blog-and-article.css
-│   ├── 60-vim-tutorial.css
-│   ├── 70-blog-toc.css
-│   ├── 80-editor-layout-and-search.css
-│   ├── 90-conventional-layout.css
-│   └── 95-resume-and-explorer.css
-├── assets/                    # Images, generated resume files and screenshots
-├── resume.tex                 # LaTeX source for the resume
-├── build-resume.sh            # Linux/macOS resume build script
-├── build-resume.bat           # Windows resume build script
-└── docs/                      # Code map and maintenance notes
+├── index.html                       # Document shell and ordered asset loading
+├── content/                          # Page data mirrors the website explorer
+│   ├── 00-data-root.js                # Shared DATA namespace
+│   ├── index.js                       # index.lua: home/profile data
+│   ├── about.js                       # about.md
+│   ├── setup.js                       # setup.md
+│   ├── experience/
+│   │   ├── work.js                    # experience/work.md
+│   │   └── skills.js                  # experience/skills.md
+│   ├── colorscheme.js                 # colorscheme.md: dotfiles configuration
+│   ├── community.js                   # community.md
+│   ├── projects/
+│   │   ├── index.js                   # projects/index.lua: collection setup
+│   │   ├── localtether.js             # projects/localtether.md
+│   │   ├── versatiletraining.js       # projects/versatiletraining.md
+│   │   ├── privateconvert.js          # projects/privateconvert.md
+│   │   ├── versatiletraininghub.js    # projects/versatiletraininghub.md
+│   │   ├── organize-my-bakkesmod-garage.js # community project page data
+│   │   └── smaller-projects/
+│   │       ├── musicapp.js            # projects/smaller-projects/musicapp.md
+│   │       └── 353-project.js         # projects/smaller-projects/353-project.md
+│   └── blog/
+│       ├── index.js                   # blog/index.md: article collection setup
+│       ├── privateconvert.js          # blog/privateconvert.md
+│       ├── musicapp.js                # blog/musicapp.md
+│       ├── versatiletraining-story.js # blog/versatiletraining-story.md
+│       ├── organize-my-bakkesmod-garage.js # blog story
+│       ├── localtether-story.js       # blog/localtether-story.md
+│       └── deep-dives/
+│           ├── versatiletraining-ue3-notes.js # blog/deep-dives/*.md
+│           └── localtether-implementation-notes.js
+├── scripts/                           # Rendering and interactive behavior
+│   ├── vim-engine.js
+│   ├── 00-page-renderers.js
+│   ├── 10-vim-tutorial.js
+│   ├── 20-editor-state.js
+│   ├── 30-editor-rendering.js
+│   ├── 40-router-startup.js
+│   ├── 50-explorer-and-theme.js
+│   ├── 60-search.js
+│   ├── 70-commands-and-keyboard.js
+│   ├── 80-layout-mode.js
+│   └── 90-dotfiles-panel.js
+├── styles/                            # Original CSS in ordered cascade layers
+├── assets/                            # Images, resume and screenshots
+├── resume.tex
+├── build-resume.sh
+├── build-resume.bat
+└── docs/                              # Architecture and maintenance notes
 ```
 
 See [`docs/architecture.md`](docs/architecture.md) for the responsibilities and load-order contract
@@ -63,11 +77,19 @@ in more detail.
 
 ## Where to make changes
 
-- Update name, contact details, about text, experience, skills or setup in
-  `content/00-site-data.js`.
-- Update featured projects, community projects or smaller projects in `content/10-project-data.js`.
-- Update upstream contribution information in `content/20-community-data.js`.
-- Write or edit a project story or deep dive in `content/30-blog-posts.js`.
+- Update home-page identity and contact details in `content/index.js`.
+- Update biography copy and quick facts in `content/about.js`.
+- Update workstation details in `content/setup.js`.
+- Update employment entries in `content/experience/work.js` and grouped skills in
+  `content/experience/skills.js`.
+- Update dotfiles repository settings in `content/colorscheme.js` and contribution details in
+  `content/community.js`.
+- Edit one project at a time in its matching file under `content/projects/`; smaller projects live
+  under `content/projects/smaller-projects/`.
+- Edit one article at a time in its matching file under `content/blog/`; technical deep dives live
+  under `content/blog/deep-dives/`.
+- Keep `content/projects/index.js` and `content/blog/index.js` as collection initializers; their
+  contents are intentionally small.
 - Change page markup or shared HTML rendering in `scripts/00-page-renderers.js`.
 - Change a specific interaction in the matching file under `scripts/` (search, keyboard commands,
   explorer, tutorial, dotfiles, and so on).
@@ -149,9 +171,10 @@ overriding the policy with `no-referrer` or `same-origin`; set the response head
 
 ## Personalize before publishing
 
-Update TODO values and contact details in `content/00-site-data.js`, edit project details in
-`content/10-project-data.js`, and update blog articles in `content/30-blog-posts.js`. Edit
-`resume.tex` for the resume, then run `./build-resume.sh` to regenerate `assets/resume.pdf` and
+Update home/contact details in `content/index.js`, biography in `content/about.js`, experience and
+skills in `content/experience/`, project details in their individual files under
+`content/projects/`, and articles in their individual files under `content/blog/`. Edit `resume.tex`
+for the resume, then run `./build-resume.sh` to regenerate `assets/resume.pdf` and
 `assets/resume-preview.png`. The resume page displays the generated PNG inside the Melange theme;
 the PDF is kept as a correctly titled, downloadable ATS-friendly file. Rebuilding requires a LaTeX
 installation (`pdflatex`) and Poppler (`pdftocairo`); use `build-resume.sh` on Linux/macOS or
@@ -159,6 +182,6 @@ installation (`pdflatex`) and Poppler (`pdftocairo`); use `build-resume.sh` on L
 identity, school, contact and employer details, so replace those in `resume.tex` before publishing
 your real resume.
 
-The colorscheme page reads the configured dotfiles repository from `content/00-site-data.js`. It has
+The colorscheme page reads the configured dotfiles repository from `content/colorscheme.js`. It has
 independent scroll containers for the file list and source preview: scroll the file list to browse
 dotfiles, and scroll the code pane vertically or horizontally to inspect long files.
