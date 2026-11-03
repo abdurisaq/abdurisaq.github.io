@@ -1,6 +1,6 @@
 /* Theme tokens, resets, and the Neovim shell. */
-
 /* Melange palette — semantic editor tokens */
+
 :root,
 [data-theme="light"] {
     color-scheme: light;
@@ -408,6 +408,7 @@ input:focus-visible {
         transform: translateY(3px);
     }
 }
+
 .statusline {
     height: 27px;
     display: flex;

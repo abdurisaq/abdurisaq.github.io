@@ -1,6 +1,6 @@
 /* Shared typography, layout primitives, overlays, and responsive foundations. */
-
 /* Content */
+
 h1,
 h2,
 h3 {
@@ -222,6 +222,7 @@ section {
 }
 /* Do not use a generic .pdf rule here: the file-tree badge also carries that class.
    The resume preview is styled by .resume-preview-frame and its img instead. */
+
 .box {
     background: var(--panel);
     border: 1px solid var(--border);
@@ -274,6 +275,7 @@ pre.code {
     flex: none;
 }
 /* Keep GitHub source previews constrained without stealing scroll from their child panes. */
+
 #live,
 .live-layout,
 .files,
@@ -628,6 +630,7 @@ pre.code {
         min-height: 220px;
     }
 }
+
 @media (max-width: 760px) {
     .explorer {
         position: fixed;
@@ -661,6 +664,7 @@ pre.code {
         padding-left: 15px;
     }
 }
+
 @media (max-width: 480px) {
     .community-intro {
         grid-template-columns: 1fr;
@@ -704,6 +708,7 @@ pre.code {
         justify-content: space-between;
     }
 }
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

@@ -1,6 +1,6 @@
 /* Conventional navigation mode and responsive layout overrides. */
-
 /* Conventional portfolio layout, same Melange tokens and same page content. */
+
 .boring-nav {
     display: flex;
     align-items: center;
@@ -120,6 +120,7 @@
         min-height: 120px;
     }
 }
+
 @media (max-width: 480px) {
     .editor-content:has(.vim-tutorial) {
         padding: 6px 8px 10px;

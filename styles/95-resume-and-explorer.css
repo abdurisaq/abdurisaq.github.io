@@ -1,6 +1,6 @@
 /* Resume preview, file-tree rows, and Deep Dives folder boundary. */
-
 /* Resume: a page image inside the existing Melange surface, never a browser PDF embed. */
+
 .resume-viewer {
     width: min(100%, 900px);
     margin: 20px auto 0;
@@ -65,8 +65,10 @@
         justify-content: center;
     }
 }
+
 /* File rows use an explicit grid so labels always receive the remaining width.
    This also prevents the resume row from collapsing to a zero-width label. */
+
 #file-tree .tree-file {
     display: grid;
     grid-template-columns: 27px minmax(0, 1fr);
@@ -101,6 +103,7 @@
 }
 /* Keep deep dives at the end of blog/, with a visible boundary around the
    nested folder contents so it reads as a sibling folder, not another post. */
+
 .tree-folder-separator {
     height: 0;
     border-top: 1px solid var(--border);

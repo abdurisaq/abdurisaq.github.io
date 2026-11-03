@@ -1,6 +1,6 @@
 /* Interactive Vim tutorial, practice panes, and offset-note components. */
-
 /* Vim motions landing page and interactive split-buffer tutorial. */
+
 .vim-pitch {
     font-size: clamp(16px, 2vw, 20px);
     line-height: 1.8;
@@ -443,6 +443,7 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
 @media (max-width: 480px) {
     .vim-tutorial-status {
         font-size: 9px;
@@ -464,7 +465,9 @@
         grid-template-columns: 1fr;
     }
 }
+
 /* The raw offset notes are deliberately more readable than a code-dump. */
+
 .offset-notes {
     margin: 38px 0;
     border-top: 1px solid var(--border);

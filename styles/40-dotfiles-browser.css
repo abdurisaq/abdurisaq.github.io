@@ -1,6 +1,6 @@
 /* GitHub dotfiles browser and code preview. */
-
 /* Dotfiles browser: both panes own their scroll; the page itself never steals their wheel input. */
+
 .live-layout {
     min-width: 0;
     max-width: 100%;

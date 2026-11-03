@@ -1,6 +1,6 @@
 /* VersatileTraining reverse-engineering walkthrough components. */
-
 /* VersatileTraining reverse-engineering walkthrough. */
+
 .deep-dive {
     margin-top: 42px;
     padding-top: 28px;
@@ -89,6 +89,7 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
+
 @media (max-width: 480px) {
     .research-flow {
         grid-template-columns: 1fr;
@@ -97,6 +98,7 @@
         height: min(390px, 60vh);
     }
 }
+
 .debug-snippet pre {
     max-width: 100%;
     max-height: 520px;

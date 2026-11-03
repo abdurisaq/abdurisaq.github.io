@@ -1,6 +1,6 @@
 /* Fixed editor frame, split panes, Telescope layout, and tutorial density. */
-
 /* Fixed editor frame: scroll the file contents, not the browser window. */
+
 html,
 body {
     height: 100%;
@@ -133,6 +133,7 @@ body {
     display: none !important;
 }
 /* Telescope: list and preview live in a bounded split, each with its own scroll. */
+
 .palette {
     width: min(980px, 100%);
     max-height: calc(100dvh - 32px);
@@ -212,6 +213,7 @@ body {
     font-size: 9px;
 }
 /* The practice lesson uses the available editor height instead of growing the page. */
+
 .editor-content:has(.vim-tutorial) {
     padding: 12px clamp(12px, 2vw, 28px) 18px;
     overflow-y: auto;
