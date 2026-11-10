@@ -1,15 +1,15 @@
 /* GitHub-backed dotfiles panel and its request cache. */
 /* ---------- live dotfiles panel ---------- */
 const ago = (d) => {
-    const s = (Date.now() - new Date(d)) / 1e3,
-        u = [
-            [31536e3, "year"],
-            [2592e3, "month"],
-            [86400, "day"],
-            [3600, "hour"],
-            [60, "minute"],
-        ];
-    for (const [n, l] of u)
+    const s = (Date.now() - new Date(d)) / 1e3;
+    const units = [
+        [31536e3, "year"],
+        [2592e3, "month"],
+        [86400, "day"],
+        [3600, "hour"],
+        [60, "minute"],
+    ];
+    for (const [n, l] of units)
         if (s >= n) {
             const v = Math.floor(s / n);
             return `${v} ${l}${v > 1 ? "s" : ""} ago`;
@@ -56,7 +56,23 @@ async function loadDotfiles() {
             paths.find((p) => /nvim.*init\.lua$/.test(p)) ||
             paths.find((p) => /init\.(lua|vim)$/.test(p)) ||
             paths[0];
-        box.innerHTML = `<div class="box"><h3>${esc(info.full_name)}</h3><p style="margin:0">last pushed <b>${ago(info.pushed_at)}</b> · ${paths.length} files · branch <code>${esc(br)}</code> · ${info.stargazers_count} stars</p></div><div class="box"><h3>Latest commits</h3>${commits.map((c) => `<div class="commit"><span>${ago(c.commit.author.date)}</span><a href="${esc(c.html_url)}" target="_blank" rel="noopener">${esc(c.commit.message.split("\n")[0])}</a></div>`).join("")}</div><div class="live-layout"><div class="box files" id="files" aria-label="Dotfiles">${paths.map((p) => `<button data-p="${esc(p)}" title="${esc(p)}">${esc(p)}</button>`).join("")}</div><section class="box code-panel"><div id="fname" class="code-filename"></div><div class="code-viewport"><pre class="code" id="code"></pre></div></section></div>`;
+        box.innerHTML = joinHtml(
+            `<div class="box"><h3>${esc(info.full_name)}</h3><p style="margin:0">last pushed <b>`,
+            `${ago(info.pushed_at)}</b> · ${paths.length} files · branch <code>${esc(br)}</code> · `,
+            `${info.stargazers_count} stars</p></div><div class="box"><h3>Latest commits</h3>`,
+            `${commits
+                .map((c) =>
+                    joinHtml(
+                        `<div class="commit"><span>${ago(c.commit.author.date)}</span><a href="${esc(c.html_url)}" `,
+                        `target="_blank" rel="noopener">${esc(c.commit.message.split("\n")[0])}</a></div>`,
+                    ),
+                )
+                .join("")}</div>`,
+            `<div class="live-layout"><div class="box files" id="files" aria-label="Dotfiles">`,
+            `${paths.map((p) => `<button data-p="${esc(p)}" title="${esc(p)}">${esc(p)}</button>`).join("")}</div>`,
+            `<section class="box code-panel"><div id="fname" class="code-filename"></div>`,
+            `<div class="code-viewport"><pre class="code" id="code"></pre></div></section></div>`,
+        );
         const show = async (p) => {
             document
                 .querySelectorAll("#files button")
@@ -79,6 +95,9 @@ async function loadDotfiles() {
         });
         if (first) show(first);
     } catch (e) {
-        box.innerHTML = `<div class="box">Couldn't reach the GitHub API (${esc(e.message)}). You can still <a href="${REPO}" target="_blank" rel="noopener">browse the repo directly</a>.</div>`;
+        box.innerHTML = joinHtml(
+            `<div class="box">Couldn't reach the GitHub API (${esc(e.message)}). You can still <a href="${REPO}" `,
+            `target="_blank" rel="noopener">browse the repo directly</a>.</div>`,
+        );
     }
 }

@@ -36,7 +36,8 @@ const VIM_TUTORIAL_STAGES = [
         },
         requiredKeys: Array(7).fill("w"),
         explanation:
-            "w moves to the next word. b goes back and e moves to the end of the current word. This stage specifically checks that you used w, not a pile of l presses.",
+            "w moves to the next word. b goes back and e moves to the end of the current word. " +
+            "This stage specifically checks that you used w, not a pile of l presses.",
     },
     {
         name: "Delete a line",
@@ -83,7 +84,8 @@ const VIM_TUTORIAL_STAGES = [
         },
         requiredKeys: ["i", ...Array.from("Hello "), "Escape"],
         explanation:
-            "i enters Insert mode. Escape returns to Normal mode. Watch the status bar change color when you switch modes.",
+            "i enters Insert mode. Escape returns to Normal mode. " +
+            "Watch the status bar change color when you switch modes.",
     },
     {
         name: "Change a word",
@@ -119,7 +121,8 @@ const VIM_TUTORIAL_STAGES = [
         },
         requiredKeys: ["0", "$"],
         explanation:
-            "0 jumps to the first column. $ moves to the last character. You do not have to count spaces or repeatedly press l.",
+            "0 jumps to the first column. $ moves to the last character. " +
+            "You do not have to count spaces or repeatedly press l.",
     },
     {
         name: "Jump through the buffer",
@@ -138,7 +141,8 @@ const VIM_TUTORIAL_STAGES = [
         },
         requiredKeys: ["G", "g", "g"],
         explanation:
-            "G jumps to the last line. gg jumps back to the top. Both are useful when you are moving around a file that is much longer than the screen.",
+            "G jumps to the last line. gg jumps back to the top. " +
+            "Both are useful when you are moving around a file that is much longer than the screen.",
     },
     {
         name: "Find a character",
@@ -207,7 +211,8 @@ const VIM_TUTORIAL_STAGES = [
         },
         requiredKeys: ["x"],
         explanation:
-            "x removes the character under the cursor. You do not have to enter Insert mode just to remove one character.",
+            "x removes the character under the cursor. " +
+            "You do not have to enter Insert mode just to remove one character.",
     },
     {
         name: "Open a line above",
@@ -258,7 +263,8 @@ const VIM_TUTORIAL_STAGES = [
             "c,i,w": 1,
         },
         explanation:
-            "You used motions to clean up a document without reaching for the mouse. Try w, dd and ciw in your editor or IDE.",
+            "You used motions to clean up a document without reaching for the mouse. " +
+            "Try w, dd and ciw in your editor or IDE.",
     },
 ];
 let vimAdvanceTimer = null;
@@ -392,7 +398,10 @@ function initVimTutorial(query) {
                         /<\/span>$/,
                         '<span class="vim-cursor-block">&nbsp;</span>',
                     );
-                return `<div class="vim-line"><span class="vim-line-number">${String(lineIndex + 1).padStart(2, "0")}</span><span class="vim-line-text">${content}</span></div>`;
+                return joinHtml(
+                    `<div class="vim-line"><span class="vim-line-number">${String(lineIndex + 1).padStart(2, "0")}</span>`,
+                    `<span class="vim-line-text">${content}</span></div>`,
+                );
             })
             .join("");
     const render = () => {
@@ -407,14 +416,14 @@ function initVimTutorial(query) {
         $("#vim-goal-copy").textContent = free
             ? "Try the motions on your own text. This pane is a quick reference."
             : stage().goal;
-        $("#vim-keys").innerHTML = `${
-            keys.length
-                ? keys
-                      .slice(-12)
-                      .map((key) => `<span>${esc(keyLabel(key))}</span>`)
-                      .join("<i>·</i>")
-                : '<span class="vim-key-placeholder">Your keystrokes will show up here · :w saves · :q resets</span>'
-        }${locked ? '<strong class="vim-key-success">✓</strong>' : ""}`;
+        const keyHistory = keys.length
+            ? keys
+                  .slice(-12)
+                  .map((key) => `<span>${esc(keyLabel(key))}</span>`)
+                  .join("<i>·</i>")
+            : '<span class="vim-key-placeholder">Your keystrokes will show up here · :w saves · :q resets</span>';
+        const successMark = locked ? '<strong class="vim-key-success">✓</strong>' : "";
+        $("#vim-keys").innerHTML = joinHtml(keyHistory, successMark);
         $("#vim-hint").hidden = focused;
         $("#vim-buffer").classList.toggle("has-focus", focused);
         $("#vim-mode-label").textContent =
@@ -469,7 +478,25 @@ function initVimTutorial(query) {
                 }),
             );
         } catch (_) {}
-        body.innerHTML = `<section class="vim-completion"><div class="vim-completion-mark">✓</div><div class="page-eyebrow">~/vim · completed</div><h2>You made it through the basics.</h2><p>You moved around a file, jumped between words and lines, changed text, deleted lines, copied them, and opened new lines. You can use these motions in VS Code with an extension or in Neovim.</p><h3>The motions you tried</h3><div class="vim-motion-list"><span><kbd>h j k l</kbd> move</span><span><kbd>w b e</kbd> words</span><span><kbd>0 $</kbd> line start / end</span><span><kbd>gg G</kbd> file start / end</span><span><kbd>f{char}</kbd> find a character</span><span><kbd>x dd</kbd> delete</span><span><kbd>yy p</kbd> yank and put</span><span><kbd>i Esc</kbd> insert mode</span><span><kbd>ciw</kbd> change inside word</span><span><kbd>a A</kbd> append</span><span><kbd>o O</kbd> open a line</span></div><div class="btns"><a class="btn" href="https://marketplace.visualstudio.com/items?itemName=vscodevim.vim" target="_blank" rel="noopener">Vim extension for VS Code ↗</a><a class="btn alt" href="https://neovim.io/doc/user/" target="_blank" rel="noopener">Neovim :help ↗</a><a class="btn alt" href="https://github.com/abdurisaq/.dotfiles" target="_blank" rel="noopener">My dotfiles ↗</a><button class="btn alt" id="vim-again" type="button">Run it again</button></div></section>`;
+        body.innerHTML = joinHtml(
+            `<section class="vim-completion"><div class="vim-completion-mark">✓</div>`,
+            `<div class="page-eyebrow">~/vim · completed</div><h2>You made it through the basics.</h2>`,
+            `<p>You moved around a file, jumped between words and lines, changed text, deleted lines, copied them, `,
+            `and opened new lines. You can use these motions in VS Code with an extension or in Neovim.</p>`,
+            `<h3>The motions you tried</h3><div class="vim-motion-list"><span><kbd>h j k l</kbd> move</span><span>`,
+            `<kbd>w b e</kbd> words</span><span><kbd>0 $</kbd> line start / end</span><span>`,
+            `<kbd>gg G</kbd> file start / end</span><span><kbd>f{char}</kbd> find a character</span><span>`,
+            `<kbd>x dd</kbd> delete</span><span><kbd>yy p</kbd> yank and put</span><span>`,
+            `<kbd>i Esc</kbd> insert mode</span><span><kbd>ciw</kbd> change inside word</span><span>`,
+            `<kbd>a A</kbd> append</span><span><kbd>o O</kbd> open a line</span></div><div class="btns">`,
+            `<a class="btn" href="https://marketplace.visualstudio.com/items?itemName=vscodevim.vim" `,
+            `target="_blank" rel="noopener">Vim extension for VS Code ↗</a>`,
+            `<a class="btn alt" href="https://neovim.io/doc/user/" target="_blank" rel="noopener">Neovim :help `,
+            `↗</a>`,
+            `<a class="btn alt" href="https://github.com/abdurisaq/.dotfiles" target="_blank" rel="noopener">My `,
+            `dotfiles ↗</a><button class="btn alt" id="vim-again" type="button">Run it again</button></div>`,
+            `</section>`,
+        );
         $("#vim-again").addEventListener("click", () => {
             try {
                 localStorage.setItem(
@@ -644,16 +671,60 @@ function initVimTutorial(query) {
         render();
     };
     if (free) {
-        body.innerHTML = `<div class="vim-stage-toolbar"><span class="vim-stage-badge" id="vim-stage-count">FREE PLAY</span></div>${tutorialMarkup()}`;
+        body.innerHTML = joinHtml(
+            `<div class="vim-stage-toolbar"><span class="vim-stage-badge" id="vim-stage-count">FREE PLAY</span>`,
+            `</div>${tutorialMarkup()}`,
+        );
     } else {
         if (saved.completed && !query.has("stage")) {
             finish();
             return;
         }
-        body.innerHTML = `<div class="vim-stage-toolbar"><span class="vim-stage-badge" id="vim-stage-count"></span></div>${tutorialMarkup()}`;
+        body.innerHTML = joinHtml(
+            `<div class="vim-stage-toolbar"><span class="vim-stage-badge" id="vim-stage-count"></span></div>`,
+            `${tutorialMarkup()}`,
+        );
     }
     function tutorialMarkup() {
-        return `<div class="vim-stage-intro"><h2 id="vim-stage-name"></h2><p id="vim-goal-copy"></p></div><div class="vim-pane-switch"><button type="button" data-vim-pane="goal" aria-pressed="false">GOAL</button><button type="button" data-vim-pane="you" class="active" aria-pressed="true">YOU</button></div><div class="vim-two-pane"><section class="vim-pane" id="vim-goal-pane"><header><strong>[ GOAL ]</strong><span>target state</span></header><div class="vim-text-buffer vim-goal-buffer" id="vim-goal-buffer"></div></section><section class="vim-pane" id="vim-you-pane"><header><strong>[ YOU ]</strong><span>editable buffer</span></header><div class="vim-buffer vim-text-buffer" id="vim-buffer" tabindex="0" aria-label="Vim practice buffer. Click here and type Vim motions."></div><div class="vim-hint" id="vim-hint">Click here to start typing</div><div class="vim-key-strip" id="vim-keys"></div></section></div><div class="vim-tutorial-status" id="vim-tutorial-status"><strong id="vim-mode-label">-- NORMAL --</strong><span id="vim-stage-position"></span><span class="vim-status-spacer"></span><button type="button" id="vim-help-button">? help</button><button type="button" id="vim-reset-button">r restart</button></div><div class="vim-play-command" id="vim-play-command" hidden><span>:</span><input id="vim-play-command-input" aria-label="Vim tutorial command" autocomplete="off" spellcheck="false"><span class="vim-play-command-hint">:w save · :q reset · :qa exit</span></div><p class="vim-play-command-message" id="vim-play-command-message" hidden></p><section class="vim-explanation" id="vim-explanation" hidden><div class="vim-explanation-check">✓ Nice.</div><p id="vim-explanation-copy"></p><button class="btn" id="vim-next" type="button" hidden>Next stage ↗</button></section><div class="vim-help" id="vim-help" tabindex="-1" hidden><div class="vim-help-card"><div class="dialog-heading"><h2>Motion cheat sheet</h2><button type="button" class="subtle-button" id="vim-help-close">×</button></div><div class="vim-motion-list"><span><kbd>h j k l</kbd> move</span><span><kbd>w b e</kbd> word navigation</span><span><kbd>0 $</kbd> line start / end</span><span><kbd>gg G</kbd> buffer start / end</span><span><kbd>f + character</kbd> find character</span><span><kbd>x dd</kbd> delete character / line</span><span><kbd>yy p</kbd> copy line / put below</span><span><kbd>i Esc</kbd> insert / return to Normal</span><span><kbd>ciw</kbd> change inside word</span><span><kbd>a A</kbd> append after cursor / at line end</span><span><kbd>o O</kbd> open a line below / above</span></div><p>Type <kbd>:w</kbd> and press Enter to submit. <kbd>:q</kbd> resets the current stage. <kbd>:qa</kbd> leaves the tutorial. Press <kbd>Esc</kbd> in Insert mode to return to Normal.</p></div></div>`;
+        return joinHtml(
+            `<div class="vim-stage-intro"><h2 id="vim-stage-name"></h2><p id="vim-goal-copy"></p></div>`,
+            `<div class="vim-pane-switch">`,
+            `<button type="button" data-vim-pane="goal" aria-pressed="false">GOAL</button>`,
+            `<button type="button" data-vim-pane="you" class="active" aria-pressed="true">YOU</button></div>`,
+            `<div class="vim-two-pane"><section class="vim-pane" id="vim-goal-pane"><header>`,
+            `<strong>[ GOAL ]</strong><span>target state</span></header>`,
+            `<div class="vim-text-buffer vim-goal-buffer" id="vim-goal-buffer"></div></section>`,
+            `<section class="vim-pane" id="vim-you-pane"><header><strong>[ YOU ]</strong>`,
+            `<span>editable buffer</span></header>`,
+            `<div class="vim-buffer vim-text-buffer" id="vim-buffer" tabindex="0" aria-label="Vim practice buffer. `,
+            `Click here and type Vim motions."></div>`,
+            `<div class="vim-hint" id="vim-hint">Click here to start typing</div>`,
+            `<div class="vim-key-strip" id="vim-keys"></div></section></div>`,
+            `<div class="vim-tutorial-status" id="vim-tutorial-status">`,
+            `<strong id="vim-mode-label">-- NORMAL --</strong><span id="vim-stage-position"></span>`,
+            `<span class="vim-status-spacer"></span><button type="button" id="vim-help-button">? help</button>`,
+            `<button type="button" id="vim-reset-button">r restart</button></div>`,
+            `<div class="vim-play-command" id="vim-play-command" hidden><span>:</span>`,
+            `<input id="vim-play-command-input" aria-label="Vim tutorial command" autocomplete="off" `,
+            `spellcheck="false"><span class="vim-play-command-hint">:w save · :q reset · :qa exit</span></div>`,
+            `<p class="vim-play-command-message" id="vim-play-command-message" hidden></p>`,
+            `<section class="vim-explanation" id="vim-explanation" hidden>`,
+            `<div class="vim-explanation-check">✓ Nice.</div><p id="vim-explanation-copy"></p>`,
+            `<button class="btn" id="vim-next" type="button" hidden>Next stage ↗</button></section>`,
+            `<div class="vim-help" id="vim-help" tabindex="-1" hidden><div class="vim-help-card">`,
+            `<div class="dialog-heading"><h2>Motion cheat sheet</h2>`,
+            `<button type="button" class="subtle-button" id="vim-help-close">×</button></div>`,
+            `<div class="vim-motion-list"><span><kbd>h j k l</kbd> move</span><span>`,
+            `<kbd>w b e</kbd> word navigation</span><span><kbd>0 $</kbd> line start / end</span><span>`,
+            `<kbd>gg G</kbd> buffer start / end</span><span><kbd>f + character</kbd> find character</span><span>`,
+            `<kbd>x dd</kbd> delete character / line</span><span><kbd>yy p</kbd> copy line / put below</span>`,
+            `<span><kbd>i Esc</kbd> insert / return to Normal</span><span><kbd>ciw</kbd> change inside word</span>`,
+            `<span><kbd>a A</kbd> append after cursor / at line end</span><span>`,
+            `<kbd>o O</kbd> open a line below / above</span></div>`,
+            `<p>Type <kbd>:w</kbd> and press Enter to submit. <kbd>:q</kbd> resets the current stage. `,
+            `<kbd>:qa</kbd> leaves the tutorial. Press <kbd>Esc</kbd> in Insert mode to return to Normal.</p>`,
+            `</div></div>`,
+        );
     }
     const buffer = () => $("#vim-buffer");
     buffer().addEventListener("focus", () => {

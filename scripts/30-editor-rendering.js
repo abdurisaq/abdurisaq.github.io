@@ -1,4 +1,17 @@
 /* Rendered-content bindings, page rendering, and explorer population. */
+const projectTreeEntry = (project) =>
+    joinHtml(
+        `<a class="tree-file" href="${projectRoute(project)}" data-project="${esc(project.id)}" `,
+        `aria-label="${esc(project.id)}.md"><span class="file-type md">MD</span>`,
+        `<span class="tree-label">${esc(project.id)}.md</span></a>`,
+    );
+const blogTreeEntry = (post) =>
+    joinHtml(
+        `<a class="tree-file" href="#/blog/${encodeURIComponent(post.id)}" data-route="blog" `,
+        `data-route-id="${esc(post.id)}" aria-label="${esc(post.id)}.md">`,
+        `<span class="file-type md">MD</span><span class="tree-label">${esc(post.id)}.md</span></a>`,
+    );
+
 function bindRenderedContent(root) {
     root.querySelectorAll(".screenshot-slot img").forEach((img) => {
         img.addEventListener(
@@ -74,34 +87,21 @@ function renderEditor() {
 }
 function renderProjectTree() {
     const ordered = [...DATA.projects, ...DATA.communityProjects];
-    $("#project-tree").innerHTML = ordered
-        .map(
-            (p) =>
-                `<a class="tree-file" href="${projectRoute(p)}" data-project="${esc(p.id)}" aria-label="${esc(p.id)}.md"><span class="file-type md">MD</span><span class="tree-label">${esc(p.id)}.md</span></a>`,
-        )
-        .join("");
-    $("#smaller-project-tree").innerHTML = DATA.smallerProjects
-        .map(
-            (p) =>
-                `<a class="tree-file" href="${projectRoute(p)}" data-project="${esc(p.id)}" aria-label="${esc(p.id)}.md"><span class="file-type md">MD</span><span class="tree-label">${esc(p.id)}.md</span></a>`,
-        )
-        .join("");
-    const blogTree = $("#blog-tree"),
-        deepDiveTree = $("#deep-dive-tree");
-    if (blogTree)
+    $("#project-tree").innerHTML = ordered.map(projectTreeEntry).join("");
+    $("#smaller-project-tree").innerHTML = DATA.smallerProjects.map(projectTreeEntry).join("");
+
+    const blogTree = $("#blog-tree");
+    const deepDiveTree = $("#deep-dive-tree");
+    if (blogTree) {
         blogTree.innerHTML = DATA.blogPosts
             .filter((post) => post.type !== "technical")
-            .map(
-                (post) =>
-                    `<a class="tree-file" href="#/blog/${encodeURIComponent(post.id)}" data-route="blog" data-route-id="${esc(post.id)}" aria-label="${esc(post.id)}.md"><span class="file-type md">MD</span><span class="tree-label">${esc(post.id)}.md</span></a>`,
-            )
+            .map(blogTreeEntry)
             .join("");
-    if (deepDiveTree)
+    }
+    if (deepDiveTree) {
         deepDiveTree.innerHTML = DATA.blogPosts
             .filter((post) => post.type === "technical")
-            .map(
-                (post) =>
-                    `<a class="tree-file" href="#/blog/${encodeURIComponent(post.id)}" data-route="blog" data-route-id="${esc(post.id)}" aria-label="${esc(post.id)}.md"><span class="file-type md">MD</span><span class="tree-label">${esc(post.id)}.md</span></a>`,
-            )
+            .map(blogTreeEntry)
             .join("");
+    }
 }

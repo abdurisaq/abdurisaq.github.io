@@ -110,21 +110,21 @@ function openSplit(target, orientation = "vertical") {
     if (location.hash !== route) location.hash = route;
     else renderEditor();
 }
+function showSinglePane(key) {
+    splitState = null;
+    const route = bufferRoute(key);
+    if (location.hash !== route) location.hash = route;
+    else renderEditor();
+}
 function closeToActiveSplit() {
     if (!splitState) return;
     const keep = splitState.active === "left" ? splitState.leftKey : splitState.rightKey;
-    splitState = null;
-    const route = bufferRoute(keep);
-    if (location.hash !== route) location.hash = route;
-    else renderEditor();
+    showSinglePane(keep);
 }
 function closeCurrentSplitPane() {
     if (!splitState) return;
     const keep = splitState.active === "left" ? splitState.rightKey : splitState.leftKey;
-    splitState = null;
-    const route = bufferRoute(keep);
-    if (location.hash !== route) location.hash = route;
-    else renderEditor();
+    showSinglePane(keep);
 }
 function focusOtherSplit() {
     if (!splitState) return;
@@ -169,9 +169,14 @@ function renderChrome() {
     if (!buffers.includes(key)) buffers.push(key);
     activeBuffer = key;
     $("#bufferline").innerHTML = buffers
-        .map(
-            (b) =>
-                `<div class="buffer-tab ${b === activeBuffer ? "active" : ""}" role="tab" aria-selected="${b === activeBuffer}" data-buffer="${esc(b)}"><span class="tab-file-icon">${b.startsWith("project:") ? "◇" : "▤"}</span><span class="tab-name">${esc(bufferLabel(b))}</span><button class="tab-close" data-close-buffer="${esc(b)}" aria-label="Close ${esc(bufferLabel(b))}" title="Close buffer">×</button></div>`,
+        .map((b) =>
+            joinHtml(
+                `<div class="buffer-tab ${b === activeBuffer ? "active" : ""}" role="tab" aria-selected="`,
+                `${b === activeBuffer}" data-buffer="${esc(b)}"><span class="tab-file-icon">`,
+                `${b.startsWith("project:") ? "◇" : "▤"}</span><span class="tab-name">${esc(bufferLabel(b))}</span>`,
+                `<button class="tab-close" data-close-buffer="${esc(b)}" aria-label="Close ${esc(bufferLabel(b))}" `,
+                `title="Close buffer">×</button></div>`,
+            ),
         )
         .join("");
     const file = bufferLabel(key);
@@ -186,10 +191,17 @@ function renderChrome() {
               : key === "experience" || key === "skills" || key === "resume"
                 ? "experience"
                 : "~";
-    $("#breadcrumb").innerHTML =
-        `<span>${esc(P.handle)}</span> <span style="color:var(--dim)">/</span> <span>${esc(parent)}</span> <span style="color:var(--dim)">/</span> <span class="crumb-current">${esc(file)}</span>`;
-    $("#status").innerHTML =
-        `<span class="status-mode">NORMAL</span><span class="status-branch">⌥ main</span><span class="status-file">${esc(file)}</span><span class="status-spacer"></span><button class="status-button" id="status-help" title="Keyboard shortcuts">? keys</button><span class="status-theme">${document.documentElement.dataset.theme} · melange</span><span class="status-position">utf-8&nbsp; · &nbsp;${route.page === "home" ? "1:1" : "1:1"}</span>`;
+    $("#breadcrumb").innerHTML = joinHtml(
+        `<span>${esc(P.handle)}</span> <span style="color:var(--dim)">/</span> <span>${esc(parent)}</span> `,
+        `<span style="color:var(--dim)">/</span> <span class="crumb-current">${esc(file)}</span>`,
+    );
+    $("#status").innerHTML = joinHtml(
+        `<span class="status-mode">NORMAL</span><span class="status-branch">⌥ main</span>`,
+        `<span class="status-file">${esc(file)}</span><span class="status-spacer"></span>`,
+        `<button class="status-button" id="status-help" title="Keyboard shortcuts">? keys</button>`,
+        `<span class="status-theme">${document.documentElement.dataset.theme} · melange</span>`,
+        `<span class="status-position">utf-8&nbsp; · &nbsp;${route.page === "home" ? "1:1" : "1:1"}</span>`,
+    );
     document.querySelectorAll("#file-tree [data-route]").forEach((a) => {
         const samePage = a.dataset.route === route.page;
         const sameId = a.dataset.routeId ? a.dataset.routeId === route.id : !route.id;

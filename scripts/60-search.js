@@ -3,35 +3,53 @@
 let searchMode = "files",
     searchMatches = [],
     searchReturnFocus = null;
-function projectSearchContent(p) {
-    const deepDive = p.deepDive
-        ? [
-              p.deepDive.intro,
-              ...(p.deepDive.sections || []).flatMap((section) => [
-                  section.title,
-                  ...(section.paragraphs || []),
-                  ...(section.bullets || []),
-              ]),
-          ]
+function sectionSearchContent(sections, includeCode = false) {
+    return (sections || []).flatMap((section) => [
+        section.title,
+        ...(section.paragraphs || []),
+        ...(section.bullets || []),
+        ...(includeCode ? [section.code || ""] : []),
+    ]);
+}
+function projectSearchContent(project) {
+    const deepDive = project.deepDive
+        ? [project.deepDive.intro, ...sectionSearchContent(project.deepDive.sections)]
         : [];
     return [
-        p.name,
-        p.summary,
-        p.about,
-        ...(p.stack || []),
-        ...(p.highlights || []),
-        ...(p.sections || []).flatMap((section) => [
-            section.title,
-            ...(section.paragraphs || []),
-            ...(section.bullets || []),
-        ]),
+        project.name,
+        project.summary,
+        project.about,
+        ...(project.stack || []),
+        ...(project.highlights || []),
+        ...sectionSearchContent(project.sections),
         ...deepDive,
+    ];
+}
+function blogSearchContent(post) {
+    return [
+        post.title,
+        post.subtitle,
+        post.intro,
+        ...sectionSearchContent(post.sections, true),
+        ...(post.workflow || []),
+        ...(post.offsetNotes || []).flatMap((note) => [
+            note.title,
+            note.offset,
+            note.base,
+            note.detail,
+            ...note.fields,
+        ]),
+        ...(post.resources || []).flatMap((resource) => [resource.title, resource.note]),
     ];
 }
 function buildSearchItems() {
     const setupContent = [
         DATA.setup.intro,
-        ...DATA.setup.machines.flatMap((m) => [m.device, m.system, m.detail]),
+        ...DATA.setup.machines.flatMap((machine) => [
+            machine.device,
+            machine.system,
+            machine.detail,
+        ]),
         ...DATA.setup.workflow,
     ];
     const skillsContent = Object.entries(DATA.skills).flatMap(([group, skills]) => [
@@ -143,26 +161,7 @@ function buildSearchItems() {
             detail: post.subtitle,
             route: `#/blog/${post.id}`,
             kind: post.type === "technical" ? "NOTES" : "BLOG",
-            content: [
-                post.title,
-                post.subtitle,
-                post.intro,
-                ...(post.sections || []).flatMap((section) => [
-                    section.title,
-                    ...(section.paragraphs || []),
-                    ...(section.bullets || []),
-                    section.code || "",
-                ]),
-                ...(post.workflow || []),
-                ...(post.offsetNotes || []).flatMap((note) => [
-                    note.title,
-                    note.offset,
-                    note.base,
-                    note.detail,
-                    ...note.fields,
-                ]),
-                ...(post.resources || []).flatMap((resource) => [resource.title, resource.note]),
-            ],
+            content: blogSearchContent(post),
         }),
     );
     [...DATA.projects, ...DATA.communityProjects].forEach((p) =>
@@ -293,7 +292,13 @@ function previewMarkup(item, query) {
     const path =
         searchMode === "grep" ? `<div class="palette-preview-path">${esc(item.path)}</div>` : "";
     const meta = searchMode === "grep" ? `Match ${item.occurrence} · ${item.kind}` : item.kind;
-    return `<div class="palette-preview-inner"><div class="palette-preview-meta"><span>${esc(meta)}</span><span>${searchMode === "grep" ? "GREP" : "FILE"}</span></div><h3>${esc(item.label)}</h3><p class="palette-preview-detail">${esc(item.detail)}</p>${path}<div class="palette-preview-rule"></div><pre class="palette-preview-excerpt">${highlightSearch(text, query)}</pre><div class="palette-preview-open">Enter to open · ↑ / ↓ to inspect another result</div></div>`;
+    return joinHtml(
+        `<div class="palette-preview-inner"><div class="palette-preview-meta"><span>${esc(meta)}</span><span>`,
+        `${searchMode === "grep" ? "GREP" : "FILE"}</span></div><h3>${esc(item.label)}</h3>`,
+        `<p class="palette-preview-detail">${esc(item.detail)}</p>${path}<div class="palette-preview-rule">`,
+        `</div><pre class="palette-preview-excerpt">${highlightSearch(text, query)}</pre>`,
+        `<div class="palette-preview-open">Enter to open · ↑ / ↓ to inspect another result</div></div>`,
+    );
 }
 function updateSearchSelection() {
     const buttons = [...$("#palette-results").querySelectorAll("[data-search-index]")];
@@ -356,12 +361,21 @@ function renderSearchResults(query) {
         });
     $("#palette-results").innerHTML = searchMatches.length
         ? searchMatches
-              .map(
-                  (item, index) =>
-                      `<button class="palette-result ${index === searchIndex ? "selected" : ""}" data-search-index="${index}" data-search-route="${esc(item.route)}"><span class="result-symbol">${item.kind === "PROJECT" ? "◇" : item.kind === "TUTORIAL" ? "▶" : "▤"}</span><span class="result-copy"><strong>${esc(item.label)}</strong><small>${esc(searchMode === "grep" ? item.matchExcerpt : item.detail)}</small></span><span class="result-kind">${esc(item.kind)}</span></button>`,
+              .map((item, index) =>
+                  joinHtml(
+                      `<button class="palette-result ${index === searchIndex ? "selected" : ""}" data-search-index="${index}" `,
+                      `data-search-route="${esc(item.route)}"><span class="result-symbol">`,
+                      `${item.kind === "PROJECT" ? "◇" : item.kind === "TUTORIAL" ? "▶" : "▤"}</span>`,
+                      `<span class="result-copy"><strong>${esc(item.label)}</strong><small>`,
+                      `${esc(searchMode === "grep" ? item.matchExcerpt : item.detail)}</small></span>`,
+                      `<span class="result-kind">${esc(item.kind)}</span></button>`,
+                  ),
               )
               .join("")
-        : `<div class="palette-empty">${searchMode === "grep" ? "No matching text occurrences." : "No filenames match that search."}</div>`;
+        : joinHtml(
+              `<div class="palette-empty">`,
+              `${searchMode === "grep" ? "No matching text occurrences." : "No filenames match that search."}</div>`,
+          );
     updateSearchSelection();
 }
 $("#search-open").addEventListener("click", () => openSearch("files"));

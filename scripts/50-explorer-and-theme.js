@@ -25,16 +25,19 @@ function visibleTreeNodes() {
         (node) => node.getClientRects().length > 0,
     );
 }
+function setKeyboardSelectedTreeNode(node) {
+    document.querySelectorAll("#file-tree .keyboard-selected").forEach((item) => {
+        item.classList.remove("keyboard-selected");
+    });
+    node.classList.add("keyboard-selected");
+}
 function focusTreeNode(node) {
     if (!node) return;
     treeNavigationActive = true;
     node.focus({
         preventScroll: true,
     });
-    document
-        .querySelectorAll("#file-tree .keyboard-selected")
-        .forEach((item) => item.classList.remove("keyboard-selected"));
-    node.classList.add("keyboard-selected");
+    setKeyboardSelectedTreeNode(node);
     node.scrollIntoView({
         block: "nearest",
     });
@@ -117,10 +120,7 @@ $("#file-tree").addEventListener("focusin", (event) => {
     const node = event.target.closest(".tree-file,.tree-folder");
     if (node) {
         treeNavigationActive = true;
-        document
-            .querySelectorAll("#file-tree .keyboard-selected")
-            .forEach((item) => item.classList.remove("keyboard-selected"));
-        node.classList.add("keyboard-selected");
+        setKeyboardSelectedTreeNode(node);
     }
 });
 $("#file-tree").addEventListener("click", (event) => {
