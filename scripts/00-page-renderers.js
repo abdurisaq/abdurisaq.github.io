@@ -87,10 +87,9 @@ const blogCard = (post) =>
         `${esc(post.subtitle)}</p><span class="blog-card-link">Read the post ↗</span></a>`,
     );
 const isSmallerProject = (id) => DATA.smallerProjects.some((p) => p.id === id);
-const projectRoute = (p) =>
-    isSmallerProject(p.id)
-        ? `#/smaller-projects/${encodeURIComponent(p.id)}`
-        : `#/projects/${encodeURIComponent(p.id)}`;
+const projectRoute = (project) =>
+    CONTENT_PAGES.find((page) => page.type === "project" && page.id === project.id)?.route ||
+    `#/projects/${encodeURIComponent(project.id)}`;
 const projectCard = (p) =>
     joinHtml(
         `<a class="card" href="${projectRoute(p)}"><h3>${esc(p.name)}</h3><p>${esc(p.summary)}</p>`,
@@ -111,24 +110,15 @@ const projectCard = (p) =>
         }`,
         `${tags(p.stack.slice(0, 4))}</a>`,
     );
+const contentPageForRoute = (page, id = null) =>
+    CONTENT_PAGES.find(
+        (item) => item.routePage === page && (item.routeId || null) === (id || null),
+    );
 const fileFor = (page, id) =>
-    id
-        ? `${id}.md`
-        : {
-              home: "index.lua",
-              about: "about.md",
-              setup: "setup.md",
-              experience: "work.md",
-              projects: "index.lua",
-              skills: "skills.md",
-              resume: "resume.pdf",
-              style: "colorscheme.md",
-              community: "community.md",
-              blog: "index.md",
-              vim: "index.md",
-          }[page] || "index.lua";
+    contentPageForRoute(page, id)?.label || (id ? `${id}.md` : "index.lua");
 const routeFor = (page, id) =>
-    id ? `#/${page}/${encodeURIComponent(id)}` : `#/${page === "home" ? "" : page}`;
+    contentPageForRoute(page, id)?.route ||
+    `#/${page === "home" ? "" : `${page}${id ? `/${encodeURIComponent(id)}` : ""}`}`;
 let splitState = null;
 const pages = {
     home: () =>

@@ -1,3 +1,17 @@
+/* @content
+{
+    "type": "page",
+    "loadOrder": 30,
+    "route": "#/setup",
+    "kind": "PAGE",
+    "detail": "Fedora laptop · Windows and Arch Linux (Omarchy) desktop dual boot · Neovim",
+    "treeOrder": 30,
+    "searchOrder": 30,
+    "searchPaths": [
+        "setup"
+    ]
+}
+*/
 // setup.md: workstation and development workflow.
 DATA.setup = {
     intro: "My laptop and desktop have different operating-system setups, but both are part of the same development workflow. Linux is where I prefer to work; Windows stays installed for the games that still refuse to cooperate with it.",

@@ -10,6 +10,6 @@ function syncRoute() {
     renderEditor();
 }
 addEventListener("hashchange", syncRoute);
-renderProjectTree();
+renderContentTree();
 if (!location.hash) location.hash = "#/";
 else syncRoute();

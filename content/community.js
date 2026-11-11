@@ -1,3 +1,15 @@
+/* @content
+{
+    "type": "page",
+    "loadOrder": 150,
+    "route": "#/community",
+    "kind": "PAGE",
+    "detail": "Mihon open-source contributions",
+    "searchProfile": "community",
+    "treeOrder": 80,
+    "searchOrder": 70
+}
+*/
 // community.md: open-source contribution details.
 DATA.community = {
     mihon: {

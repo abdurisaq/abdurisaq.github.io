@@ -1,5 +1,22 @@
+/* @content
+{
+    "type": "project",
+    "collection": "smallerProjects",
+    "loadOrder": 130,
+    "treeOrder": 110,
+    "searchOrder": 230,
+    "searchProfile": "project",
+    "folderSearch": {
+        "detail": "Independent projects and coursework",
+        "route": "#/projects",
+        "kind": "DIR",
+        "searchOrder": 225,
+        "profile": "project-folder"
+    }
+}
+*/
 // projects/smaller-projects/musicapp.md
-DATA.smallerProjects.push({
+registerContentData("project", {
     id: "musicapp",
     name: "MusicApp",
     repo: "https://github.com/abdurisaq/MusicApp",

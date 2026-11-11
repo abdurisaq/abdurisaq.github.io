@@ -1,5 +1,15 @@
+/* @content
+{
+    "type": "project",
+    "collection": "communityProjects",
+    "loadOrder": 120,
+    "treeOrder": 50,
+    "searchOrder": 220,
+    "searchProfile": "project"
+}
+*/
 // projects/organize-my-bakkesmod-garage.md: community project
-DATA.communityProjects.push({
+registerContentData("project", {
     id: "organize-my-bakkesmod-garage",
     name: "OrganizeMyBakkesModGarage",
     repo: "https://github.com/abdurisaq/OrganizeMyBakkesModGarage",

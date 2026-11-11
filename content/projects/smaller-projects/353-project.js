@@ -1,5 +1,15 @@
+/* @content
+{
+    "type": "project",
+    "collection": "smallerProjects",
+    "loadOrder": 140,
+    "treeOrder": 120,
+    "searchOrder": 240,
+    "searchProfile": "project"
+}
+*/
 // projects/smaller-projects/353-project.md
-DATA.smallerProjects.push({
+registerContentData("project", {
     id: "353-project",
     name: "353-Project",
     repo: "https://github.com/abdurisaq/353-Project",

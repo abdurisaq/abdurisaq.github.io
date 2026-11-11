@@ -1,12 +1,25 @@
 # abdurisaq — portfolio.nvim
 
 A lightweight, static portfolio presented as a Neovim-inspired editor. The site uses vanilla HTML,
-CSS and JavaScript; it does not require a framework, package manager or application build step.
+CSS and JavaScript; it does not require a framework, bundler or package manager. A small Node.js
+utility regenerates the content manifest when page files are added or moved. The generated site
+itself remains static and needs no server-side runtime.
 
 ## Run locally
 
-Serve the folder over HTTP rather than opening `index.html` directly. This matters for external
-embeds such as YouTube, which require the hosting page to send an HTTP referrer.
+The checked-in manifest and script list are ready to run. Serve the folder over HTTP rather than
+opening `index.html` directly. This matters for external embeds such as YouTube, which require the
+hosting page to send an HTTP referrer.
+
+When you add, move or rename a content page, regenerate the manifest first:
+
+```sh
+node tools/build-content-manifest.mjs
+```
+
+The generator uses only Node.js built-ins. It scans `content/` recursively, reads each file's
+`@content` header, derives its path relative to `content/`, and updates `content/manifest.js` plus
+the generated script block in `index.html`. No Node process is needed when the deployed site runs.
 
 ```sh
 python -m http.server 8000
@@ -22,18 +35,20 @@ independently.
 ```text
 portfolio/
 ├── index.html                       # Document shell and ordered asset loading
-├── content/                          # Page data mirrors the website explorer
-│   ├── 00-data-root.js                # Shared DATA namespace
+├── content/                          # Page data and metadata mirror the website explorer
+│   ├── 00-data-root.js                # Shared DATA and CONTENT_PAGES namespaces
+│   ├── manifest.js                   # Generated page registry; do not edit by hand
 │   ├── index.js                       # index.lua: home/profile data
 │   ├── about.js                       # about.md
 │   ├── setup.js                       # setup.md
 │   ├── experience/
 │   │   ├── work.js                    # experience/work.md
-│   │   └── skills.js                  # experience/skills.md
+│   │   ├── skills.js                  # experience/skills.md
+│   │   └── resume.js                  # experience/resume.pdf metadata
 │   ├── colorscheme.js                 # colorscheme.md: dotfiles configuration
 │   ├── community.js                   # community.md
 │   ├── projects/
-│   │   ├── index.js                   # projects/index.lua: collection setup
+│   │   ├── index.js                   # projects/index.lua: collection page
 │   │   ├── localtether.js             # projects/localtether.md
 │   │   ├── versatiletraining.js       # projects/versatiletraining.md
 │   │   ├── privateconvert.js          # projects/privateconvert.md
@@ -42,8 +57,11 @@ portfolio/
 │   │   └── smaller-projects/
 │   │       ├── musicapp.js            # projects/smaller-projects/musicapp.md
 │   │       └── 353-project.js         # projects/smaller-projects/353-project.md
+│   ├── vim/
+│   │   ├── index.js                   # vim/index.md metadata
+│   │   └── play.js                    # vim/play.md metadata
 │   └── blog/
-│       ├── index.js                   # blog/index.md: article collection setup
+│       ├── index.js                   # blog/index.md: article collection page
 │       ├── privateconvert.js          # blog/privateconvert.md
 │       ├── musicapp.js                # blog/musicapp.md
 │       ├── versatiletraining-story.js # blog/versatiletraining-story.md
@@ -66,6 +84,8 @@ portfolio/
 │   └── 90-dotfiles-panel.js
 ├── styles/                            # Original CSS in ordered cascade layers
 ├── assets/                            # Images, resume and screenshots
+├── tools/
+│   └── build-content-manifest.mjs     # Discovers pages and generates the manifest
 ├── resume.tex
 ├── build-resume.sh
 ├── build-resume.bat
@@ -88,8 +108,15 @@ in more detail.
   under `content/projects/smaller-projects/`.
 - Edit one article at a time in its matching file under `content/blog/`; technical deep dives live
   under `content/blog/deep-dives/`.
-- Keep `content/projects/index.js` and `content/blog/index.js` as collection initializers; their
-  contents are intentionally small.
+- Keep `content/projects/index.js` and `content/blog/index.js` as collection landing pages. Project
+  and article data files register themselves into the collection named by their own metadata header;
+  the arrays are initialized automatically.
+- Every page data file starts with a small JSON `@content` header. It declares the page type, load
+  order, tree order and search source. The generator derives the page ID, explorer label and
+  relative path from the file location wherever possible.
+- After adding, moving or renaming a content file, run `node tools/build-content-manifest.mjs`. The
+  generated manifest drives the search index, file explorer and route-to-filename lookup. Do not
+  hand-edit `content/manifest.js` or the generated script block in `index.html`.
 - Change page markup or shared HTML rendering in `scripts/00-page-renderers.js`.
 - Change a specific interaction in the matching file under `scripts/` (search, keyboard commands,
   explorer, tutorial, dotfiles, and so on).
@@ -107,6 +134,58 @@ ahead of the modules that define its dependencies.
 
 The stylesheets are also linked in their numbered order. Their rules preserve the original cascade;
 keep the order as shown in `index.html` when adding or rearranging styles.
+
+## Content page metadata
+
+A content file begins with a JSON comment that the generator reads. The page data remains in the
+same file; the header declares how the application should expose it. Project and blog entries are
+registered into the matching collection automatically from this metadata.
+
+A project page can use this small header:
+
+```js
+/* @content
+{
+    "type": "project",
+    "collection": "projects",
+    "loadOrder": 260,
+    "treeOrder": 60,
+    "searchOrder": 260,
+    "searchProfile": "project"
+}
+*/
+```
+
+The filename supplies the page ID and `.md` explorer path; project routes are derived from the
+project folder. `collection` selects the `DATA` array, which `registerContentData()` creates on
+first use. Each project file registers its object with `registerContentData("project", { ... })`;
+each blog file uses `registerContentData("blog", { ... })`. `loadOrder` preserves collection order,
+`treeOrder` controls its position inside the explorer folder, and `searchOrder` controls Grep
+traversal order. Blog pages use `type: "blog"`, `collection: "blogPosts"` and
+`searchProfile: "blog"`.
+
+Static pages declare their route and search source explicitly. `searchPaths` selects fields from
+`DATA`; `searchTerms` adds short fixed terms when there is no content object. Use `pagePath` only
+when the explorer extension differs from the source `.js` file, such as `index.lua` or `resume.pdf`.
+`folderOrder` sets where a directory appears alongside root-level files; nested folder order is
+inferred from the pages inside it. `folderPresentation` optionally declares classes and separators
+for a folder containing that page. `folderSearch` can add a searchable virtual directory entry; its
+path and label are derived from the containing folder.
+
+The Explorer is rebuilt recursively from the manifest paths. New subfolders under `content/` appear
+in the corresponding tree automatically. Folder-specific presentation is declared in the metadata of
+a page inside that folder, rather than being keyed to a hardcoded folder name.
+
+For a new project, create a file under `content/projects/` (or a subfolder), add a `type: "project"`
+header with its collection and ordering fields, and register the object with
+`registerContentData("project", { ... })`. For a new article, do the same under `content/blog/` with
+`type: "blog"` and `registerContentData("blog", { ... })`. The generator discovers the file, derives
+its explorer path and route, includes its script, and makes it available to search. The browser
+cannot scan the deployed server's directories itself, so run the generator whenever content files
+are added, moved or renamed.
+
+Run `node tools/build-content-manifest.mjs --check` to verify that the generated manifest and
+`index.html` script list are up to date.
 
 ## Interface
 

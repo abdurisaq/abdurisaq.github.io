@@ -18,34 +18,27 @@ const current = () => {
         query: new URLSearchParams(hashQuery || location.search),
     };
 };
-const currentKey = () => {
-    const { page, id } = current();
-    if (page === "projects" && id) return `project:${id}`;
-    if (page === "smaller-projects" && id) return `smaller-project:${id}`;
-    if (page === "blog" && id) return `blog:${id}`;
-    if (page === "vim" && id) return `vim:${id}`;
-    return page;
+const currentKey = () => keyForRoute(location.hash);
+const contentPageForKey = (key) => {
+    const separator = key.indexOf(":");
+    return separator < 0
+        ? CONTENT_PAGES.find((page) => !page.keyPrefix && page.routePage === key && !page.routeId)
+        : CONTENT_PAGES.find(
+              (page) =>
+                  page.keyPrefix === key.slice(0, separator) &&
+                  page.id === key.slice(separator + 1),
+          );
 };
-const bufferLabel = (key) => {
-    if (["project:", "smaller-project:", "blog:", "vim:"].some((prefix) => key.startsWith(prefix)))
-        return `${key.slice(key.indexOf(":") + 1)}.md`;
-    return fileFor(key);
-};
-const bufferRoute = (key) => {
-    if (key.startsWith("project:")) return routeFor("projects", key.slice(8));
-    if (key.startsWith("smaller-project:")) return routeFor("smaller-projects", key.slice(16));
-    if (key.startsWith("blog:")) return routeFor("blog", key.slice(5));
-    if (key.startsWith("vim:")) return routeFor("vim", key.slice(4));
-    return routeFor(key);
-};
+const bufferLabel = (key) => contentPageForKey(key)?.label || fileFor(key);
+const bufferRoute = (key) => contentPageForKey(key)?.route || routeFor(key);
 function renderPageForKey(key) {
-    if (key.startsWith("project:")) return pages.project(key.slice(8));
-    if (key.startsWith("smaller-project:")) return pages.project(key.slice(16));
-    if (key.startsWith("blog:")) return pages.blog(key.slice(5));
-    if (key === "blog") return pages.blog(null);
-    if (key === "vim:play") return pages.vimPlay(new URLSearchParams());
-    if (key.startsWith("vim:")) return pages.vim();
-    return (pages[key] || pages.notfound)();
+    const page = contentPageForKey(key);
+    if (page?.type === "project") return pages.project(page.id);
+    if (page?.type === "blog") return pages.blog(page.id);
+    if (page?.type === "tutorial")
+        return page.routeId ? pages.vimPlay(new URLSearchParams()) : pages.vim();
+    if (page?.routePage === "blog") return pages.blog(null);
+    return (pages[page?.routePage || key] || pages.notfound)();
 }
 function updatePaneTitles() {
     const primaryTitle = $("#primary-pane-title"),
@@ -131,16 +124,20 @@ function focusOtherSplit() {
     activateSplit(splitState.active === "left" ? "right" : "left");
 }
 function keyForRoute(route) {
-    const path = String(route || "#/")
+    const normalizedRoute = String(route || "#/").split("?")[0];
+    const page = CONTENT_PAGES.find((item) => item.route === normalizedRoute);
+    if (page) return page.keyPrefix ? `${page.keyPrefix}:${page.id}` : page.routePage;
+
+    const parts = normalizedRoute
         .replace(/^#/, "")
-        .split("?")[0];
-    const parts = path.split("/").filter(Boolean).map(decodeURIComponent);
-    if (!parts.length) return "home";
+        .split("/")
+        .filter(Boolean)
+        .map(decodeURIComponent);
     if (parts[0] === "projects" && parts[1]) return `project:${parts[1]}`;
     if (parts[0] === "smaller-projects" && parts[1]) return `smaller-project:${parts[1]}`;
     if (parts[0] === "blog" && parts[1]) return `blog:${parts[1]}`;
     if (parts[0] === "vim" && parts[1]) return `vim:${parts[1]}`;
-    return parts[0];
+    return parts[0] || "home";
 }
 function openBuffer(key, navigate = true) {
     if (!buffers.includes(key)) buffers.push(key);
@@ -180,17 +177,10 @@ function renderChrome() {
         )
         .join("");
     const file = bufferLabel(key);
-    const parent = key.startsWith("smaller-project:")
-        ? "projects / smaller-projects"
-        : key.startsWith("project:") || key === "projects"
-          ? "projects"
-          : key.startsWith("blog:") || key === "blog"
-            ? "blog"
-            : key.startsWith("vim:") || key === "vim"
-              ? "vim"
-              : key === "experience" || key === "skills" || key === "resume"
-                ? "experience"
-                : "~";
+    const page = CONTENT_PAGES.find(
+        (item) => item.routePage === route.page && (item.routeId || null) === (route.id || null),
+    );
+    const parent = page?.path.includes("/") ? page.path.slice(0, page.path.lastIndexOf("/")) : "~";
     $("#breadcrumb").innerHTML = joinHtml(
         `<span>${esc(P.handle)}</span> <span style="color:var(--dim)">/</span> <span>${esc(parent)}</span> `,
         `<span style="color:var(--dim)">/</span> <span class="crumb-current">${esc(file)}</span>`,
@@ -208,7 +198,7 @@ function renderChrome() {
         a.classList.toggle("active", samePage && sameId);
     });
     document
-        .querySelectorAll("#project-tree [data-project], #smaller-project-tree [data-project]")
+        .querySelectorAll("#file-tree [data-project]")
         .forEach((a) => a.classList.toggle("active", a.dataset.project === route.id));
     document.title = `${P.handle} | ${route.id || route.page}`;
 }

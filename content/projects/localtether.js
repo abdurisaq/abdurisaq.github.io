@@ -1,5 +1,15 @@
+/* @content
+{
+    "type": "project",
+    "collection": "projects",
+    "loadOrder": 80,
+    "treeOrder": 10,
+    "searchOrder": 180,
+    "searchProfile": "project"
+}
+*/
 // projects/localtether.md
-DATA.projects.push({
+registerContentData("project", {
     id: "localtether",
     name: "LocalTether",
     repo: "https://github.com/abdurisaq/LocalTether",

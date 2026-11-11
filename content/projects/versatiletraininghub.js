@@ -1,5 +1,15 @@
+/* @content
+{
+    "type": "project",
+    "collection": "projects",
+    "loadOrder": 110,
+    "treeOrder": 40,
+    "searchOrder": 210,
+    "searchProfile": "project"
+}
+*/
 // projects/versatiletraininghub.md
-DATA.projects.push({
+registerContentData("project", {
     id: "versatiletraininghub",
     name: "Versatile Training Hub",
     repo: "https://github.com/abdurisaq/VersatileTrainingHub",

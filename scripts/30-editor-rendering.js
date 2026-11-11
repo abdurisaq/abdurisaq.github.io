@@ -1,16 +1,98 @@
 /* Rendered-content bindings, page rendering, and explorer population. */
-const projectTreeEntry = (project) =>
-    joinHtml(
-        `<a class="tree-file" href="${projectRoute(project)}" data-project="${esc(project.id)}" `,
-        `aria-label="${esc(project.id)}.md"><span class="file-type md">MD</span>`,
-        `<span class="tree-label">${esc(project.id)}.md</span></a>`,
+function contentTreeFileEntry(page) {
+    const extension = page.label.split(".").pop().toLowerCase();
+    const typeLabel = extension.toUpperCase();
+    const routeId = page.routeId ? ` data-route-id="${esc(page.routeId)}"` : "";
+    const projectId = page.type === "project" ? ` data-project="${esc(page.id)}"` : "";
+    const resumeClass = page.kind === "PDF" ? " resume-tree-file" : "";
+    const title = page.title ? ` title="${esc(page.title)}"` : "";
+    const ariaLabel = page.ariaLabel || page.label;
+
+    return joinHtml(
+        `<a class="tree-file${resumeClass}" href="${esc(page.route)}" `,
+        `data-route="${esc(page.routePage)}"${routeId}${projectId}${title} `,
+        `aria-label="${esc(ariaLabel)}"><span class="file-type ${esc(extension)}">`,
+        `${esc(typeLabel)}</span><span class="tree-label">${esc(page.label)}</span></a>`,
     );
-const blogTreeEntry = (post) =>
-    joinHtml(
-        `<a class="tree-file" href="#/blog/${encodeURIComponent(post.id)}" data-route="blog" `,
-        `data-route-id="${esc(post.id)}" aria-label="${esc(post.id)}.md">`,
-        `<span class="file-type md">MD</span><span class="tree-label">${esc(post.id)}.md</span></a>`,
+}
+
+function renderContentFolderContents(folderPath = "", depth = 0) {
+    const prefix = folderPath ? `${folderPath}/` : "";
+    const descendants = CONTENT_PAGES.filter((page) => page.path.startsWith(prefix));
+    const files = descendants.filter((page) => page.path.slice(prefix.length).indexOf("/") === -1);
+    const folderNames = [
+        ...new Set(
+            descendants.flatMap((page) => {
+                const remainder = page.path.slice(prefix.length);
+                const slash = remainder.indexOf("/");
+                return slash === -1 ? [] : [remainder.slice(0, slash)];
+            }),
+        ),
+    ];
+    const entries = [
+        ...files.map((page) => ({
+            order: page.treeOrder,
+            type: "file",
+            render: () => contentTreeFileEntry(page),
+        })),
+        ...folderNames.map((name) => {
+            const path = folderPath ? `${folderPath}/${name}` : name;
+            const nestedPages = descendants.filter((page) => page.path.startsWith(`${path}/`));
+            const explicitOrder = nestedPages
+                .map((page) => page.folderOrder)
+                .filter(Number.isFinite);
+            const order = Math.min(
+                ...(explicitOrder.length
+                    ? explicitOrder
+                    : nestedPages.map((page) => page.treeOrder)),
+            );
+            return {
+                order,
+                type: "folder",
+                render: () => renderContentFolderEntry(path, name, depth),
+            };
+        }),
+    ];
+
+    return entries
+        .sort((a, b) => a.order - b.order || a.type.localeCompare(b.type))
+        .map((entry) => entry.render())
+        .join("");
+}
+
+function renderContentFolderEntry(folderPath, name, depth) {
+    const folderPage = CONTENT_PAGES.find(
+        (page) =>
+            page.path.slice(0, page.path.lastIndexOf("/")) === folderPath &&
+            page.folderPresentation,
     );
+    const presentation = folderPage?.folderPresentation || {};
+    const separator = presentation.separator
+        ? `<div class="tree-folder-separator" aria-hidden="true"></div>`
+        : "";
+    const folderClass = [
+        "tree-folder",
+        ...(depth > 0 ? ["nested"] : []),
+        ...(presentation.className ? [presentation.className] : []),
+    ].join(" ");
+    const contentsClass = [
+        "tree-children",
+        ...(presentation.contentsClassName ? [presentation.contentsClassName] : []),
+    ].join(" ");
+
+    return joinHtml(
+        separator,
+        `<button class="${folderClass}" type="button" data-folder="${esc(folderPath)}">`,
+        `<span class="tree-chevron">⌄</span><span class="folder-icon">▰</span> `,
+        `${esc(name)}</button><div class="${contentsClass}" data-folder-content="${esc(folderPath)}">`,
+        renderContentFolderContents(folderPath, depth + 1),
+        `</div>`,
+    );
+}
+
+function renderContentTree() {
+    $("#file-tree").innerHTML = renderContentFolderContents();
+}
 
 function bindRenderedContent(root) {
     root.querySelectorAll(".screenshot-slot img").forEach((img) => {
@@ -83,25 +165,5 @@ function renderEditor() {
                 block: "start",
             });
         });
-    }
-}
-function renderProjectTree() {
-    const ordered = [...DATA.projects, ...DATA.communityProjects];
-    $("#project-tree").innerHTML = ordered.map(projectTreeEntry).join("");
-    $("#smaller-project-tree").innerHTML = DATA.smallerProjects.map(projectTreeEntry).join("");
-
-    const blogTree = $("#blog-tree");
-    const deepDiveTree = $("#deep-dive-tree");
-    if (blogTree) {
-        blogTree.innerHTML = DATA.blogPosts
-            .filter((post) => post.type !== "technical")
-            .map(blogTreeEntry)
-            .join("");
-    }
-    if (deepDiveTree) {
-        deepDiveTree.innerHTML = DATA.blogPosts
-            .filter((post) => post.type === "technical")
-            .map(blogTreeEntry)
-            .join("");
     }
 }

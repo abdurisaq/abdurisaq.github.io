@@ -1,5 +1,15 @@
+/* @content
+{
+    "type": "blog",
+    "collection": "blogPosts",
+    "loadOrder": 190,
+    "treeOrder": 30,
+    "searchOrder": 130,
+    "searchProfile": "blog"
+}
+*/
 // blog/versatiletraining-story.md
-DATA.blogPosts.push({
+registerContentData("blog", {
     id: "versatiletraining-story",
     type: "story",
     projectId: "versatiletraining",

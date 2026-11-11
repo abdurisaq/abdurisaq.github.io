@@ -1,5 +1,15 @@
+/* @content
+{
+    "type": "blog",
+    "collection": "blogPosts",
+    "loadOrder": 180,
+    "treeOrder": 20,
+    "searchOrder": 120,
+    "searchProfile": "blog"
+}
+*/
 // blog/musicapp.md
-DATA.blogPosts.push({
+registerContentData("blog", {
     id: "musicapp",
     type: "story",
     projectId: "musicapp",

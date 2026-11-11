@@ -1,5 +1,15 @@
+/* @content
+{
+    "type": "blog",
+    "collection": "blogPosts",
+    "loadOrder": 230,
+    "treeOrder": 120,
+    "searchOrder": 170,
+    "searchProfile": "blog"
+}
+*/
 // blog/deep-dives/localtether-implementation-notes.md
-DATA.blogPosts.push({
+registerContentData("blog", {
     id: "localtether-implementation-notes",
     type: "technical",
     projectId: "localtether",

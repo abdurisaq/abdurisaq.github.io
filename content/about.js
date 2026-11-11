@@ -1,3 +1,17 @@
+/* @content
+{
+    "type": "page",
+    "loadOrder": 20,
+    "route": "#/about",
+    "kind": "PAGE",
+    "detail": "About me",
+    "treeOrder": 20,
+    "searchOrder": 20,
+    "searchPaths": [
+        "about"
+    ]
+}
+*/
 // about.md: biography copy and quick facts.
 DATA.about = [
     "TODO: Paragraph 1. Who you are, school, year, what you study.",

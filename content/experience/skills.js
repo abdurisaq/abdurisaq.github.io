@@ -1,3 +1,18 @@
+/* @content
+{
+    "type": "page",
+    "loadOrder": 50,
+    "route": "#/skills",
+    "kind": "PAGE",
+    "detail": "Languages, frameworks and tools",
+    "treeOrder": 20,
+    "searchOrder": 50,
+    "searchPaths": [
+        "skills"
+    ],
+    "searchObjectKeys": true
+}
+*/
 // experience/skills.md: grouped technical skills.
 DATA.skills = {
     Languages: ["C++", "Python", "Kotlin", "TypeScript", "JavaScript", "SQL", "C", "Java"],

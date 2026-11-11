@@ -1,5 +1,15 @@
+/* @content
+{
+    "type": "blog",
+    "collection": "blogPosts",
+    "loadOrder": 210,
+    "treeOrder": 40,
+    "searchOrder": 150,
+    "searchProfile": "blog"
+}
+*/
 // blog/organize-my-bakkesmod-garage.md
-DATA.blogPosts.push({
+registerContentData("blog", {
     id: "organize-my-bakkesmod-garage",
     type: "story",
     projectId: "organize-my-bakkesmod-garage",

@@ -1,5 +1,15 @@
+/* @content
+{
+    "type": "blog",
+    "collection": "blogPosts",
+    "loadOrder": 170,
+    "treeOrder": 10,
+    "searchOrder": 110,
+    "searchProfile": "blog"
+}
+*/
 // blog/privateconvert.md
-DATA.blogPosts.push({
+registerContentData("blog", {
     id: "privateconvert",
     type: "story",
     projectId: "privateconvert",

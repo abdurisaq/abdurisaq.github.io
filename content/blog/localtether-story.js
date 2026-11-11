@@ -1,5 +1,15 @@
+/* @content
+{
+    "type": "blog",
+    "collection": "blogPosts",
+    "loadOrder": 220,
+    "treeOrder": 50,
+    "searchOrder": 160,
+    "searchProfile": "blog"
+}
+*/
 // blog/localtether-story.md
-DATA.blogPosts.push({
+registerContentData("blog", {
     id: "localtether-story",
     type: "story",
     projectId: "localtether",

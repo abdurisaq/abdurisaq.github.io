@@ -1,5 +1,20 @@
+/* @content
+{
+    "type": "blog",
+    "collection": "blogPosts",
+    "loadOrder": 200,
+    "treeOrder": 110,
+    "searchOrder": 140,
+    "searchProfile": "blog",
+    "folderPresentation": {
+        "className": "deep-dives-folder",
+        "contentsClassName": "deep-dives-contents",
+        "separator": true
+    }
+}
+*/
 // blog/deep-dives/versatiletraining-ue3-notes.md
-DATA.blogPosts.push({
+registerContentData("blog", {
     id: "versatiletraining-ue3-notes",
     title: "Okay, so how did I figure out what Rocket League was doing?",
     subtitle: "The UE3, BakkesMod, Function Scanner and callback notes behind VersatileTraining.",

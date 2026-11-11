@@ -1,5 +1,15 @@
+/* @content
+{
+    "type": "project",
+    "collection": "projects",
+    "loadOrder": 100,
+    "treeOrder": 30,
+    "searchOrder": 200,
+    "searchProfile": "project"
+}
+*/
 // projects/privateconvert.md
-DATA.projects.push({
+registerContentData("project", {
     id: "privateconvert",
     name: "PrivateConvert",
     repo: "https://github.com/abdurisaq/PrivateConvert",

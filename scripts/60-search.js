@@ -1,8 +1,8 @@
-/* Telescope-style file search and live text grep. */
-// Telescope-style finder: file navigation plus a content-oriented live grep mode.
+/* Telescope-style file search and live text grep. Content metadata comes from the generated manifest. */
 let searchMode = "files",
     searchMatches = [],
     searchReturnFocus = null;
+
 function sectionSearchContent(sections, includeCode = false) {
     return (sections || []).flatMap((section) => [
         section.title,
@@ -11,6 +11,7 @@ function sectionSearchContent(sections, includeCode = false) {
         ...(includeCode ? [section.code || ""] : []),
     ]);
 }
+
 function projectSearchContent(project) {
     const deepDive = project.deepDive
         ? [project.deepDive.intro, ...sectionSearchContent(project.deepDive.sections)]
@@ -25,6 +26,7 @@ function projectSearchContent(project) {
         ...deepDive,
     ];
 }
+
 function blogSearchContent(post) {
     return [
         post.title,
@@ -42,171 +44,124 @@ function blogSearchContent(post) {
         ...(post.resources || []).flatMap((resource) => [resource.title, resource.note]),
     ];
 }
-function buildSearchItems() {
-    const setupContent = [
-        DATA.setup.intro,
-        ...DATA.setup.machines.flatMap((machine) => [
-            machine.device,
-            machine.system,
-            machine.detail,
-        ]),
-        ...DATA.setup.workflow,
-    ];
-    const skillsContent = Object.entries(DATA.skills).flatMap(([group, skills]) => [
-        group,
-        ...skills,
-    ]);
-    const items = [
-        {
-            label: "index.lua",
-            path: "index.lua",
-            detail: "Home · introduction",
-            route: "#/",
-            kind: "PAGE",
-            content: [P.tagline, ...DATA.about, ...DATA.facts.flat()],
-        },
-        {
-            label: "about.md",
-            path: "about.md",
-            detail: "About me",
-            route: "#/about",
-            kind: "PAGE",
-            content: DATA.about,
-        },
-        {
-            label: "setup.md",
-            path: "setup.md",
-            detail: "Fedora laptop · Windows and Arch Linux (Omarchy) desktop dual boot · Neovim",
-            route: "#/setup",
-            kind: "PAGE",
-            content: setupContent,
-        },
-        {
-            label: "work.md",
-            path: "experience/work.md",
-            detail: "Work and experience",
-            route: "#/experience",
-            kind: "PAGE",
-            content: DATA.experience.flatMap((job) => [
-                job.role,
-                job.org,
-                job.dates,
-                job.place,
-                ...job.bullets,
-            ]),
-        },
-        {
-            label: "skills.md",
-            path: "experience/skills.md",
-            detail: "Languages, frameworks and tools",
-            route: "#/skills",
-            kind: "PAGE",
-            content: skillsContent,
-        },
-        {
-            label: "resume.pdf",
-            path: "experience/resume.pdf",
-            detail: "Resume · LaTeX source with generated image preview and PDF download",
-            route: "#/resume",
-            kind: "PDF",
-            content: ["resume.pdf", "resume.tex", "curriculum vitae"],
-        },
-        {
-            label: "community.md",
-            path: "community.md",
-            detail: "Mihon open-source contributions",
-            route: "#/community",
-            kind: "PAGE",
-            content: [
-                DATA.community.mihon.name,
-                DATA.community.mihon.summary,
-                ...DATA.community.mihon.contributions.flatMap((c) => [c.title, c.status, c.detail]),
-            ],
-        },
-        {
-            label: "colorscheme.md",
-            path: "colorscheme.md",
-            detail: "About the Neovim-inspired interface",
-            route: "#/style",
-            kind: "PAGE",
-            content: ["Melange colorscheme from my current dotfiles hosted on GitHub"],
-        },
-        {
-            label: "index.md",
-            path: "blog/index.md",
-            detail: "Project stories and technical notes",
-            route: "#/blog",
-            kind: "PAGE",
-            content: DATA.blogPosts
-                .filter((post) => post.type !== "technical")
-                .map((post) => `${post.title} ${post.subtitle}`)
-                .join("\n")
-                .split("\n"),
-        },
-        {
-            label: "index.md",
-            path: "vim/index.md",
-            detail: "Interactive Vim motions tutorial",
-            route: "#/vim",
-            kind: "PAGE",
-            content: [
-                "vim motions keyboard tutorial VS Code IDE Neovim movement h j k l w b e dd ciw",
-            ],
-        },
-    ];
-    DATA.blogPosts.forEach((post) =>
-        items.push({
-            label: `${post.id}.md`,
-            path: `blog/${post.id}.md`,
-            detail: post.subtitle,
-            route: `#/blog/${post.id}`,
-            kind: post.type === "technical" ? "NOTES" : "BLOG",
-            content: blogSearchContent(post),
-        }),
-    );
-    [...DATA.projects, ...DATA.communityProjects].forEach((p) =>
-        items.push({
-            label: `${p.id}.md`,
-            path: `projects/${p.id}.md`,
-            detail: p.summary,
-            route: projectRoute(p),
-            kind: "PROJECT",
-            content: projectSearchContent(p),
-        }),
-    );
-    items.push({
-        label: "smaller-projects/",
-        path: "projects/smaller-projects/",
-        detail: "Independent projects and coursework",
-        route: "#/projects",
-        kind: "DIR",
-        content: DATA.smallerProjects.flatMap(projectSearchContent),
-    });
-    DATA.smallerProjects.forEach((p) =>
-        items.push({
-            label: `${p.id}.md`,
-            path: `projects/smaller-projects/${p.id}.md`,
-            detail: p.summary,
-            route: projectRoute(p),
-            kind: "PROJECT",
-            content: projectSearchContent(p),
-        }),
-    );
-    items.push({
-        label: "play.md",
-        path: "vim/play.md",
-        detail: "Interactive Vim motions game",
-        route: "#/vim/play",
-        kind: "TUTORIAL",
-        content: VIM_TUTORIAL_STAGES.flatMap((stage) => [
+
+function contentPageData(page) {
+    const collection = page.collection ? DATA[page.collection] : null;
+    return Array.isArray(collection) ? collection.find((entry) => entry.id === page.id) : null;
+}
+
+function valuesAtPath(path) {
+    const parts = path.replace(/\[\]/g, ".[]").split(".").filter(Boolean);
+    function visit(value, index) {
+        if (index === parts.length) return [value];
+        if (parts[index] === "[]")
+            return Array.isArray(value) ? value.flatMap((item) => visit(item, index + 1)) : [];
+        return value == null ? [] : visit(value[parts[index]], index + 1);
+    }
+    return visit(DATA, 0);
+}
+
+function flattenSearchValues(value, includeObjectKeys = false) {
+    if (typeof value === "string") return [value];
+    if (Array.isArray(value))
+        return value.flatMap((item) => flattenSearchValues(item, includeObjectKeys));
+    if (value && typeof value === "object") {
+        return Object.entries(value).flatMap(([key, item]) => [
+            ...(includeObjectKeys ? [key] : []),
+            ...flattenSearchValues(item, includeObjectKeys),
+        ]);
+    }
+    return [];
+}
+
+const searchProfiles = {
+    project: (page) => {
+        const project = contentPageData(page);
+        return project ? projectSearchContent(project) : [];
+    },
+    blog: (page) => {
+        const post = contentPageData(page);
+        return post ? blogSearchContent(post) : [];
+    },
+    "blog-index": () =>
+        DATA.blogPosts
+            .filter((post) => post.type !== "technical")
+            .map((post) => `${post.title} ${post.subtitle}`)
+            .join("\n")
+            .split("\n"),
+    community: () => {
+        const mihon = DATA.community.mihon;
+        return [
+            mihon.name,
+            mihon.summary,
+            ...mihon.contributions.flatMap((item) => [item.title, item.status, item.detail]),
+        ];
+    },
+    tutorial: () =>
+        VIM_TUTORIAL_STAGES.flatMap((stage) => [
             stage.name,
             stage.goal,
             stage.explanation,
             ...stage.initial,
         ]),
-    });
-    return items;
+    "project-folder": (page) => {
+        const folderPath = page.path.slice(0, page.path.lastIndexOf("/"));
+        return CONTENT_PAGES.filter(
+            (item) => item.type === "project" && item.path.startsWith(`${folderPath}/`),
+        ).flatMap((item) => projectSearchContent(contentPageData(item)));
+    },
+};
+
+function pageSearchContent(page) {
+    const profile = searchProfiles[page.searchProfile];
+    if (profile) return profile(page);
+
+    const selected = (page.searchPaths || []).flatMap(valuesAtPath);
+    return [
+        ...selected.flatMap((value) => flattenSearchValues(value, page.searchObjectKeys)),
+        ...(page.searchTerms || []),
+    ];
 }
+function pageSearchKind(page) {
+    if (page.type === "project") return "PROJECT";
+    if (page.type === "blog") return contentPageData(page)?.type === "technical" ? "NOTES" : "BLOG";
+    return page.kind || (page.type === "tutorial" ? "TUTORIAL" : "PAGE");
+}
+
+function pageSearchDetail(page) {
+    const data = contentPageData(page);
+    return page.detail || data?.summary || data?.subtitle || "";
+}
+
+function buildSearchItems() {
+    const pageItems = CONTENT_PAGES.filter((page) => page.searchable).map((page) => ({
+        searchOrder: page.searchOrder,
+        label: page.label,
+        path: page.path,
+        detail: pageSearchDetail(page),
+        route: page.route,
+        kind: pageSearchKind(page),
+        content: pageSearchContent(page),
+    }));
+    const folderItems = CONTENT_PAGES.filter((page) => page.folderSearch).map((page) => {
+        const folder = page.folderSearch;
+        const path = page.path.slice(0, page.path.lastIndexOf("/"));
+        return {
+            searchOrder: folder.searchOrder,
+            label: `${path.slice(path.lastIndexOf("/") + 1)}/`,
+            path: `${path}/`,
+            detail: folder.detail,
+            route: folder.route,
+            kind: folder.kind || "DIR",
+            content: searchProfiles[folder.profile]?.(page) || [],
+        };
+    });
+
+    return [...pageItems, ...folderItems]
+        .sort((a, b) => a.searchOrder - b.searchOrder)
+        .map(({ searchOrder, ...item }) => item);
+}
+
 searchItems = buildSearchItems();
 function normalizeSearch(value) {
     return String(value || "")

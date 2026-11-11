@@ -1,5 +1,13 @@
-// projects/index.lua: initialize ordered project collections.
-// Individual project pages append their entries in explorer/render order.
-DATA.projects = [];
-DATA.communityProjects = [];
-DATA.smallerProjects = [];
+/* @content
+{
+    "type": "page",
+    "loadOrder": 70,
+    "pagePath": "projects/index.lua",
+    "route": "#/projects",
+    "kind": "LUA",
+    "detail": "Selected projects and independent work",
+    "treeOrder": 0,
+    "folderOrder": 50,
+    "searchable": false
+}
+*/

@@ -98,118 +98,7 @@
                         <span class="tree-chevron">⌄</span
                         ><span class="folder-icon">▰</span> abdurisaq
                     </div>
-                    <nav class="tree" id="file-tree">
-                        <a class="tree-file" href="#/" data-route="home"
-                            ><span class="file-type lua">LUA</span
-                            ><span class="tree-label">index.lua</span></a
-                        >
-                        <a class="tree-file" href="#/about" data-route="about"
-                            ><span class="file-type md">MD</span
-                            ><span class="tree-label">about.md</span></a
-                        >
-                        <a class="tree-file" href="#/setup" data-route="setup"
-                            ><span class="file-type md">MD</span
-                            ><span class="tree-label">setup.md</span></a
-                        >
-                        <button class="tree-folder" type="button" data-folder="experience">
-                            <span class="tree-chevron">⌄</span
-                            ><span class="folder-icon">▰</span> experience
-                        </button>
-                        <div class="tree-children" data-folder-content="experience">
-                            <a class="tree-file" href="#/experience" data-route="experience"
-                                ><span class="file-type md">MD</span
-                                ><span class="tree-label">work.md</span></a
-                            >
-                            <a class="tree-file" href="#/skills" data-route="skills"
-                                ><span class="file-type md">MD</span
-                                ><span class="tree-label">skills.md</span></a
-                            >
-                            <a
-                                class="tree-file resume-tree-file"
-                                href="#/resume"
-                                data-route="resume"
-                                title="Resume PDF · in-page image preview"
-                                aria-label="Resume PDF"
-                                ><span class="file-type pdf">PDF</span
-                                ><span class="tree-label">resume.pdf</span></a
-                            >
-                        </div>
-                        <button class="tree-folder" type="button" data-folder="projects">
-                            <span class="tree-chevron">⌄</span
-                            ><span class="folder-icon">▰</span> projects
-                        </button>
-                        <div class="tree-children" data-folder-content="projects">
-                            <a class="tree-file" href="#/projects" data-route="projects"
-                                ><span class="file-type lua">LUA</span
-                                ><span class="tree-label">index.lua</span></a
-                            >
-                            <div id="project-tree"></div>
-                            <button
-                                class="tree-folder nested"
-                                type="button"
-                                data-folder="smaller-projects"
-                            >
-                                <span class="tree-chevron">⌄</span
-                                ><span class="folder-icon">▰</span> smaller-projects
-                            </button>
-                            <div
-                                class="tree-children"
-                                data-folder-content="smaller-projects"
-                                id="smaller-project-tree"
-                            ></div>
-                        </div>
-                        <button class="tree-folder" type="button" data-folder="blog">
-                            <span class="tree-chevron">⌄</span
-                            ><span class="folder-icon">▰</span> blog
-                        </button>
-                        <div class="tree-children" data-folder-content="blog">
-                            <a class="tree-file" href="#/blog" data-route="blog"
-                                ><span class="file-type md">MD</span
-                                ><span class="tree-label">index.md</span></a
-                            >
-                            <div id="blog-tree"></div>
-                            <div class="tree-folder-separator" aria-hidden="true"></div>
-                            <button
-                                class="tree-folder nested deep-dives-folder"
-                                type="button"
-                                data-folder="deep-dives"
-                            >
-                                <span class="tree-chevron">⌄</span
-                                ><span class="folder-icon">▰</span> deep-dives
-                            </button>
-                            <div
-                                class="tree-children deep-dives-contents"
-                                data-folder-content="deep-dives"
-                                id="deep-dive-tree"
-                            ></div>
-                        </div>
-                        <button class="tree-folder" type="button" data-folder="vim">
-                            <span class="tree-chevron">⌄</span
-                            ><span class="folder-icon">▰</span> vim
-                        </button>
-                        <div class="tree-children" data-folder-content="vim">
-                            <a class="tree-file" href="#/vim" data-route="vim"
-                                ><span class="file-type md">MD</span
-                                ><span class="tree-label">index.md</span></a
-                            >
-                            <a
-                                class="tree-file"
-                                href="#/vim/play"
-                                data-route="vim"
-                                data-route-id="play"
-                                ><span class="file-type md">MD</span
-                                ><span class="tree-label">play.md</span></a
-                            >
-                        </div>
-                        <a class="tree-file" href="#/community" data-route="community"
-                            ><span class="file-type md">MD</span
-                            ><span class="tree-label">community.md</span></a
-                        >
-                        <a class="tree-file" href="#/style" data-route="style"
-                            ><span class="file-type md">MD</span
-                            ><span class="tree-label">colorscheme.md</span></a
-                        >
-                    </nav>
+                    <nav class="tree" id="file-tree"></nav>
                     <div class="explorer-bottom">
                         <span class="explorer-dot"></span> WORKSPACE
                         <span class="explorer-bottom-right">5 folders</span>
@@ -330,13 +219,16 @@
                 </p>
             </section>
         </div>
-        <!-- Data is loaded first so every renderer sees the complete DATA object. -->
+        <!-- Content scripts and their order are generated from the @content headers. -->
+        <!-- BEGIN GENERATED CONTENT SCRIPTS -->
         <script src="content/00-data-root.js"></script>
+        <script src="content/manifest.js"></script>
         <script src="content/index.js"></script>
         <script src="content/about.js"></script>
         <script src="content/setup.js"></script>
         <script src="content/experience/work.js"></script>
         <script src="content/experience/skills.js"></script>
+        <script src="content/experience/resume.js"></script>
         <script src="content/colorscheme.js"></script>
         <script src="content/projects/index.js"></script>
         <script src="content/projects/localtether.js"></script>
@@ -355,6 +247,9 @@
         <script src="content/blog/organize-my-bakkesmod-garage.js"></script>
         <script src="content/blog/localtether-story.js"></script>
         <script src="content/blog/deep-dives/localtether-implementation-notes.js"></script>
+        <script src="content/vim/index.js"></script>
+        <script src="content/vim/play.js"></script>
+        <!-- END GENERATED CONTENT SCRIPTS -->
 
         <!-- Keep classic scripts (not modules) in this order: they share top-level bindings. -->
         <script src="scripts/vim-engine.js"></script>
