@@ -35,7 +35,6 @@ portfolio/
 ├── scripts/                    # Rendering and application behavior
 ├── styles/                     # Theme and component styles, in cascade order
 ├── assets/                     # Images, resume files and screenshots
-├── docs/                       # Architecture notes
 ├── resume.tex                  # Resume source
 ├── build-resume.sh
 └── build-resume.bat
