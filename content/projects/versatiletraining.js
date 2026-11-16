@@ -1,28 +1,38 @@
-/* @content
-{
-    "type": "project",
-    "collection": "projects",
-    "loadOrder": 90,
-    "treeOrder": 20,
-    "searchOrder": 190,
-    "searchProfile": "project"
-}
-*/
+addPage({
+    type: "project",
+    path: "projects/versatiletraining.md",
+    treeOrder: 20,
+    searchOrder: 190,
+});
+
 // projects/versatiletraining.md
-registerContentData("project", {
+DATA.projects.push({
     id: "versatiletraining",
     name: "VersatileTraining",
     repo: "https://github.com/abdurisaq/VersatileTraining",
     summary:
-        "A Rocket League training plugin that lets me build drills around live game state—not just replay a fixed shot. I worked with car and ball physics, boost, goal detection and input recording to make training packs behave like configurable scenarios.",
+        "A Rocket League training plugin that lets me build drills around live game " +
+        "state—not just replay a fixed shot. I worked with car and ball physics, boost, " +
+        "goal detection and input recording to make training packs behave like configurable " +
+        "scenarios.",
     stack: ["C++", "BakkesMod SDK", "Dear ImGui", "vcpkg", "Visual Studio"],
-    about: "VersatileTraining is where I got closest to the game itself. I wanted training packs to respond to the situation on the field, so I built a BakkesMod plugin around live car and ball state, boost, goal blockers and recorded inputs. The interesting part was not adding another menu; it was making the game state usable enough that a drill could be configured, replayed and inspected instead of simply repeated.",
+    about:
+        "VersatileTraining is where I got closest to the game itself. I wanted training " +
+        "packs to respond to the situation on the field, so I built a BakkesMod plugin " +
+        "around live car and ball state, boost, goal blockers and recorded inputs. The " +
+        "interesting part was not adding another menu; it was making the game state usable " +
+        "enough that a drill could be configured, replayed and inspected instead of simply " +
+        "repeated.",
     sections: [
         {
             title: "Build the situation you want to practise",
             paragraphs: [
-                "Custom packs let you set the starting position and rotation of the car and ball, their velocities, boost amount and initial jump state. The Snapshot Gallery is the other way into this workflow: save a state from a live session or replay, then load it again as a repeatable shot.",
-                "That makes the plugin useful both for creating a scenario from scratch and for turning an interesting moment from a match or replay into a drill.",
+                "Custom packs let you set the starting position and rotation of the car and ball, " +
+                    "their velocities, boost amount and initial jump state. The Snapshot Gallery is the " +
+                    "other way into this workflow: save a state from a live session or replay, then " +
+                    "load it again as a repeatable shot.",
+                "That makes the plugin useful both for creating a scenario from scratch and for " +
+                    "turning an interesting moment from a match or replay into a drill.",
             ],
         },
         {
@@ -30,19 +40,26 @@ registerContentData("project", {
             bullets: [
                 "Add goal blockers with custom size and position to practise hitting specific targets.",
                 "Override and adjust existing training packs, including packs created by other people.",
-                "Use variance settings to introduce controlled changes to shot parameters, such as ball speed or the starting position.",
+                "Use variance settings to introduce controlled changes to shot parameters, such as " +
+                    "ball speed or the starting position.",
             ],
         },
         {
             title: "Make attempts repeatable",
             paragraphs: [
-                "The experimental recording feature captures controller input during an attempt and can spawn a bot to replay the recorded movement. It is an experiment rather than a finished headline feature, but it explores a useful question: how can a player compare a new attempt against a known reference run?",
+                "The experimental recording feature captures controller input during an attempt and " +
+                    "can spawn a bot to replay the recorded movement. It is an experiment rather than a " +
+                    "finished headline feature, but it explores a useful question: how can a player " +
+                    "compare a new attempt against a known reference run?",
             ],
         },
         {
             title: "Connect the plugin to the Hub",
             paragraphs: [
-                "VersatileTraining is paired with the Versatile Training Hub. The plugin can upload packs created in-game, and players can download community packs from the website. The Hub handles discovery and pack management; the plugin brings those packs back into Rocket League.",
+                "VersatileTraining is paired with the Versatile Training Hub. The plugin can upload " +
+                    "packs created in-game, and players can download community packs from the website. " +
+                    "The Hub handles discovery and pack management; the plugin brings those packs back " +
+                    "into Rocket League.",
             ],
         },
     ],

@@ -1,20 +1,13 @@
-/* @content
-{
-    "type": "page",
-    "loadOrder": 10,
-    "pagePath": "index.lua",
-    "route": "#/",
-    "kind": "PAGE",
-    "detail": "Home · introduction",
-    "treeOrder": 10,
-    "searchOrder": 10,
-    "searchPaths": [
-        "profile.tagline",
-        "about",
-        "facts"
-    ]
-}
-*/
+addPage({
+    path: "index.lua",
+    route: "#/",
+    kind: "PAGE",
+    detail: "Home · introduction",
+    treeOrder: 10,
+    searchOrder: 10,
+    searchPaths: ["profile.tagline", "about", "facts"],
+});
+
 // Home page identity and introductory metadata.
 DATA.profile = {
     name: "Abdurisaq",

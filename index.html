@@ -219,10 +219,8 @@
                 </p>
             </section>
         </div>
-        <!-- Content scripts and their order are generated from the @content headers. -->
-        <!-- BEGIN GENERATED CONTENT SCRIPTS -->
-        <script src="content/00-data-root.js"></script>
-        <script src="content/manifest.js"></script>
+        <!-- Content files are loaded explicitly. Keep their order stable. -->
+        <script src="content/data.js"></script>
         <script src="content/index.js"></script>
         <script src="content/about.js"></script>
         <script src="content/setup.js"></script>
@@ -249,7 +247,6 @@
         <script src="content/blog/deep-dives/localtether-implementation-notes.js"></script>
         <script src="content/vim/index.js"></script>
         <script src="content/vim/play.js"></script>
-        <!-- END GENERATED CONTENT SCRIPTS -->
 
         <!-- Keep classic scripts (not modules) in this order: they share top-level bindings. -->
         <script src="scripts/vim-engine.js"></script>

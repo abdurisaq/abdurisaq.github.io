@@ -1,18 +1,14 @@
-/* @content
-{
-    "type": "page",
-    "loadOrder": 40,
-    "route": "#/experience",
-    "kind": "PAGE",
-    "detail": "Work and experience",
-    "treeOrder": 10,
-    "folderOrder": 40,
-    "searchOrder": 40,
-    "searchPaths": [
-        "experience"
-    ]
-}
-*/
+addPage({
+    path: "experience/work.md",
+    route: "#/experience",
+    kind: "PAGE",
+    detail: "Work and experience",
+    treeOrder: 10,
+    folderOrder: 40,
+    searchOrder: 40,
+    searchPaths: ["experience"],
+});
+
 // experience/work.md: professional experience entries.
 DATA.experience = [
     {

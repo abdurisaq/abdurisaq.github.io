@@ -1,4 +1,4 @@
-/* Telescope-style file search and live text grep. Content metadata comes from the generated manifest. */
+/* Telescope-style file search and live text grep, built from the page data. */
 let searchMode = "files",
     searchMatches = [],
     searchReturnFocus = null;

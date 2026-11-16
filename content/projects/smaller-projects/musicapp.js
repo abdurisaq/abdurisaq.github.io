@@ -1,46 +1,59 @@
-/* @content
-{
-    "type": "project",
-    "collection": "smallerProjects",
-    "loadOrder": 130,
-    "treeOrder": 110,
-    "searchOrder": 230,
-    "searchProfile": "project",
-    "folderSearch": {
-        "detail": "Independent projects and coursework",
-        "route": "#/projects",
-        "kind": "DIR",
-        "searchOrder": 225,
-        "profile": "project-folder"
-    }
-}
-*/
+addPage({
+    type: "project",
+    collection: "smallerProjects",
+    path: "projects/smaller-projects/musicapp.md",
+    treeOrder: 110,
+    searchOrder: 230,
+    folderSearch: {
+        detail: "Independent projects and coursework",
+        route: "#/projects",
+        kind: "DIR",
+        searchOrder: 225,
+        profile: "project-folder",
+    },
+});
+
 // projects/smaller-projects/musicapp.md
-registerContentData("project", {
+DATA.smallerProjects.push({
     id: "musicapp",
     name: "MusicApp",
     repo: "https://github.com/abdurisaq/MusicApp",
     summary:
-        "An Android music player built around the whole listening loop: download media, keep it in a local library, organize playlists and keep playback going in the background with Bluetooth controls.",
+        "An Android music player built around the whole listening loop: download media, " +
+        "keep it in a local library, organize playlists and keep playback going in the " +
+        "background with Bluetooth controls.",
     stack: ["Kotlin", "Android", "Media Playback"],
-    about: "MusicApp was an exercise in making the everyday path feel complete. Finding or downloading a track is only the start; the app also needs to keep a local library organized, manage playlists and continue playing after the screen goes off. I built it with Kotlin and Compose, then worked through Android's playback and download services to make those pieces behave together.",
+    about:
+        "MusicApp was an exercise in making the everyday path feel complete. Finding or " +
+        "downloading a track is only the start; the app also needs to keep a local library " +
+        "organized, manage playlists and continue playing after the screen goes off. I " +
+        "built it with Kotlin and Compose, then worked through Android's playback and " +
+        "download services to make those pieces behave together.",
     sections: [
         {
             title: "Keep a local music library",
             paragraphs: [
-                "Room stores song records, playlists and the relationship between them. DAO interfaces expose playlist and song queries as flows, so the UI can observe library changes without having to manage raw SQL in the screens.",
+                "Room stores song records, playlists and the relationship between them. DAO " +
+                    "interfaces expose playlist and song queries as flows, so the UI can observe " +
+                    "library changes without having to manage raw SQL in the screens.",
             ],
         },
         {
             title: "Download and organize media",
             paragraphs: [
-                "The app includes YouTube search and a direct-download flow. Search requires a user-provided YouTube API key, which is kept in local.properties for the build rather than checked into the repository. Downloaded items can then be organized into playlists.",
+                "The app includes YouTube search and a direct-download flow. Search requires a " +
+                    "user-provided YouTube API key, which is kept in local.properties for the build " +
+                    "rather than checked into the repository. Downloaded items can then be organized " +
+                    "into playlists.",
             ],
         },
         {
             title: "Keep playback running",
             paragraphs: [
-                "Playback is built around Media3 ExoPlayer. An Android service owns the media session and publishes a system notification with previous, play/pause and next actions, allowing playback controls to remain available outside the app. The player also supports background playback and shuffle.",
+                "Playback is built around Media3 ExoPlayer. An Android service owns the media " +
+                    "session and publishes a system notification with previous, play/pause and next " +
+                    "actions, allowing playback controls to remain available outside the app. The " +
+                    "player also supports background playback and shuffle.",
             ],
         },
     ],

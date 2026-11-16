@@ -1,31 +1,41 @@
-/* @content
-{
-    "type": "project",
-    "collection": "communityProjects",
-    "loadOrder": 120,
-    "treeOrder": 50,
-    "searchOrder": 220,
-    "searchProfile": "project"
-}
-*/
+addPage({
+    type: "project",
+    collection: "communityProjects",
+    path: "projects/organize-my-bakkesmod-garage.md",
+    treeOrder: 50,
+    searchOrder: 220,
+});
+
 // projects/organize-my-bakkesmod-garage.md: community project
-registerContentData("project", {
+DATA.communityProjects.push({
     id: "organize-my-bakkesmod-garage",
     name: "OrganizeMyBakkesModGarage",
     repo: "https://github.com/abdurisaq/OrganizeMyBakkesModGarage",
     summary:
-        "A BakkesMod plugin that makes a crowded Rocket League garage manageable: group presets, sort loadouts and switch between setups in-game. A small quality-of-life fix that found an audience well beyond my own setup.",
+        "A BakkesMod plugin that makes a crowded Rocket League garage manageable: group " +
+        "presets, sort loadouts and switch between setups in-game. A small quality-of-life " +
+        "fix that found an audience well beyond my own setup.",
     stack: ["C++", "BakkesMod SDK", "Dear ImGui", "Windows APIs"],
     image: "assets/organize-my-bakkesmod-garage.png",
     imageAlt:
         "OrganizeMyBakkesModGarage group and preset management interface shown over Rocket League gameplay.",
-    about: "OrganizeMyBakkesModGarage began as a tiny irritation: once a garage fills up, finding the preset you actually want becomes its own task. I built the organization tools directly into the game, so grouping, sorting and managing loadouts did not require a separate website or workflow. It is one of my less complicated projects—and, with around 13,000 downloads, easily one of the most widely used.",
+    about:
+        "OrganizeMyBakkesModGarage began as a tiny irritation: once a garage fills up, " +
+        "finding the preset you actually want becomes its own task. I built the " +
+        "organization tools directly into the game, so grouping, sorting and managing " +
+        "loadouts did not require a separate website or workflow. It is one of my less " +
+        "complicated projects—and, with around 13,000 downloads, easily one of the most " +
+        "widely used.",
     sections: [
         {
             title: "Give presets a structure",
             paragraphs: [
-                "Create named groups, add presets from the garage, remove entries later and edit a group's name or contents. The UI includes group and preset search fields, so the list stays manageable as the collection grows.",
-                "Groups can be sorted by name, modification date or number of presets, in either ascending or descending order. A selected group can also be marked as the main group for the in-game shuffle features.",
+                "Create named groups, add presets from the garage, remove entries later and edit a " +
+                    "group's name or contents. The UI includes group and preset search fields, so the " +
+                    "list stays manageable as the collection grows.",
+                "Groups can be sorted by name, modification date or number of presets, in either " +
+                    "ascending or descending order. A selected group can also be marked as the main " +
+                    "group for the in-game shuffle features.",
             ],
         },
         {
@@ -40,7 +50,10 @@ registerContentData("project", {
         {
             title: "Keep the workflow inside Rocket League",
             paragraphs: [
-                "The plugin is built around BakkesMod game events and an ImGui interface. It tracks replay and loadout events to collect preset information, then exposes group editing and selection through its own window. The project is Windows-focused and its README notes that Linux is not supported.",
+                "The plugin is built around BakkesMod game events and an ImGui interface. It tracks " +
+                    "replay and loadout events to collect preset information, then exposes group " +
+                    "editing and selection through its own window. The project is Windows-focused and " +
+                    "its README notes that Linux is not supported.",
             ],
         },
     ],
