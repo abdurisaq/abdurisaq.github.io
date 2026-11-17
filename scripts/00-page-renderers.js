@@ -86,7 +86,6 @@ const blogCard = (post) =>
         `${esc(post.category)} <span>·</span> ${esc(post.readTime)}</div><h3>${esc(post.title)}</h3><p>`,
         `${esc(post.subtitle)}</p><span class="blog-card-link">Read the post ↗</span></a>`,
     );
-const isSmallerProject = (id) => DATA.smallerProjects.some((p) => p.id === id);
 const projectRoute = (project) =>
     CONTENT_PAGES.find((page) => page.type === "project" && page.id === project.id)?.route ||
     `#/projects/${encodeURIComponent(project.id)}`;
@@ -193,8 +192,8 @@ const pages = {
     projects: () =>
         joinHtml(
             `<h1>projects</h1>`,
-            `<p class="page-intro">Selected work first, followed by community software and smaller independent `,
-            `projects.</p><section><h2>Featured projects</h2><div class="grid">`,
+            `<p class="page-intro">Selected work and community software.</p>`,
+            `<section><h2>Featured projects</h2><div class="grid">`,
             `${DATA.projects.slice(0, 3).map(projectCard).join("")}</div></section><section>`,
             `<div class="section-heading-row"><h2>Community project</h2>`,
             `<span class="section-kicker">player adoption</span></div><div class="grid">`,
@@ -206,26 +205,29 @@ const pages = {
                           `${DATA.projects.slice(3).map(projectCard).join("")}</div></section>`,
                       )
                     : ""
-            }<section>`,
-            `<div class="section-heading-row"><h2>Smaller projects</h2>`,
-            `<span class="section-kicker">more experiments</span></div>`,
-            `<p>Smaller applications, coursework and systems exercises. Each project has its own page in `,
-            `<code>projects/smaller-projects/</code>.</p><div class="grid">`,
-            `${DATA.smallerProjects.map(projectCard).join("")}</div></section>`,
+            }`,
         ),
     project: (id) => {
-        const p = [...DATA.projects, ...DATA.communityProjects, ...DATA.smallerProjects].find(
-            (x) => x.id === id,
-        );
+        const p = [...DATA.projects, ...DATA.communityProjects].find((x) => x.id === id);
         if (!p) return pages.notfound();
-        const projectFolder = isSmallerProject(id) ? "smaller-projects" : "projects";
+        const logo = p.image && p.imageVariant === "logo";
         return joinHtml(
             `<div class="crumb"><a href="#/projects">projects</a> / `,
-            `${projectFolder === "smaller-projects" ? `<span>smaller-projects</span> / ` : ""}${esc(p.id)}</div>
+            `${esc(p.id)}</div>
   `,
-            `    <h1>${esc(p.name)}</h1>
-      <p class="page-intro">${esc(p.summary)}</p>
-      `,
+            `${
+                logo
+                    ? joinHtml(
+                          `<div class="project-heading project-heading-with-logo"><div class="project-heading-copy">`,
+                          `<h1>${esc(p.name)}</h1><p class="page-intro">${esc(p.summary)}</p></div>`,
+                          `<img class="project-logo" src="${esc(p.image)}" alt="${esc(p.imageAlt || p.name)}" `,
+                          `width="88" height="88"></div>`,
+                      )
+                    : joinHtml(
+                          `<h1>${esc(p.name)}</h1><p class="page-intro">${esc(p.summary)}</p>`,
+                      )
+            }
+`,
             `${
                 p.storyPostId
                     ? joinHtml(
@@ -243,10 +245,11 @@ const pages = {
 `,
             `      `,
             `${
-                p.image
+                p.image && !logo
                     ? joinHtml(
-                          `<figure class="project-media"><img src="${esc(p.image)}" alt="${esc(p.imageAlt || p.name)}" `,
-                          `loading="lazy"><figcaption>${esc(p.imageAlt || p.name)}</figcaption></figure>`,
+                          `<figure class="project-media">`,
+                          `<img src="${esc(p.image)}" alt="${esc(p.imageAlt || p.name)}" loading="lazy">`,
+                          `<figcaption>${esc(p.imageAlt || p.name)}</figcaption></figure>`,
                       )
                     : ""
             }
@@ -415,7 +418,7 @@ const pages = {
         }
         const post = DATA.blogPosts.find((item) => item.id === id);
         if (!post) return pages.notfound();
-        const project = [...DATA.projects, ...DATA.communityProjects, ...DATA.smallerProjects].find(
+        const project = [...DATA.projects, ...DATA.communityProjects].find(
             (item) => item.id === post.projectId,
         );
         const videos = post.videos?.length

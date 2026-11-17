@@ -134,7 +134,6 @@ function keyForRoute(route) {
         .filter(Boolean)
         .map(decodeURIComponent);
     if (parts[0] === "projects" && parts[1]) return `project:${parts[1]}`;
-    if (parts[0] === "smaller-projects" && parts[1]) return `smaller-project:${parts[1]}`;
     if (parts[0] === "blog" && parts[1]) return `blog:${parts[1]}`;
     if (parts[0] === "vim" && parts[1]) return `vim:${parts[1]}`;
     return parts[0] || "home";

@@ -11,7 +11,6 @@ const DATA = {
     skills: null,
     projects: [],
     communityProjects: [],
-    smallerProjects: [],
     community: null,
     blogPosts: [],
 };
@@ -28,7 +27,7 @@ function addPage(options) {
     const route =
         options.route ||
         (type === "project"
-            ? `#/${collection === "smallerProjects" ? "smaller-projects" : "projects"}/${encodeURIComponent(id)}`
+            ? `#/projects/${encodeURIComponent(id)}`
             : type === "blog"
               ? `#/blog/${encodeURIComponent(id)}`
               : null);
@@ -38,9 +37,7 @@ function addPage(options) {
     const routeParts = route.replace(/^#/, "").split("?")[0].split("/").filter(Boolean);
     const defaultKeyPrefix =
         type === "project"
-            ? collection === "smallerProjects"
-                ? "smaller-project"
-                : "project"
+            ? "project"
             : type === "blog"
               ? "blog"
               : type === "tutorial"

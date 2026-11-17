@@ -354,6 +354,28 @@ pre.code {
     margin: 20px 0 28px;
     max-width: 920px;
 }
+.project-heading-with-logo {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.project-heading-copy {
+    min-width: 0;
+    flex: 1;
+}
+.project-heading-copy .page-intro {
+    margin-bottom: 0;
+}
+.project-logo {
+    display: block;
+    width: 88px;
+    height: 88px;
+    flex: none;
+    object-fit: contain;
+    margin-top: 4px;
+}
 .project-media img {
     display: block;
     width: 100%;
@@ -632,6 +654,10 @@ pre.code {
 }
 
 @media (max-width: 760px) {
+    .project-logo {
+        width: 60px;
+        height: 60px;
+    }
     .explorer {
         position: fixed;
         z-index: 50;
