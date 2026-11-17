@@ -59,14 +59,14 @@ DATA.communityProjects.push({
     ],
     screenshots: [
         {
-            src: "assets/screenshots/organize-groups.png",
+            src: "assets/gifs/organize-groups.gif",
             alt: "OrganizeMyBakkesModGarage groups and preset management screen",
             caption: "Preset groups and editing",
         },
         {
-            src: "assets/screenshots/organize-shuffle.png",
-            alt: "OrganizeMyBakkesModGarage preset shuffle controls",
-            caption: "Main group and shuffle settings",
+            src: "assets/gifs/swap-car-bodies.gif",
+            alt: "OrganizeMyBakkesModGarage preset swapping",
+            caption: "Main group car swapping",
         },
     ],
     highlights: [
@@ -87,5 +87,7 @@ DATA.communityProjects.push({
         },
     ],
     videos: [],
-    links: [["Source", "https://github.com/abdurisaq/OrganizeMyBakkesModGarage"]],
+    links: [["Source", "https://github.com/abdurisaq/OrganizeMyBakkesModGarage"],
+            ["Download on BakkesPlugins", "https://bakkesplugins.com/plugin/534"],
+    ],
 });

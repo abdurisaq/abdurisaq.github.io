@@ -60,9 +60,6 @@
     border: 1px solid var(--border);
     background: var(--panel);
 }
-.screenshot-slot:not(.has-image) img {
-    display: none;
-}
 .screenshot-slot.has-image .screenshot-placeholder {
     display: none;
 }

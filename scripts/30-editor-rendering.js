@@ -96,6 +96,11 @@ function renderContentTree() {
 
 function bindRenderedContent(root) {
     root.querySelectorAll(".screenshot-slot img").forEach((img) => {
+        const reportLoadFailure = () => {
+            if (!img.parentElement) return;
+            console.error("[portfolio] Failed to load screenshot:", img.src, `(${img.alt})`);
+            img.remove();
+        };
         img.addEventListener(
             "load",
             () => img.closest(".screenshot-slot")?.classList.add("has-image"),
@@ -103,11 +108,14 @@ function bindRenderedContent(root) {
                 once: true,
             },
         );
-        img.addEventListener("error", () => img.remove(), {
+        img.addEventListener("error", reportLoadFailure, {
             once: true,
         });
-        if (img.complete && img.naturalWidth > 0)
-            img.closest(".screenshot-slot")?.classList.add("has-image");
+        if (img.complete) {
+            if (img.naturalWidth > 0)
+                img.closest(".screenshot-slot")?.classList.add("has-image");
+            else reportLoadFailure();
+        }
     });
     root.querySelectorAll(".video-load").forEach((button) =>
         button.addEventListener("click", () => {

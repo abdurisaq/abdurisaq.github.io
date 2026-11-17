@@ -41,7 +41,7 @@ const screenshotGallery = (shots) =>
                           `<figure class="screenshot-slot"><div class="screenshot-placeholder"><span>SCREENSHOT `,
                           `${String(i + 1).padStart(2, "0")}</span><code>${esc(shot.src)}</code>`,
                           `<small>Add your image at this path</small></div><img src="${esc(shot.src)}" alt="${esc(shot.alt)}" `,
-                          `loading="lazy"><figcaption>${esc(shot.caption || shot.alt)}</figcaption></figure>`,
+                          `><figcaption>${esc(shot.caption || shot.alt)}</figcaption></figure>`,
                       ),
                   )
                   .join("")}</div>`,

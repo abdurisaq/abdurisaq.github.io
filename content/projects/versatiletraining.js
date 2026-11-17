@@ -90,6 +90,13 @@ DATA.projects.push({
             alt: "VersatileTraining goal blocker configuration",
             caption: "Goal blocker configuration",
         },
+        {
+            src: "assets/screenshots/versatile-training-settings.png",
+            alt: "VersatileTraining settings page",
+            caption: "Settings page",
+        },
+
+        
     ],
     highlights: [
         "Custom training packs with control over position, rotation, velocity, boost and jump state.",
@@ -107,7 +114,7 @@ DATA.projects.push({
     ],
     links: [
         ["Source", "https://github.com/abdurisaq/VersatileTraining"],
-        ["Download on BakkesPlugins", "https://bakkesplugins.com/plugins/view/559"],
+        ["Download on BakkesPlugins", "https://bakkesplugins.com/plugin/559"],
     ],
     storyPostId: "versatiletraining-story",
     technicalPostId: "versatiletraining-ue3-notes",
