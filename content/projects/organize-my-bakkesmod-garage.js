@@ -56,12 +56,12 @@ DATA.communityProjects.push({
     ],
     screenshots: [
         {
-            src: "assets/gifs/organize-groups.gif",
+            src: "assets/projects/organize-my-bakkesmod-garage/organize-groups.gif",
             alt: "OrganizeMyBakkesModGarage groups and preset management screen",
             caption: "Preset groups and editing",
         },
         {
-            src: "assets/gifs/swap-car-bodies.gif",
+            src: "assets/projects/organize-my-bakkesmod-garage/swap-car-bodies.gif",
             alt: "OrganizeMyBakkesModGarage preset swapping",
             caption: "Main group car swapping",
         },

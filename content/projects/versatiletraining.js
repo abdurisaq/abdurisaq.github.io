@@ -76,22 +76,22 @@ DATA.projects.push({
     ],
     screenshots: [
         {
-            src: "assets/screenshots/versatile-training-pack-editor.png",
+            src: "assets/projects/versatiletraining/versatile-training-pack-editor.png",
             alt: "VersatileTraining custom training pack editor",
             caption: "Custom pack editor",
         },
         {
-            src: "assets/screenshots/versatile-training-snapshot-gallery.png",
+            src: "assets/projects/versatiletraining/versatile-training-snapshot-gallery.png",
             alt: "VersatileTraining snapshot gallery",
             caption: "Snapshot gallery and saved game states",
         },
         {
-            src: "assets/screenshots/versatile-training-goal-blockers.png",
+            src: "assets/projects/versatiletraining/versatile-training-goal-blockers.png",
             alt: "VersatileTraining goal blocker configuration",
             caption: "Goal blocker configuration",
         },
         {
-            src: "assets/screenshots/versatile-training-settings.png",
+            src: "assets/projects/versatiletraining/versatile-training-settings.png",
             alt: "VersatileTraining settings page",
             caption: "Settings page",
         },

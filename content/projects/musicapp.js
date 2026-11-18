@@ -14,7 +14,7 @@ DATA.projects.push({
         "An Android music player built around a simple listening workflow: search for " +
         "music, download tracks, organize a local library and playlists, and keep " +
         "playback running in the background.",
-    image: "assets/screenshots/music-logo.png",
+    image: "assets/projects/musicapp/music-logo.png",
     imageAlt: "MusicApp logo",
     imageVariant: "logo",
     stack: ["Kotlin", "Jetpack Compose", "Room", "Android Media3"],

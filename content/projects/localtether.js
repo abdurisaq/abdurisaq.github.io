@@ -66,14 +66,14 @@ DATA.projects.push({
     ],
     screenshots: [
         {
-            src: "assets/screenshots/localtether-session-dashboard.png",
-            alt: "LocalTether session dashboard showing connected clients and session controls",
-            caption: "Session dashboard and host controls",
+            src: "assets/projects/localtether/Local-Tether-dashboard.png",
+            alt: "LocalTether dashboard with a shared file explorer and session controls",
+            caption: "Dashboard and shared file explorer",
         },
         {
-            src: "assets/screenshots/localtether-shared-files.png",
-            alt: "LocalTether synchronized shared file explorer",
-            caption: "Shared file explorer",
+            src: "assets/projects/localtether/Local-Tether-join.jpg",
+            alt: "LocalTether screen for discovering or manually joining a session",
+            caption: "Join an existing session",
         },
     ],
     highlights: [

@@ -70,19 +70,9 @@ DATA.projects.push({
     ],
     screenshots: [
         {
-            src: "assets/screenshots/versatile-hub-browse.png",
-            alt: "Versatile Training Hub community pack browser",
-            caption: "Browsing community packs",
-        },
-        {
-            src: "assets/screenshots/versatile-hub-pack-details.png",
-            alt: "Versatile Training Hub pack detail and shot metadata",
-            caption: "Pack details and decoded shot data",
-        },
-        {
-            src: "assets/screenshots/versatile-hub-upload.png",
-            alt: "Versatile Training Hub upload workflow",
-            caption: "Uploading a pack from the companion plugin",
+            src: "assets/projects/versatiletraininghub/versatile-hub-landing.png",
+            alt: "Versatile Training Hub landing page with links to browse and upload training packs",
+            caption: "Training Hub landing page",
         },
     ],
     highlights: [

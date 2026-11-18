@@ -61,19 +61,14 @@ DATA.projects.push({
     ],
     screenshots: [
         {
-            src: "assets/screenshots/privateconvert-file-operations.png",
-            alt: "PrivateConvert file operations interface with an image conversion pipeline",
-            caption: "Pipeline builder and file operations",
+            src: "assets/projects/privateconvert/private-converter-dashboard.png",
+            alt: "PrivateConvert dashboard with file operations and recent conversion jobs",
+            caption: "Dashboard and recent jobs",
         },
         {
-            src: "assets/screenshots/privateconvert-pdf-editor.png",
-            alt: "PrivateConvert PDF editor interface",
-            caption: "PDF page editor",
-        },
-        {
-            src: "assets/screenshots/privateconvert-jobs.png",
-            alt: "PrivateConvert job history and queue interface",
-            caption: "Job queue and history",
+            src: "assets/projects/privateconvert/private-converter-pipeline.png",
+            alt: "PrivateConvert file operations page for recording and applying a conversion pipeline",
+            caption: "Pipeline recording and file operations",
         },
     ],
     highlights: [
