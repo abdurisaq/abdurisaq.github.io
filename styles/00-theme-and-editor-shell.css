@@ -57,7 +57,7 @@ body {
     background: var(--bg);
     color: var(--fg);
     font:
-        14px/1.75 "JetBrains Mono",
+        16px/1.75 "JetBrains Mono",
         Menlo,
         Consolas,
         monospace;

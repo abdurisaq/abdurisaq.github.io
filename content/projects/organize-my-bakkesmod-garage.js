@@ -16,9 +16,6 @@ DATA.communityProjects.push({
         "presets, sort loadouts and switch between setups in-game. A small quality-of-life " +
         "fix that found an audience well beyond my own setup.",
     stack: ["C++", "BakkesMod SDK", "Dear ImGui", "Windows APIs"],
-    image: "assets/organize-my-bakkesmod-garage.png",
-    imageAlt:
-        "OrganizeMyBakkesModGarage group and preset management interface shown over Rocket League gameplay.",
     about:
         "OrganizeMyBakkesModGarage began as a tiny irritation: once a garage fills up, " +
         "finding the preset you actually want becomes its own task. I built the " +

@@ -110,6 +110,7 @@ body {
     overscroll-behavior: contain;
     scrollbar-gutter: stable;
     padding: 26px clamp(18px, 3.6vw, 52px) 74px;
+    font-size: 18px;
     margin: 0;
 }
 #split-app {

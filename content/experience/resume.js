@@ -9,5 +9,3 @@ addPage({
     ariaLabel: "Resume PDF",
     title: "Resume PDF · in-page image preview",
 });
-
-// Virtual page metadata. Content is rendered by the application.

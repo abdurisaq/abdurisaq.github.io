@@ -4,7 +4,7 @@ addPage({
     kind: "PAGE",
     detail: "Project stories and technical notes",
     treeOrder: 0,
-    folderOrder: 60,
+    folderOrder: 99,
     searchOrder: 90,
     searchProfile: "blog-index",
 });

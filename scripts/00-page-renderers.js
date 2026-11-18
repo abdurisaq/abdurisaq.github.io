@@ -29,6 +29,78 @@ const video = (v) =>
         `<a href="https://www.youtube.com/watch?v=${encodeURIComponent(v.id)}" target="_blank" `,
         `rel="noopener">If the player is unavailable, watch on YouTube ↗</a></figcaption></figure>`,
     );
+const renderAboutMediaCard = (item) =>
+    joinHtml(
+        `<article class="about-media-card"><div class="about-media-art"><img src="${esc(item.image)}" `,
+        `alt="${esc(item.alt)}" width="360" height="540" loading="lazy" decoding="async"></div>`,
+        `<div class="about-media-copy"><span class="about-media-category">${esc(item.category)}</span>`,
+        `<h3>${esc(item.title)}</h3>`,
+        `${
+            item.descriptionHtml
+                ? item.descriptionHtml
+                : item.description
+                  ? `<p>${esc(item.description)}</p>`
+                  : ""
+        }</div></article>`,
+    );
+const renderAboutBlock = (block) => {
+    switch (block.type) {
+        case "html":
+            return block.html;
+        case "videos":
+            return `<div class="about-video-grid">${block.videos.map(video).join("")}</div>`;
+        case "media-grid": {
+            const layoutClass =
+                block.items.length === 4
+                    ? " about-media-grid--four"
+                    : block.items.length === 2
+                      ? " about-media-grid--pair"
+                      : "";
+            return `<div class="about-media-grid${layoutClass}">${block.items.map(renderAboutMediaCard).join("")}</div>`;
+        }
+        default:
+            throw new Error(`Unknown About page block type: ${block.type}`);
+    }
+};
+const renderAbout = () =>
+    joinHtml(
+        `<article class="about-page"><header class="about-professional">`,
+        `<div class="about-professional-copy"><h1>about me</h1>`,
+        `<p class="about-introduction">${DATA.about.introductionHtml}</p></div>`,
+        `<div class="about-facts-wrap"><div class="about-facts-label">QUICK FACTS</div>`,
+        `<table class="about-facts"><tbody>`,
+        `${DATA.about.facts
+            .map(
+                ([label, value]) =>
+                    `<tr><th scope="row">${esc(label)}</th><td>${esc(value)}</td></tr>`,
+            )
+            .join("")}</tbody></table></div></header>`,
+        `<aside class="about-invitation" aria-label="Invitation to read more">`,
+        `<div class="about-invitation-copy"><p><em>Nothing particularly interesting down here...</em></p>`,
+        `<p>But if you're <em>cough</em> curious about knowing a little more about me, I wouldn't `,
+        `mind you opening the rest of this file.</p>`,
+        `<p>You can press <kbd>zR</kbd> to unfold everything, or just click the button. I promise `,
+        `it's only a mildly excessive amount of personal information.</p></div>`,
+        `<button class="btn about-open-button" type="button" data-about-open-all `,
+        `aria-controls="about-personal-profile" aria-expanded="false">`,
+        `Open the rest of the file <span aria-hidden="true">↘</span></button></aside>`,
+        `<details class="about-profile-fold" id="about-personal-profile">`,
+        `<summary><span>Personal profile</span><span class="about-fold-state">zR opens all folds</span></summary>`,
+        `<div class="about-profile-content"><p class="about-greeting"><strong>${esc(DATA.about.greeting)}</strong></p>`,
+        `<p>${esc(DATA.about.profileIntroduction)}</p>`,
+        `<p class="about-ascii" aria-hidden="true">&#92; ( &gt;o&lt; ) /</p>`,
+        `${DATA.about.sections
+            .map(
+                (section, index) =>
+                    joinHtml(
+                        `<details class="about-section" id="about-section-${index + 1}" open>`,
+                        `<summary><span>${esc(section.title)}</span></summary>`,
+                        `<div class="about-section-content">`,
+                        `${section.blocks.map(renderAboutBlock).join("")}</div></details>`,
+                    ),
+            )
+            .join("")}</div></details></article>`,
+    );
 const screenshotGallery = (shots) =>
     !shots?.length
         ? ""
@@ -127,9 +199,10 @@ const pages = {
             `<a class="btn" href="#/projects">Explore projects <span>↗</span></a>`,
             `<a class="btn alt" href="#/resume">View resume</a><a class="btn alt" href="#/about">About me</a>`,
             `</div><div class="boring-invite">`,
-            `<p>Does this overwhelm you and you just want a normal website? Click the boring button to make this `,
-            `into a boring website.</p>`,
-            `<button class="btn alt" type="button" data-boring-toggle>Make it boring</button></div>`,
+            `<p>This portfolio is styled after Neovim, with a few Vim motions built in to help you explore. `,
+            `Press <code>:</code> and type <code>help</code> to see the available commands, or click `,
+            `<code>? keys</code> in the bottom-right corner for keyboard shortcuts.</p>`,
+            `<button class="btn alt" type="button" data-boring-toggle>Use a regular layout</button></div>`,
             `</section>
     <section><h2>Featured projects</h2><div class="grid">`,
             `${DATA.projects.slice(0, 3).map(projectCard).join("")}</div><p style="margin-top:15px">`,
@@ -163,27 +236,15 @@ const pages = {
             `↗</a> <span style="color:var(--dim)">·</span> <a href="${esc(P.linkedin)}" target="_blank" `,
             `rel="noopener">LinkedIn ↗</a></p></section>`,
         ),
-    about: () =>
-        joinHtml(
-            `<h1>about me</h1><section class="cols"><div>${DATA.about.map((x) => `<p>${t(x)}</p>`).join("")}</div>`,
-            `<aside class="side">`,
-            `${DATA.facts
-                .map(([k, v]) =>
-                    joinHtml(
-                        `<div style="margin-bottom:8px"><span style="color:var(--cyan)">${esc(k)}:</span> `,
-                        `${t(v)}</div>`,
-                    ),
-                )
-                .join("")}</aside>`,
-            `</section>`,
-        ),
+    about: renderAbout,
     experience: () =>
         joinHtml(
             `<h1>experience</h1><section class="timeline">`,
             `${DATA.experience
                 .map((j) =>
                     joinHtml(
-                        `<div class="job"><h3>${t(j.role)}</h3><div class="meta">${t(j.org)} · ${t(j.dates)} · ${t(j.place)}</div>`,
+                        `<div class="job"><h3>${t(j.role)}</h3>`,
+                        `<div class="meta">${t(j.org)} · ${t(j.dates)} · ${t(j.place)}</div>`,
                         `<ul>${j.bullets.map((b) => `<li>${t(b)}</li>`).join("")}</ul></div>`,
                     ),
                 )
@@ -211,6 +272,36 @@ const pages = {
         const p = [...DATA.projects, ...DATA.communityProjects].find((x) => x.id === id);
         if (!p) return pages.notfound();
         const logo = p.image && p.imageVariant === "logo";
+        const sidebarMeta = joinHtml(
+            p.storyPostId
+                ? joinHtml(
+                      `<aside class="project-blog-cta"><span class="cta-kicker">How this project happened</span><p>`,
+                      `<a href="#/blog/${encodeURIComponent(p.storyPostId)}">Read the story behind ${esc(p.name)} ↗</a>`,
+                      `${
+                          p.technicalPostId
+                              ? joinHtml(
+                                    ` <span class="link-separator">·</span> `,
+                                    `<a href="#/blog/${encodeURIComponent(p.technicalPostId)}">Technical notes ↗</a>`,
+                                )
+                              : ""
+                      }</p></aside>`,
+                  )
+                : "",
+            p.metrics
+                ? joinHtml(
+                      `<div class="metrics-panel"><div class="metrics-label">`,
+                      `${esc(p.metricsLabel || "Community reach · figures provided")}</div><div class="metric-row">`,
+                      `${p.metrics
+                          .map((m) =>
+                              joinHtml(
+                                  `<div class="metric"><strong>${esc(m.value)}</strong>`,
+                                  `<small>${esc(m.label)}</small></div>`,
+                              ),
+                          )
+                          .join("")}</div></div>`,
+                  )
+                : "",
+        );
         return joinHtml(
             `<div class="crumb"><a href="#/projects">projects</a> / `,
             `${esc(p.id)}</div>
@@ -229,22 +320,6 @@ const pages = {
             }
 `,
             `${
-                p.storyPostId
-                    ? joinHtml(
-                          `<aside class="project-blog-cta"><span class="cta-kicker">How this project happened</span><p>`,
-                          `<a href="#/blog/${encodeURIComponent(p.storyPostId)}">Read the story behind ${esc(p.name)} ↗</a>`,
-                          `${
-                              p.technicalPostId
-                                  ? ` <span class="link-separator">·</span> <a href="#/blog/${encodeURIComponent(p.technicalPostId)}">Technical notes ↗</a>`
-                                  : ""
-                          }</p>`,
-                          `</aside>`,
-                      )
-                    : ""
-            }
-`,
-            `      `,
-            `${
                 p.image && !logo
                     ? joinHtml(
                           `<figure class="project-media">`,
@@ -255,24 +330,6 @@ const pages = {
             }
 `,
             `      `,
-            `${
-                p.metrics
-                    ? joinHtml(
-                          `<div class="metrics-panel"><div class="metrics-label">`,
-                          `${esc(p.metricsLabel || "Community reach · figures provided")}</div><div class="metric-row">`,
-                          `${p.metrics
-                              .map((m) =>
-                                  joinHtml(
-                                      `<div class="metric"><strong>${esc(m.value)}</strong>`,
-                                      `<small>${esc(m.label)}</small></div>`,
-                                  ),
-                              )
-                              .join("")}</div>`,
-                          `</div>`,
-                      )
-                    : ""
-            }
-`,
             `      <div class="cols project-layout"><div>
         <section><h2>What it is</h2><p>${esc(p.about)}</p>`,
             `</section>
@@ -280,7 +337,9 @@ const pages = {
         <section>`,
             `<h2>Technical highlights</h2><ul>${p.highlights.map((h) => `<li>${esc(h)}</li>`).join("")}</ul>`,
             `</section>
-      </div><aside class="side"><h3>Technology</h3>${tags(p.stack)}<h3 `,
+      </div><aside class="side project-sidebar">`,
+            `${sidebarMeta ? `<div class="project-sidebar-meta">${sidebarMeta}</div>` : ""}`,
+            `<h3>Technology</h3>${tags(p.stack)}<h3 `,
             `style="margin-top:20px">Links</h3>`,
             `${p.links
                 .map(([name, url]) =>
@@ -355,11 +414,16 @@ const pages = {
                     joinHtml(
                         `<article class="contribution"><div class="contribution-heading"><h3>${esc(c.title)}</h3>`,
                         `<span class="contribution-status fork">${esc(c.status)}</span></div><p>${esc(c.detail)}</p>`,
-                        `${c.branchUrl ? `<a href="${esc(c.branchUrl)}" target="_blank" rel="noopener">View implementation branch ↗</a>` : ""}`,
+                        `${
+                            c.branchUrl
+                                ? `<a href="${esc(c.branchUrl)}" target="_blank" rel="noopener">View implementation branch ↗</a>`
+                                : ""
+                        }`,
                         `${
                             c.issueUrl
                                 ? joinHtml(
-                                      `${c.branchUrl ? ` <span class="link-separator">·</span> ` : ""}<a href="${esc(c.issueUrl)}" `,
+                                      c.branchUrl ? ` <span class="link-separator">·</span> ` : "",
+                                      `<a href="${esc(c.issueUrl)}" `,
                                       `target="_blank" rel="noopener">Original issue #1232 ↗</a>`,
                                   )
                                 : ""
@@ -411,7 +475,8 @@ const pages = {
                         ? joinHtml(
                               `<section class="blog-technical-list"><div class="section-heading-row"><h2>Deep dives</h2>`,
                               `<span class="section-kicker">~/blog/deep-dives</span></div>`,
-                              `<p>Project-specific implementation notes: the lower-level details behind the decisions, experiments `,
+                              `<p>Project-specific implementation notes: the lower-level details behind the `,
+                              `decisions, experiments `,
                               `and debugging.</p><div class="blog-list">${notes.map(blogCard).join("")}</div></section>`,
                           )
                         : ""
@@ -465,9 +530,11 @@ const pages = {
                   `${post.offsetNotes
                       .map((note) =>
                           joinHtml(
-                              `<article class="offset-note"><div class="offset-note-head"><strong>${esc(note.title)}</strong><code>`,
+                              `<article class="offset-note"><div class="offset-note-head"><strong>`,
+                              `${esc(note.title)}</strong><code>`,
                               `${esc(note.offset)}</code></div><small>Base: ${esc(note.base)}</small><p>${esc(note.detail)}</p>`,
-                              `<div class="offset-fields">${note.fields.map((field) => `<span>${esc(field)}</span>`).join("")}</div>`,
+                              `<div class="offset-fields">`,
+                              `${note.fields.map((field) => `<span>${esc(field)}</span>`).join("")}</div>`,
                               `</article>`,
                           ),
                       )

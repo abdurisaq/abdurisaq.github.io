@@ -70,8 +70,8 @@
     display: block;
 }
 .boring-mode .editor-content {
-    width: min(100%, 980px);
-    max-width: 980px;
+    width: min(100%, 1120px);
+    max-width: 1120px;
     margin: 0 auto;
     height: 100%;
     min-height: 0;

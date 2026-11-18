@@ -1,4 +1,3 @@
-/* Ex commands, help dialog, and global keyboard mappings. */
 // Ex command line.
 function openCommand() {
     const row = $("#command-row");
@@ -141,7 +140,9 @@ $("#status").addEventListener("click", (e) => {
 $("#help-overlay").addEventListener("click", (e) => {
     if (e.target.matches("[data-close-help]")) closeHelp();
 });
-let lastG = 0;
+let lastG = 0,
+    aboutPendingZ = false,
+    aboutPendingTimer = 0;
 function inEditable(el) {
     return el && (el.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(el.tagName));
 }
@@ -185,6 +186,27 @@ addEventListener("keydown", (e) => {
         e.target.id === "vim-play-command-input"
     )
         return;
+    if (aboutPendingZ) {
+        if (["Shift", "Control", "Alt", "Meta"].includes(e.key)) return;
+        aboutPendingZ = false;
+        clearTimeout(aboutPendingTimer);
+        if (
+            currentKey() === "about" &&
+            (e.key === "R" || (e.key === "r" && e.shiftKey))
+        ) {
+            e.preventDefault();
+            openAllAboutFolds(splitState?.active === "right" ? $("#split-app") : $("#app"));
+            return;
+        }
+    }
+    if (currentKey() === "about" && e.key === "z") {
+        e.preventDefault();
+        aboutPendingZ = true;
+        aboutPendingTimer = setTimeout(() => {
+            aboutPendingZ = false;
+        }, 1000);
+        return;
+    }
     if (e.key === "Escape") {
         if (treeNavigationActive && $("#explorer").contains(document.activeElement)) {
             e.preventDefault();

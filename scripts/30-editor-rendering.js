@@ -38,14 +38,21 @@ function renderContentFolderContents(folderPath = "", depth = 0) {
         ...folderNames.map((name) => {
             const path = folderPath ? `${folderPath}/${name}` : name;
             const nestedPages = descendants.filter((page) => page.path.startsWith(`${path}/`));
+            const directFolderPage = nestedPages.find(
+                (page) =>
+                    page.path.slice(0, page.path.lastIndexOf("/")) === path &&
+                    Number.isFinite(page.folderOrder),
+            );
             const explicitOrder = nestedPages
                 .map((page) => page.folderOrder)
                 .filter(Number.isFinite);
-            const order = Math.min(
-                ...(explicitOrder.length
-                    ? explicitOrder
-                    : nestedPages.map((page) => page.treeOrder)),
-            );
+            const order =
+                directFolderPage?.folderOrder ??
+                Math.min(
+                    ...(explicitOrder.length
+                        ? explicitOrder
+                        : nestedPages.map((page) => page.treeOrder)),
+                );
             return {
                 order,
                 type: "folder",
@@ -94,7 +101,38 @@ function renderContentTree() {
     $("#file-tree").innerHTML = renderContentFolderContents();
 }
 
+function loadAboutMedia(about) {
+    about.querySelectorAll(".about-media-card img[loading='lazy']").forEach((img) => {
+        img.loading = "eager";
+    });
+}
+
+function openAllAboutFolds(root) {
+    const about = root?.matches(".about-page") ? root : root?.querySelector(".about-page");
+    if (!about) return false;
+
+    about.querySelectorAll("details").forEach((fold) => {
+        fold.open = true;
+    });
+    loadAboutMedia(about);
+    about
+        .querySelector("[data-about-open-all]")
+        ?.setAttribute("aria-expanded", "true");
+    return true;
+}
+
 function bindRenderedContent(root) {
+    const about = root.querySelector(".about-page");
+    if (about) {
+        const profile = about.querySelector(".about-profile-fold");
+        const openButton = about.querySelector("[data-about-open-all]");
+        openButton?.addEventListener("click", () => openAllAboutFolds(about));
+        profile?.addEventListener("toggle", () => {
+            openButton?.setAttribute("aria-expanded", String(profile.open));
+            if (profile.open) loadAboutMedia(about);
+        });
+    }
+
     root.querySelectorAll(".screenshot-slot img").forEach((img) => {
         const reportLoadFailure = () => {
             if (!img.parentElement) return;

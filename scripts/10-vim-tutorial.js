@@ -371,7 +371,9 @@ function initVimTutorial(query) {
                         mode === "normal";
                     const atGoal =
                         isGoal && cursor && cursor.line === lineIndex && cursor.col === col;
-                    content += `<span class="${atLive ? "vim-cursor-block" : atGoal ? "vim-goal-marker" : "vim-char"}">${char}</span>`;
+                    content += `<span class="${
+                        atLive ? "vim-cursor-block" : atGoal ? "vim-goal-marker" : "vim-char"
+                    }">${char}</span>`;
                 }
                 if (!chars.length)
                     content =
@@ -528,8 +530,6 @@ function initVimTutorial(query) {
             );
         } catch (_) {}
         reset();
-        // The manual Next button takes focus away from the buffer. Return focus
-        // after every stage transition so the next lesson accepts keys immediately.
         setTimeout(() => $("#vim-buffer")?.focus(), 0);
     };
     const matchesSequence = (trace, sequence) => {

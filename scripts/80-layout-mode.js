@@ -1,5 +1,4 @@
 /* Conventional-layout toggle and persistence. */
-// The boring layout keeps the same content and colors, but removes the editor chrome.
 function setLayoutMode(mode, persist = true) {
     const boring = mode === "boring";
     document.body.classList.toggle("boring-mode", boring);
@@ -10,7 +9,7 @@ function setLayoutMode(mode, persist = true) {
         } catch (_) {}
     }
     const button = document.querySelector("[data-boring-toggle]");
-    if (button) button.textContent = boring ? "Back to fun" : "Make it boring";
+    if (button) button.textContent = boring ? "Back to Neovim layout" : "Use a regular layout";
 }
 try {
     setLayoutMode(localStorage.getItem("portfolio-layout") || "fun", false);

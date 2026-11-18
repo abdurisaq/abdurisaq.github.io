@@ -258,7 +258,6 @@
         if (key === "Escape") return true;
         if (state.mode === "insert")
             return key === "Backspace" || (key.length === 1 && key !== "\n" && key !== "\r");
-        // A wrong follow-up cancels a pending sequence, just as a failed motion
         // should not leave the learner trapped in a half-entered command.
         if (state.pendingKey) return key.length === 1;
         return "hjklwbe0$GgfdycxpioOaAI".includes(key) && key.length === 1;
